@@ -134,9 +134,29 @@ boring threats — the player develops, and the Program develops alongside.
 The horror is mechanical and procedural, not jump-scare:
 
 - Drones beep like crazy and whirr intensely when they find you.
-- Psionic "interference" corrupts your screen when you're detected/scanned.
 - Aggressive, personalized tracking pressure based on your weapon profile.
 - Alarms, roaring engines — inhuman sounds.
+
+### Psionic interference (proximity warning)
+
+Interference is an *ambient early-warning system*, not a one-off scan effect.
+Whenever Program drones are within roughly **3 chunks (~48 blocks)** of the
+player, a faint shift and hue distortion appears around the edges of the HUD.
+It **grows in intensity with how dangerous the nearby drones are** — one
+surveyor is a barely-perceptible flicker; a skirmisher pack closing in washes
+the screen edges hard. Players learn to read it: presence, escalation, and
+(by paying attention) roughly how bad the situation is before they ever see
+or hear the unit.
+
+## VFX Direction
+
+Weapons and events use a **Minecrafty particle language while staying
+semi-realistic in composition**. Effects are built from vanilla-style
+particles (explosion puffs, smoke, flashes, sparks) arranged realistically —
+scale, trails, timing — rather than from custom hyper-real effects.
+Reference case: the drop pod entry produces a huge smoke column and a roaring
+sound in the sky, but the impact itself still reads as classic Minecraft
+explosion particles and smoke.
 
 ## Technical Architecture (implementation view)
 

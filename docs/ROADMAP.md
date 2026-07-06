@@ -19,15 +19,18 @@ Phases are ordered so every phase ships something playable, and the Director
 
 ## Phase 1 — First Contact
 
-- [ ] Drop pod: meteor-style descent (visible from hundreds of blocks,
-      smoke trail, impact shake + crater), lands 300–600 blocks from spawn
-      after day 2–3
+- [ ] Drop pod: meteor-style descent (visible from hundreds of blocks, huge
+      smoke column, roaring sky sound), lands 300–600 blocks from spawn after
+      day 2–3; impact reads as vanilla explosion particles + smoke (see VFX
+      Direction in DESIGN.md)
 - [ ] Probe core block (the pod itself): heart of the future base, killable,
       drops early salvage; despawn/derelict rules
 - [ ] Explosive attack drone (Tier 1 response unit, creeper-style approach)
 - [ ] Director response loop: scan report → proportional unit dispatch
 - [ ] Custom sound recordings replace vanilla placeholders
-- [ ] Client-side "psionic interference" screen shader/overlay on scan
+- [ ] Psionic interference HUD overlay: ambient hue/shift vignette whenever
+      drones are within ~3 chunks, intensity scaled by the danger of nearby
+      units (surveyor = faint flicker, skirmisher pack = heavy wash)
 
 ## Phase 2 — The Base Lives
 
