@@ -1,8 +1,12 @@
 package dev.rheava.program7.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.ScanPlayerGoal;
+import dev.rheava.program7.entity.ai.StealItemsGoal;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
@@ -20,7 +24,10 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,10 +42,14 @@ import org.jetbrains.annotations.Nullable;
  * can grab it. Killing one interrupts the report and drops salvageable parts.
  */
 public class SurveyorDroneEntity extends PathAwareEntity {
+	private static final int CARGO_CAPACITY = 3;
+
 	private int scanCooldown = 0;
 	private int retreatTicks = 0;
 	@Nullable
 	private LivingEntity retreatFrom;
+	/** Stolen goods. Drops back out when the drone is destroyed. */
+	private final List<ItemStack> cargo = new ArrayList<>();
 
 	public SurveyorDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -58,9 +69,10 @@ public class SurveyorDroneEntity extends PathAwareEntity {
 	protected void initGoals() {
 		this.goalSelector.add(1, new RetreatGoal(this));
 		this.goalSelector.add(2, new ScanPlayerGoal(this));
-		this.goalSelector.add(3, new HoverWanderGoal(this));
-		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
-		this.goalSelector.add(5, new LookAroundGoal(this));
+		this.goalSelector.add(3, new StealItemsGoal(this));
+		this.goalSelector.add(4, new HoverWanderGoal(this));
+		this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
+		this.goalSelector.add(6, new LookAroundGoal(this));
 	}
 
 	@Override
@@ -108,6 +120,28 @@ public class SurveyorDroneEntity extends PathAwareEntity {
 	@Nullable
 	public LivingEntity getRetreatFrom() {
 		return this.retreatFrom;
+	}
+
+	public boolean isCargoFull() {
+		return this.cargo.size() >= CARGO_CAPACITY;
+	}
+
+	public void addCargo(ItemStack stack) {
+		if (!stack.isEmpty()) {
+			this.cargo.add(stack);
+		}
+	}
+
+	@Override
+	public void onDeath(DamageSource damageSource) {
+		super.onDeath(damageSource);
+		// The thief spills everything it took.
+		if (!this.getWorld().isClient) {
+			for (ItemStack stack : this.cargo) {
+				this.dropStack(stack);
+			}
+			this.cargo.clear();
+		}
 	}
 
 	@Override
@@ -163,11 +197,22 @@ public class SurveyorDroneEntity extends PathAwareEntity {
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		nbt.putInt("ScanCooldown", this.scanCooldown);
+		NbtList cargoList = new NbtList();
+		for (ItemStack stack : this.cargo) {
+			cargoList.add(stack.encode(this.getRegistryManager()));
+		}
+		nbt.put("Cargo", cargoList);
 	}
 
 	@Override
 	public void readCustomDataFromNbt(NbtCompound nbt) {
 		super.readCustomDataFromNbt(nbt);
 		this.scanCooldown = nbt.getInt("ScanCooldown");
+		this.cargo.clear();
+		NbtList cargoList = nbt.getList("Cargo", NbtElement.COMPOUND_TYPE);
+		for (int i = 0; i < cargoList.size(); i++) {
+			ItemStack.fromNbt(this.getRegistryManager(), cargoList.getCompound(i))
+					.ifPresent(this.cargo::add);
+		}
 	}
 }

@@ -48,7 +48,11 @@ Phases are ordered so every phase ships something playable, and the Director
       (iron, copper, redstone, coal, gunpowder)
 - [ ] Harvester drone (actually breaks ore blocks, needs them, hauls them);
       medium ground-based mining drones from the starter complement
-- [ ] Resource ledger: units cost real mined resources; iron/copper/redstone
+- [x] Resource ledger v1: every pod lands with a stockpile (iron, copper,
+      redstone, coal, gunpowder); attack drone dispatches cost real
+      resources and simply don't launch when the ledger can't pay —
+      starving the base already works (moved up)
+- [ ] Resource ledger v2: harvesters refill it; iron/copper/redstone
       appetite drives harvester targeting
 - [ ] Territory outlining; terrain-aware expansion (mine into existing
       caves, fortify mountains/river crossings); mini outposts
@@ -77,8 +81,12 @@ Phases are ordered so every phase ships something playable, and the Director
 - [ ] Component hitboxes on larger drones (snipe a rotor / diamond hardpoints)
 - [ ] Drones flee fights they can't win; environmental damage tuning
       (withers and golem armies are viable base-killers through mid game)
-- [ ] Gear theft raids on unattended player storage (config), death-drop
-      hauling to base storage (keep-inventory recommended default)
+- [x] Gear theft v1: surveyors snatch dropped item stacks (config-gated)
+      and carry them as cargo — killing the thief spills everything back
+      out (moved up)
+- [ ] Gear theft v2: raids on unattended player storage, hauling cargo to
+      base storage, tracking-chip recovery (keep-inventory recommended
+      default)
 
 ## Phase 4 — Reverse Engineering (player tech tree)
 

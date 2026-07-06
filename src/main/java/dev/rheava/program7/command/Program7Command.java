@@ -56,6 +56,21 @@ public final class Program7Command {
 		source.sendFeedback(() -> Text.literal("[Program 7] Global threat: " + state.getGlobalThreat()
 				+ "/" + ProgramDirectorState.MAX_THREAT
 				+ " — scans completed: " + state.getScansCompleted()), false);
+		if (state.isPodDeployed()) {
+			StringBuilder stockpile = new StringBuilder("[Program 7] Stockpile —");
+			state.getResources().entrySet().stream()
+					.sorted(java.util.Map.Entry.comparingByKey())
+					.forEach(entry -> stockpile.append(' ').append(entry.getKey())
+							.append(": ").append(entry.getValue()).append(','));
+			stockpile.setLength(stockpile.length() - 1);
+			source.sendFeedback(() -> Text.literal(stockpile.toString()), false);
+			if (state.getProbeCorePos() != null) {
+				source.sendFeedback(() -> Text.literal("[Program 7] Probe core at "
+						+ state.getProbeCorePos().toShortString()), false);
+			}
+		} else {
+			source.sendFeedback(() -> Text.literal("[Program 7] No pod on the ground yet."), false);
+		}
 
 		ServerPlayerEntity player = source.getPlayer();
 		if (player != null) {

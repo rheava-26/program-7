@@ -48,6 +48,14 @@ public class ProgramDirectorState extends PersistentState {
 	/** Survive this long after landfall (7 in-game days) for the advancement. */
 	private static final long SEVEN_DAYS = 7L * 24000L;
 
+	/** What one attack drone costs the Program to field. */
+	private static final Map<String, Integer> ATTACK_DRONE_COST = Map.of(
+			Resources.IRON, 4, Resources.GUNPOWDER, 4, Resources.REDSTONE, 2);
+	/** The starter stockpile every pod brings down with it. */
+	private static final Map<String, Integer> POD_STOCKPILE = Map.of(
+			Resources.IRON, 64, Resources.COPPER, 48, Resources.REDSTONE, 32,
+			Resources.COAL, 64, Resources.GUNPOWDER, 32);
+
 	private int globalThreat = 0;
 	private int scansCompleted = 0;
 	private long landingDeadline = -1L;
@@ -57,6 +65,12 @@ public class ProgramDirectorState extends PersistentState {
 	private BlockPos probeCorePos = null;
 	private final Map<UUID, PlayerIntel> intel = new HashMap<>();
 	private final List<PendingDispatch> dispatches = new ArrayList<>();
+	/**
+	 * The resource ledger. The Program spends this to field units and (in
+	 * later phases) refills it by actually mining. An empty ledger means no
+	 * reinforcements — starving the base is a real strategy.
+	 */
+	private final Map<String, Integer> resources = new HashMap<>();
 
 	public static ProgramDirectorState get(ServerWorld world) {
 		return world.getServer().getOverworld().getPersistentStateManager()
@@ -159,7 +173,34 @@ public class ProgramDirectorState extends PersistentState {
 		if (state.landedAt < 0) {
 			state.landedAt = world.getTime();
 		}
+		// Every pod arrives with a stockpile; re-insertions restock the war.
+		POD_STOCKPILE.forEach(state::addResource);
 		state.markDirty();
+	}
+
+	public void addResource(String key, int amount) {
+		this.resources.merge(key, amount, Integer::sum);
+		this.markDirty();
+	}
+
+	public int getResource(String key) {
+		return this.resources.getOrDefault(key, 0);
+	}
+
+	/** Atomically pay a cost, or pay nothing if any part is unaffordable. */
+	public boolean tryConsume(Map<String, Integer> cost) {
+		for (Map.Entry<String, Integer> entry : cost.entrySet()) {
+			if (this.getResource(entry.getKey()) < entry.getValue()) {
+				return false;
+			}
+		}
+		cost.forEach((key, amount) -> this.resources.merge(key, -amount, Integer::sum));
+		this.markDirty();
+		return true;
+	}
+
+	public Map<String, Integer> getResources() {
+		return Map.copyOf(this.resources);
 	}
 
 	@Nullable
@@ -196,10 +237,19 @@ public class ProgramDirectorState extends PersistentState {
 
 		// Proportional response: the Director answers a filed scan with
 		// attack drones matched to the risk tier, after a short mustering
-		// delay. (Tier 2/3 base responses arrive with the base itself.)
+		// delay — but only as many as the stockpile can pay for.
+		// (Tier 2/3 base responses arrive with the base itself.)
 		if (this.podDeployed) {
-			this.dispatches.add(new PendingDispatch(player.getUuid(), record.riskTier(),
-					200 + player.getRandom().nextInt(200)));
+			int affordable = 0;
+			for (int i = 0; i < record.riskTier(); i++) {
+				if (this.tryConsume(ATTACK_DRONE_COST)) {
+					affordable++;
+				}
+			}
+			if (affordable > 0) {
+				this.dispatches.add(new PendingDispatch(player.getUuid(), affordable,
+						200 + player.getRandom().nextInt(200)));
+			}
 		}
 		this.markDirty();
 	}
@@ -288,6 +338,10 @@ public class ProgramDirectorState extends PersistentState {
 			dispatchList.add(tag);
 		}
 		nbt.put("Dispatches", dispatchList);
+
+		NbtCompound resourceTag = new NbtCompound();
+		this.resources.forEach(resourceTag::putInt);
+		nbt.put("Resources", resourceTag);
 		return nbt;
 	}
 
@@ -322,6 +376,11 @@ public class ProgramDirectorState extends PersistentState {
 			NbtCompound tag = dispatchList.getCompound(i);
 			state.dispatches.add(new PendingDispatch(
 					tag.getUuid("Player"), tag.getInt("Count"), tag.getInt("TicksLeft")));
+		}
+
+		NbtCompound resourceTag = nbt.getCompound("Resources");
+		for (String key : resourceTag.getKeys()) {
+			state.resources.put(key, resourceTag.getInt(key));
 		}
 		return state;
 	}

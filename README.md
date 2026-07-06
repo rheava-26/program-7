@@ -34,6 +34,12 @@ reverse-engineered and turned against it.
   stealing, structure interference, terrain destruction, ceasefire,
   endless waves (several are forward declarations for later phases).
 - **"Still Here" advancement** — survive seven in-game days after landfall.
+- **Resource economy v1** — every pod lands with a stockpile (iron, copper,
+  redstone, coal, gunpowder). Attack drone dispatches cost real resources;
+  when the ledger can't pay, nothing launches. Check it with
+  `/program7 status`.
+- **Item theft** — surveyors snatch unattended dropped items and carry them
+  as cargo. Shoot the thief down and it all spills back out. Config-gated.
 
 - **Surveyor Drone** — the Program's flying recon unit. It closes in on
   players, sweeps them with an accelerating scan (the beeping speeds up as it
