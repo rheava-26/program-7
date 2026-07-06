@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "program7:drone_core"
+    },
+    "title": {
+      "translate": "advancements.program7.seven_days.title"
+    },
+    "description": {
+      "translate": "advancements.program7.seven_days.description"
+    },
+    "frame": "challenge",
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "survived": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

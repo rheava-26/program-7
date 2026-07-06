@@ -18,6 +18,9 @@
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 
+  "advancements.program7.seven_days.title": "Still Here",
+  "advancements.program7.seven_days.description": "Survive seven days after the Program makes landfall",
+
   "subtitles.program7.entity.surveyor_drone.ambient": "Drone whirs",
   "subtitles.program7.entity.surveyor_drone.alert": "Drone alarm blares",
   "subtitles.program7.entity.surveyor_drone.scan_beep": "Drone beeps",

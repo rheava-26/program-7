@@ -12,6 +12,7 @@ import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
+import net.minecraft.advancement.AdvancementEntry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -44,9 +45,13 @@ public class ProgramDirectorState extends PersistentState {
 	/** A pod only descends "live" if someone is close enough to watch it. */
 	private static final double SIMULATED_DESCENT_RANGE = 160.0;
 
+	/** Survive this long after landfall (7 in-game days) for the advancement. */
+	private static final long SEVEN_DAYS = 7L * 24000L;
+
 	private int globalThreat = 0;
 	private int scansCompleted = 0;
 	private long landingDeadline = -1L;
+	private long landedAt = -1L;
 	private boolean podDeployed = false;
 	@Nullable
 	private BlockPos probeCorePos = null;
@@ -72,6 +77,17 @@ public class ProgramDirectorState extends PersistentState {
 				ServerPlayerEntity anchor = world.getPlayers()
 						.get(world.getRandom().nextInt(world.getPlayers().size()));
 				this.deployPod(world, anchor, 300, 600);
+			}
+		}
+
+		if (this.landedAt >= 0 && world.getTime() % 200 == 0
+				&& world.getTime() - this.landedAt >= SEVEN_DAYS) {
+			AdvancementEntry advancement = world.getServer().getAdvancementLoader()
+					.get(Program7.id("seven_days"));
+			if (advancement != null) {
+				for (ServerPlayerEntity player : world.getPlayers()) {
+					player.getAdvancementTracker().grantCriterion(advancement, "survived");
+				}
 			}
 		}
 
@@ -140,6 +156,9 @@ public class ProgramDirectorState extends PersistentState {
 		ProgramDirectorState state = get(world);
 		state.podDeployed = true;
 		state.probeCorePos = pos;
+		if (state.landedAt < 0) {
+			state.landedAt = world.getTime();
+		}
 		state.markDirty();
 	}
 
@@ -240,6 +259,7 @@ public class ProgramDirectorState extends PersistentState {
 		nbt.putInt("GlobalThreat", this.globalThreat);
 		nbt.putInt("ScansCompleted", this.scansCompleted);
 		nbt.putLong("LandingDeadline", this.landingDeadline);
+		nbt.putLong("LandedAt", this.landedAt);
 		nbt.putBoolean("PodDeployed", this.podDeployed);
 		if (this.probeCorePos != null) {
 			nbt.putIntArray("ProbeCorePos", new int[] {
@@ -276,6 +296,7 @@ public class ProgramDirectorState extends PersistentState {
 		state.globalThreat = nbt.getInt("GlobalThreat");
 		state.scansCompleted = nbt.getInt("ScansCompleted");
 		state.landingDeadline = nbt.contains("LandingDeadline") ? nbt.getLong("LandingDeadline") : -1L;
+		state.landedAt = nbt.contains("LandedAt") ? nbt.getLong("LandedAt") : -1L;
 		state.podDeployed = nbt.getBoolean("PodDeployed");
 		if (nbt.contains("ProbeCorePos")) {
 			int[] pos = nbt.getIntArray("ProbeCorePos");

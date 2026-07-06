@@ -1,5 +1,6 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.ai.ChaseAndDetonateGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.registry.P7Sounds;
@@ -95,10 +96,12 @@ public class AttackDroneEntity extends PathAwareEntity {
 
 	private void explode() {
 		this.discard();
-		// ExplosionSourceType.MOB respects the mobGriefing gamerule, which
-		// stands in for the terrain-destruction config until one exists.
-		this.getWorld().createExplosion(this, this.getX(), this.getY(), this.getZ(),
-				2.0f, World.ExplosionSourceType.MOB);
+		// With terrain destruction configured on, MOB still defers to the
+		// mobGriefing gamerule; configured off, no blocks break at all.
+		World.ExplosionSourceType sourceType = Program7.CONFIG.terrainDestruction
+				? World.ExplosionSourceType.MOB
+				: World.ExplosionSourceType.NONE;
+		this.getWorld().createExplosion(this, this.getX(), this.getY(), this.getZ(), 2.0f, sourceType);
 	}
 
 	@Override

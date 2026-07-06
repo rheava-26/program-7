@@ -35,10 +35,12 @@ Phases are ordered so every phase ships something playable, and the Director
 - [ ] Pod descent simulation when no player is near the sky column
       (currently resolves instantly instead)
 - [ ] Custom sound recordings replace vanilla placeholders
-- [ ] Psionic interference HUD overlay: ambient hue/shift vignette whenever
+- [x] Psionic interference HUD overlay: ambient hue/shift vignette whenever
       drones are within ~3 chunks, intensity scaled by the danger of nearby
-      units; static audio layer; directionality behind a config flag
-- [ ] Config file scaffold (see table in DESIGN.md)
+      units (armed attack drone ≫ surveyor, closer presses harder); static
+      audio bursts; directionality behind a config flag
+- [x] Config file scaffold (`config/program7.json`, see table in DESIGN.md);
+      terrain-destruction toggle wired into attack drone explosions
 
 ## Phase 2 — The Base Lives
 
@@ -68,7 +70,8 @@ Phases are ordered so every phase ships something playable, and the Director
       patterns; visible view cones on sensor drones (hide by breaking LoS)
 - [ ] Gunship doctrine: known players get a delayed, deliberate sneak attack
       once a gunship is available
-- [ ] "Seven days" advancement for surviving a week with the Program active
+- [x] "Still Here" advancement for surviving seven days after landfall
+      (moved up — already implemented)
 - [ ] Skirmisher drone (car-sized: HMG + grenade launcher) and light attack
       drone
 - [ ] Component hitboxes on larger drones (snipe a rotor / diamond hardpoints)

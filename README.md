@@ -25,6 +25,15 @@ reverse-engineered and turned against it.
   Shoot it down before it arms to salvage its warhead.
 - **Scan → response loop** — once the pod is down, every completed surveyor
   scan musters a tier-scaled attack drone dispatch on the scanned player.
+- **Psionic interference** — a violet hue-shift creeps in from the screen
+  edges whenever Program hardware is within ~3 chunks, scaling with how
+  dangerous the nearby units are (an armed attack drone hits much harder
+  than a surveyor), with bursts of audio static. Optional directionality
+  (threat-facing edge glows hotter) via config.
+- **Config** — `config/program7.json`: overlay/directionality, item
+  stealing, structure interference, terrain destruction, ceasefire,
+  endless waves (several are forward declarations for later phases).
+- **"Still Here" advancement** — survive seven in-game days after landfall.
 
 - **Surveyor Drone** — the Program's flying recon unit. It closes in on
   players, sweeps them with an accelerating scan (the beeping speeds up as it

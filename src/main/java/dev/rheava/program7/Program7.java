@@ -1,7 +1,9 @@
 package dev.rheava.program7;
 
 import dev.rheava.program7.command.Program7Command;
+import dev.rheava.program7.config.P7Config;
 import dev.rheava.program7.director.ProgramDirectorState;
+import dev.rheava.program7.network.InterferenceManager;
 import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
 import dev.rheava.program7.registry.P7Items;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class Program7 implements ModInitializer {
 	public static final String MOD_ID = "program7";
 	public static final Logger LOGGER = LoggerFactory.getLogger("Program 7");
+	public static final P7Config CONFIG = P7Config.load();
 
 	public static Identifier id(String path) {
 		return Identifier.of(MOD_ID, path);
@@ -36,6 +39,7 @@ public class Program7 implements ModInitializer {
 		P7Entities.register();
 		P7Items.register();
 		Program7Command.register();
+		InterferenceManager.register();
 
 		// The Director thinks once per overworld tick: insertion schedule,
 		// pending dispatches, and (later) base production.
