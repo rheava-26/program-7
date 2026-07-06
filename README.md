@@ -10,7 +10,21 @@ reverse-engineered and turned against it.
 - **[Design bible](docs/DESIGN.md)** — full concept, lore, systems
 - **[Roadmap](docs/ROADMAP.md)** — phased implementation plan and status
 
-## What's in the current build (Phase 0)
+## What's in the current build (Phase 0 + Phase 1 core)
+
+- **Drop pod insertion** — 2–3 in-game days in, a pod comes down 300–600
+  blocks from a random player: roaring descent, smoke-and-flame trail,
+  vanilla-style explosion on impact, and a placed **Probe Core**. Landings
+  nobody is around to see resolve instantly with a distant boom. Force one
+  with `/program7 land [distance]`.
+- **Probe Core block** — iron-pick tier, very tough, glows faintly; cracking
+  it drops heavy salvage and iron.
+- **Attack Drone** — the Tier 1 response: fast flyer that chases you down,
+  arms at contact range (accelerating beeps), and detonates. Once armed it's
+  committed — kiting it into terrain or enemies is legitimate counterplay.
+  Shoot it down before it arms to salvage its warhead.
+- **Scan → response loop** — once the pod is down, every completed surveyor
+  scan musters a tier-scaled attack drone dispatch on the scanned player.
 
 - **Surveyor Drone** — the Program's flying recon unit. It closes in on
   players, sweeps them with an accelerating scan (the beeping speeds up as it

@@ -19,19 +19,52 @@
    or smarter. It runs from fights it can't win and gets better over time.
 4. **Inhuman sound design.** Whirring, roaring engines, alarms, frantic
    beeping, psionic interference artifacts on the player's screen.
-5. **Works WITH the world.** Vanilla mobs hurt drones. Drones use villagers,
-   spawners, enchanting, redstone. Broad mod compatibility.
+5. **Works WITH the world — invasion, not overlay.** Vanilla mobs hurt
+   drones. Drones use villagers, spawners, enchanting, redstone. Maximum mod
+   compatibility: drones should *react to* modded enemies and work around
+   them rather than ignoring them. It should feel like an invasion run by an
+   adapting AI.
 
 ## The Fantasy / How a Playthrough Opens
 
 - Player plays normally for a day or two.
-- A drop pod lands violently several hundred blocks away — huge smoke trail,
-  whirring audible from a distance.
+- A drop pod lands violently several hundred blocks away — huge smoke column,
+  roaring audible from the sky (VFX: vanilla explosion particles + smoke on
+  impact; semi-realistic composition, Minecrafty ingredients).
 - Investigating reveals a large square complex: mini-factories running,
   mining rollers and baby-laser drones extracting resources, obvious scan
   drones roaming, gun turrets emplaced, cargo crates being ferried around.
 - Scan drones approach detected players and scan them over several seconds.
 - The response depends on the scan (see Risk Tiers).
+
+## The Main Pod, Territory & Outposts
+
+The main drop pod is a **big fabricator** plus a starter kit:
+
+- A small complement of drones, including a couple of medium ground-based
+  mining drones.
+- A stockpile of key resources: iron, copper, redstone, coal, gunpowder, etc.
+- Autoturrets and **mortars** for base defense.
+
+From there the Program **outlines a territory** and expands with **mini
+outposts**. It reads terrain like a strategist:
+
+- Uses natural features — mines into existing caves instead of always boring
+  fresh shafts.
+- Builds fortifications in naturally defensible positions: mountaintops,
+  river crossings, chokepoints.
+
+### Re-insertion (when a main outpost dies)
+
+Destroying a main outpost is a real victory, but the orbital station answers.
+After a substantial waiting period, a new pod comes down — always within a
+few thousand blocks — and its placement is a read on how the war is going:
+
+- **Player obliterated them decisively** → lands far away, likely with more
+  resources committed.
+- **Player is weak** → lands close to surviving network infrastructure so it
+  can relink to the existing network.
+- **Drones scouted richer ground** → lands on the better position.
 
 ## Risk Tiers (scan-driven response)
 
@@ -48,6 +81,22 @@ After killing or chasing off the player, the base enters **lockdown mode**:
 mass production of fortifications and drones, favoring high ground, with a
 **20 / 20 / 60** production split:
 explosive suicide drones / heavy assault drones / light attack drones.
+
+## Detection, Stealth & Coexistence
+
+You can *sort of* keep the peace with the Program — by running away, not
+engaging, and hiding. But:
+
+- **Anomaly detection:** drones notice blocks that shouldn't exist in an
+  area (structures, torches, paths) and go searching for whoever made them.
+- **The gunship doctrine:** once the Program knows a player exists, its
+  preferred move is to quietly wait until it can field a gunship, then launch
+  a sneak attack to wipe the player out quickly.
+- Hiding works on **line of sight** — drones have visible view boxes /
+  sight cones (think the search drones in *The Incredibles*); break the cone
+  and you're dark.
+- Surviving past **~7 in-game days** with the Program active earns an
+  advancement.
 
 ## Counter-Adaptation (weapon profiling)
 
@@ -108,26 +157,59 @@ boring threats — the player develops, and the Program develops alongside.
   firearms and rifles, laser drills, thermal vision, scanner systems (your
   drones scout and soft-X-ray ore locations), ground-penetrating radar,
   surface-to-surface missiles, automatic MG turrets.
+- **Electronics / intel gear:** tracking chips (mark items or targets),
+  **glowstone illuminators** (tracking chips that apply the glowing effect to
+  mobs), tracking displays, and a **datapad** — a heartbeat-sensor-style
+  handheld that shows enemy drones.
 - The Program steals back: leave gear in the open and a drone may take it.
 - Bases are attackable with a real chance of success: controlled withers, a
   micro-drone fleet, gunships, missile volleys, iron golem armies, zombified
   piglin swarms in the Nether. Base turrets handle small threats but the
   Program won't commit serious resources until the base itself takes damage.
   Damage it with plain swings or by mining out specific storage blocks.
-- Killing a base yields a **cold fusion engine** — the key to producing your
-  own fully automated systems.
+- Killing a main base yields a **cold fusion engine** — the key to producing
+  your own fully automated systems — and its **data files** (see Lore).
 - Environment hurts them too: a wither tossed at a base can wipe it, an iron
   golem army is a legitimate mid-game strategy.
 
-## Small Things That Matter
+### Weapon balance philosophy
 
-1. Player drones can be dyed and carry banner patterns.
-2. Larger drones support different weapon/turret loadouts (heavy assault,
-   gunship variants).
-3. Mod compat: Guard Villagers, Cracker's Wither Storm; Create blocks
-   (including moving contraptions) should be attackable/interactable by drone
-   swarms — no deep integration required, just coexistence.
-4. Psionic interception: a mid/late-game player tool to control mobs.
+- **Bows** stay relevant: far cheaper ammo, faster to fire than the more
+  advanced guns; firearms require quite a bit of build-up.
+- **Autodrones are armored against firearms** — especially weak ones.
+  **Enchanted weapons are great at bypassing drone armor.**
+- Early-game weapons salvaged from basic light attack drones sit around the
+  level of a Power II–III bow, with better range.
+- **Guns are loud.** Gunfire attracts the drone network. Every shot is a
+  trade.
+
+### Death & theft
+
+- Designed to be played with **keep inventory on**.
+- Without it: drones haul your death-drops and stolen gear to their storage;
+  **tracking chips** let you mark valuables and follow them — every theft
+  becomes a raid objective. Item stealing can be disabled in config.
+
+## Endgame & Victory
+
+The intended ending: the player constructs an **anti-orbital weapon** — a
+missile battery / railgun (specifics TBD) — and takes down the orbital
+station itself, ending the Program. For players who don't want it to end,
+a config option turns re-insertion into **endless waves**.
+
+## Lore Delivery & The Program's "Voice"
+
+The Program is **silent**. No taunts, no narration — the player infers
+everything from behavior. Two exceptions, both diegetic:
+
+- **Data files:** defeating a main base lets you rummage through its data —
+  a full listing and map of every area it scouted, plus founders' logs
+  explaining *why* the fleet is here: the planet is resource-rich and perfect
+  for long-distance programs.
+- **Ceasefire protocol** (config-gated, unlocks only after the Program has
+  discovered villagers — i.e., learned that negotiation exists): when the
+  drones are badly weakened, or the player keeps dying repeatedly, the
+  Program may contact the player to offer a timed ceasefire.
 
 ## Audio / Horror Direction
 
@@ -135,7 +217,8 @@ The horror is mechanical and procedural, not jump-scare:
 
 - Drones beep like crazy and whirr intensely when they find you.
 - Aggressive, personalized tracking pressure based on your weapon profile.
-- Alarms, roaring engines — inhuman sounds.
+- Alarms, roaring engines — inhuman sounds. A general static/interference
+  audio layer accompanies psionic proximity.
 
 ### Psionic interference (proximity warning)
 
@@ -148,6 +231,9 @@ the screen edges hard. Players learn to read it: presence, escalation, and
 (by paying attention) roughly how bad the situation is before they ever see
 or hear the unit.
 
+**Directionality** (interference biased toward the screen edge facing the
+threat) is available as a config option.
+
 ## VFX Direction
 
 Weapons and events use a **Minecrafty particle language while staying
@@ -158,11 +244,41 @@ Reference case: the drop pod entry produces a huge smoke column and a roaring
 sound in the sky, but the impact itself still reads as classic Minecraft
 explosion particles and smoke.
 
+## Visual Identity
+
+- Realistic drone silhouettes built from blocky Minecraft language.
+- Palette: gunmetal hulls, **red = sensors/weapons**, **cyan = psionics and
+  power systems**.
+- **Visible view boxes** on sensor units — you can see what they see, and
+  hide from it.
+
+## Configuration (planned)
+
+| Setting | Default | Notes |
+|---------|---------|-------|
+| Interfere with player structures | **off** | Drones avoid player builds unless in active conflict. Explosive weapons don't care either way. |
+| Terrain destruction by explosions | on (gamerule-linked) | Whether Program explosions break terrain. |
+| Item stealing | on | Drones loot unattended gear / death drops. |
+| Interference directionality | off | HUD warning biased toward threat direction. |
+| Ceasefire protocol | on | Only after the Program discovers villagers. |
+| Endless waves | off | Re-insertion never stops; anti-orbital victory disabled. |
+
+## Small Things That Matter
+
+1. Player drones can be dyed and carry banner patterns.
+2. Larger drones support different weapon/turret loadouts (heavy assault,
+   gunship variants).
+3. Mod compat: Guard Villagers, Cracker's Wither Storm; Create blocks
+   (including moving contraptions) should be attackable/interactable by drone
+   swarms — no deep integration required, just coexistence.
+4. Psionic interception: a mid/late-game player tool to control mobs.
+
 ## Technical Architecture (implementation view)
 
 - **Program Director** (`ProgramDirectorState`, persisted per world): the
   single brain. Holds global threat posture, per-player intel files (risk
-  tier, weapon profile, elytra flag, deaths), and later: base registry,
+  tier, weapon profile, elytra flag, deaths), landing/re-insertion schedule,
+  probe/base positions, pending unit dispatches, and later: base registry,
   resource ledger, production queues, era progression.
 - **Risk assessment** (`RiskAssessment`): armor + weapon scoring, death-count
   demotion — the tier table above.
@@ -172,3 +288,5 @@ explosion particles and smoke.
 - **Sound events** are registered up-front with vanilla placeholder
   redirects (`sounds.json`), so custom recordings can drop in later without
   code changes.
+- **Target version:** Minecraft 1.21.1 (Fabric) — chosen for the breadth of
+  the mod ecosystem there, in service of Pillar 5.

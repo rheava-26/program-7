@@ -1,7 +1,6 @@
 package dev.rheava.program7.client.render;
 
 import dev.rheava.program7.Program7;
-import dev.rheava.program7.entity.SurveyorDroneEntity;
 import net.minecraft.client.model.ModelData;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPartBuilder;
@@ -10,14 +9,17 @@ import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.MathHelper;
 
 /**
- * A boxy quad-rotor surveillance chassis: armored body, forward sensor strip,
- * four spinning rotors. Deliberately reads as "machine", not "creature".
+ * A boxy quad-rotor chassis shared by the small flyers: armored body,
+ * forward sensor strip, four spinning rotors. Deliberately reads as
+ * "machine", not "creature". Each unit gets its own texture + model layer.
  */
-public class SurveyorDroneModel extends SinglePartEntityModel<SurveyorDroneEntity> {
-	public static final EntityModelLayer LAYER = new EntityModelLayer(Program7.id("surveyor_drone"), "main");
+public class QuadRotorDroneModel<T extends MobEntity> extends SinglePartEntityModel<T> {
+	public static final EntityModelLayer SURVEYOR_LAYER = new EntityModelLayer(Program7.id("surveyor_drone"), "main");
+	public static final EntityModelLayer ATTACK_LAYER = new EntityModelLayer(Program7.id("attack_drone"), "main");
 
 	private final ModelPart root;
 	private final ModelPart body;
@@ -26,7 +28,7 @@ public class SurveyorDroneModel extends SinglePartEntityModel<SurveyorDroneEntit
 	private final ModelPart rotorBackLeft;
 	private final ModelPart rotorBackRight;
 
-	public SurveyorDroneModel(ModelPart root) {
+	public QuadRotorDroneModel(ModelPart root) {
 		this.root = root;
 		this.body = root.getChild("body");
 		this.rotorFrontLeft = this.body.getChild("rotor_fl");
@@ -56,7 +58,7 @@ public class SurveyorDroneModel extends SinglePartEntityModel<SurveyorDroneEntit
 	}
 
 	@Override
-	public void setAngles(SurveyorDroneEntity entity, float limbAngle, float limbDistance,
+	public void setAngles(T entity, float limbAngle, float limbDistance,
 			float animationProgress, float headYaw, float headPitch) {
 		float spin = animationProgress * 2.2f;
 		this.rotorFrontLeft.yaw = spin;

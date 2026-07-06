@@ -20,6 +20,7 @@ import net.minecraft.text.Text;
  * /program7 status        — global threat, scan count, and your intel file
  * /program7 assess        — run a live risk assessment on yourself
  * /program7 threat &lt;0-100&gt; — force the global threat level
+ * /program7 land [distance] — force the drop pod down now (testing)
  * </pre>
  */
 public final class Program7Command {
@@ -31,7 +32,22 @@ public final class Program7Command {
 						.then(CommandManager.literal("assess").executes(Program7Command::assessSelf))
 						.then(CommandManager.literal("threat")
 								.then(CommandManager.argument("value", IntegerArgumentType.integer(0, 100))
-										.executes(Program7Command::setThreat)))));
+										.executes(Program7Command::setThreat)))
+						.then(CommandManager.literal("land")
+								.executes(context -> land(context, 120))
+								.then(CommandManager.argument("distance", IntegerArgumentType.integer(32, 2000))
+										.executes(context -> land(context,
+												IntegerArgumentType.getInteger(context, "distance")))))));
+	}
+
+	private static int land(CommandContext<ServerCommandSource> context, int distance) throws CommandSyntaxException {
+		ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
+		ProgramDirectorState state = ProgramDirectorState.get(context.getSource().getWorld());
+		state.deployPod(context.getSource().getWorld(), player,
+				(int) (distance * 0.8), (int) (distance * 1.2));
+		context.getSource().sendFeedback(() -> Text.literal("[Program 7] Insertion authorized, ~"
+				+ distance + " blocks out."), true);
+		return 1;
 	}
 
 	private static int status(CommandContext<ServerCommandSource> context) {

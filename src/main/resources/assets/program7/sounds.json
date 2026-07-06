@@ -34,5 +34,23 @@
     "sounds": [
       { "name": "minecraft:entity.generic.explode", "type": "event" }
     ]
+  },
+  "entity.attack_drone.fuse": {
+    "subtitle": "subtitles.program7.entity.attack_drone.fuse",
+    "sounds": [
+      { "name": "minecraft:entity.creeper.primed", "type": "event" }
+    ]
+  },
+  "event.drop_pod.descent": {
+    "subtitle": "subtitles.program7.event.drop_pod.descent",
+    "sounds": [
+      { "name": "minecraft:entity.ender_dragon.growl", "type": "event" }
+    ]
+  },
+  "event.drop_pod.impact": {
+    "subtitle": "subtitles.program7.event.drop_pod.impact",
+    "sounds": [
+      { "name": "minecraft:entity.generic.explode", "type": "event" }
+    ]
   }
 }

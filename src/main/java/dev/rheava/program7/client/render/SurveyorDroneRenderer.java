@@ -6,11 +6,12 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.util.Identifier;
 
-public class SurveyorDroneRenderer extends MobEntityRenderer<SurveyorDroneEntity, SurveyorDroneModel> {
+public class SurveyorDroneRenderer
+		extends MobEntityRenderer<SurveyorDroneEntity, QuadRotorDroneModel<SurveyorDroneEntity>> {
 	private static final Identifier TEXTURE = Program7.id("textures/entity/surveyor_drone.png");
 
 	public SurveyorDroneRenderer(EntityRendererFactory.Context context) {
-		super(context, new SurveyorDroneModel(context.getPart(SurveyorDroneModel.LAYER)), 0.4f);
+		super(context, new QuadRotorDroneModel<>(context.getPart(QuadRotorDroneModel.SURVEYOR_LAYER)), 0.4f);
 	}
 
 	@Override

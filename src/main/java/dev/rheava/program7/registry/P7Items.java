@@ -35,6 +35,8 @@ public final class P7Items {
 
 	public static final Item SURVEYOR_DRONE_SPAWN_EGG = register("surveyor_drone_spawn_egg",
 			new SpawnEggItem(P7Entities.SURVEYOR_DRONE, 0x23272b, 0x27e2d3, new Item.Settings()));
+	public static final Item ATTACK_DRONE_SPAWN_EGG = register("attack_drone_spawn_egg",
+			new SpawnEggItem(P7Entities.ATTACK_DRONE, 0x23272b, 0xe83030, new Item.Settings()));
 
 	public static final RegistryKey<ItemGroup> MAIN_GROUP = RegistryKey.of(RegistryKeys.ITEM_GROUP,
 			Program7.id("main"));
@@ -56,7 +58,9 @@ public final class P7Items {
 			entries.add(GUN_BARREL);
 			entries.add(EXPLOSIVE_WARHEAD);
 			entries.add(MAGAZINE);
+			entries.add(P7Blocks.PROBE_CORE_ITEM);
 			entries.add(SURVEYOR_DRONE_SPAWN_EGG);
+			entries.add(ATTACK_DRONE_SPAWN_EGG);
 		});
 	}
 

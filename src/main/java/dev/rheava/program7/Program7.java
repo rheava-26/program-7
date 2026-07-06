@@ -1,11 +1,15 @@
 package dev.rheava.program7;
 
 import dev.rheava.program7.command.Program7Command;
+import dev.rheava.program7.director.ProgramDirectorState;
+import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
 import dev.rheava.program7.registry.P7Items;
 import dev.rheava.program7.registry.P7Sounds;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +32,18 @@ public class Program7 implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		P7Sounds.register();
+		P7Blocks.register();
 		P7Entities.register();
 		P7Items.register();
 		Program7Command.register();
+
+		// The Director thinks once per overworld tick: insertion schedule,
+		// pending dispatches, and (later) base production.
+		ServerTickEvents.END_WORLD_TICK.register(world -> {
+			if (world.getRegistryKey() == World.OVERWORLD) {
+				ProgramDirectorState.get(world).tick(world);
+			}
+		});
 
 		LOGGER.info("[Program 7] Probe telemetry online. Awaiting insertion window.");
 	}

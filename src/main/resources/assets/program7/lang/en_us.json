@@ -8,8 +8,13 @@
   "item.program7.explosive_warhead": "Explosive Warhead",
   "item.program7.magazine": "Magazine",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
+  "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
+
+  "block.program7.probe_core": "Probe Core",
 
   "entity.program7.surveyor_drone": "Surveyor Drone",
+  "entity.program7.attack_drone": "Attack Drone",
+  "entity.program7.drop_pod": "Drop Pod",
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 
@@ -18,5 +23,8 @@
   "subtitles.program7.entity.surveyor_drone.scan_beep": "Drone beeps",
   "subtitles.program7.entity.surveyor_drone.interference": "Psionic interference crackles",
   "subtitles.program7.entity.surveyor_drone.hurt": "Drone plating dents",
-  "subtitles.program7.entity.surveyor_drone.death": "Drone breaks apart"
+  "subtitles.program7.entity.surveyor_drone.death": "Drone breaks apart",
+  "subtitles.program7.entity.attack_drone.fuse": "Warhead arms",
+  "subtitles.program7.event.drop_pod.descent": "Something roars in the sky",
+  "subtitles.program7.event.drop_pod.impact": "Distant impact"
 }

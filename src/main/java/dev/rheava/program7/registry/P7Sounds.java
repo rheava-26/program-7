@@ -21,6 +21,9 @@ public final class P7Sounds {
 	public static final SoundEvent DRONE_INTERFERENCE = register("entity.surveyor_drone.interference");
 	public static final SoundEvent DRONE_HURT = register("entity.surveyor_drone.hurt");
 	public static final SoundEvent DRONE_DEATH = register("entity.surveyor_drone.death");
+	public static final SoundEvent ATTACK_DRONE_FUSE = register("entity.attack_drone.fuse");
+	public static final SoundEvent DROP_POD_DESCENT = register("event.drop_pod.descent");
+	public static final SoundEvent DROP_POD_IMPACT = register("event.drop_pod.impact");
 
 	private static SoundEvent register(String name) {
 		Identifier id = Program7.id(name);
