@@ -1,0 +1,22 @@
+{
+  "itemGroup.program7.main": "Program 7",
+
+  "item.program7.drone_core": "Drone Core",
+  "item.program7.power_bank": "Power Bank",
+  "item.program7.transmitter": "Transmitter",
+  "item.program7.gun_barrel": "Gun Barrel",
+  "item.program7.explosive_warhead": "Explosive Warhead",
+  "item.program7.magazine": "Magazine",
+  "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
+
+  "entity.program7.surveyor_drone": "Surveyor Drone",
+
+  "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
+
+  "subtitles.program7.entity.surveyor_drone.ambient": "Drone whirs",
+  "subtitles.program7.entity.surveyor_drone.alert": "Drone alarm blares",
+  "subtitles.program7.entity.surveyor_drone.scan_beep": "Drone beeps",
+  "subtitles.program7.entity.surveyor_drone.interference": "Psionic interference crackles",
+  "subtitles.program7.entity.surveyor_drone.hurt": "Drone plating dents",
+  "subtitles.program7.entity.surveyor_drone.death": "Drone breaks apart"
+}

@@ -1,0 +1,64 @@
+# Program 7
+
+A Fabric mod for Minecraft **1.21.1**.
+
+An automated orbital probe program has chosen your world as its testing
+ground. Its drop pods land, mine, build and adapt — profiling how you fight
+and escalating alongside you. Everything it fields can be shot down, salvaged,
+reverse-engineered and turned against it.
+
+- **[Design bible](docs/DESIGN.md)** — full concept, lore, systems
+- **[Roadmap](docs/ROADMAP.md)** — phased implementation plan and status
+
+## What's in the current build (Phase 0)
+
+- **Surveyor Drone** — the Program's flying recon unit. It closes in on
+  players, sweeps them with an accelerating scan (the beeping speeds up as it
+  finishes — that's your window to break line of sight or shoot it down),
+  hits you with psionic interference when the scan completes, then retreats.
+  Spawn it with the spawn egg from the *Program 7* creative tab.
+- **Program Director** — persistent per-world brain. Every completed scan
+  files an intel report (risk tier, weapon profile, elytra flag, death count)
+  and raises the global threat level. Future phases read this state to decide
+  what the Program sends after you.
+- **Risk assessment** — the doc's tier table implemented: naked frequent
+  diers are Tier 1; iron-grade fighters Tier 2; diamond+ Tier 3 (frequent
+  deaths demote you — you're not a priority target, however shiny).
+- **Salvage items** — drone core, power bank, transmitter, gun barrel,
+  explosive warhead, magazine. Surveyors drop the recon-flavored ones.
+- **Sound scaffolding** — all drone sound events are registered and currently
+  redirect to vanilla sounds; real recordings drop into
+  `assets/program7/sounds.json` with zero code changes.
+- **Debug commands** — `/program7 status`, `/program7 assess`,
+  `/program7 threat <0-100>` (op level 2).
+
+## Building
+
+Requires Java 21.
+
+```bash
+./gradlew build        # jar lands in build/libs/
+./gradlew runClient    # dev-launch a client
+```
+
+> Version pins live in `gradle.properties`. If dependency resolution ever
+> fails on `fabric_version` / `yarn_mappings`, grab the current numbers for
+> MC 1.21.1 from <https://fabricmc.net/develop> — everything else should
+> stand.
+
+## Project layout
+
+```
+src/main/java/dev/rheava/program7/
+  Program7.java            mod entrypoint
+  registry/                items, entities, sounds
+  entity/                  SurveyorDroneEntity + ai/ goals
+  director/                ProgramDirectorState, RiskAssessment, ScanRecord
+  command/                 /program7 debug commands
+  client/                  renderer + quad-rotor model
+```
+
+## License
+
+All rights reserved (pre-release). A proper license will be chosen before the
+CurseForge release.

@@ -1,0 +1,38 @@
+{
+  "entity.surveyor_drone.ambient": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.ambient",
+    "sounds": [
+      { "name": "minecraft:block.beacon.ambient", "type": "event" }
+    ]
+  },
+  "entity.surveyor_drone.alert": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.alert",
+    "sounds": [
+      { "name": "minecraft:block.note_block.bit", "type": "event" }
+    ]
+  },
+  "entity.surveyor_drone.scan_beep": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.scan_beep",
+    "sounds": [
+      { "name": "minecraft:block.note_block.bit", "type": "event" }
+    ]
+  },
+  "entity.surveyor_drone.interference": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.interference",
+    "sounds": [
+      { "name": "minecraft:entity.elder_guardian.curse", "type": "event" }
+    ]
+  },
+  "entity.surveyor_drone.hurt": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.hurt",
+    "sounds": [
+      { "name": "minecraft:entity.iron_golem.hurt", "type": "event" }
+    ]
+  },
+  "entity.surveyor_drone.death": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.death",
+    "sounds": [
+      { "name": "minecraft:entity.generic.explode", "type": "event" }
+    ]
+  }
+}

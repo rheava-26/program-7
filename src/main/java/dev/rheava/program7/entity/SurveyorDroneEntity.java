@@ -1,0 +1,173 @@
+package dev.rheava.program7.entity;
+
+import dev.rheava.program7.entity.ai.HoverWanderGoal;
+import dev.rheava.program7.entity.ai.RetreatGoal;
+import dev.rheava.program7.entity.ai.ScanPlayerGoal;
+import dev.rheava.program7.registry.P7Sounds;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.control.FlightMoveControl;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.pathing.BirdNavigation;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * The Surveyor Drone — Program 7's eyes on the ground.
+ *
+ * <p>It is not a fighter. It closes to standoff range, sweeps the target with
+ * an escalating scan (beeping faster and faster the closer it is to done),
+ * files a threat profile with the Program Director, then withdraws before you
+ * can grab it. Killing one interrupts the report and drops salvageable parts.
+ */
+public class SurveyorDroneEntity extends PathAwareEntity {
+	private int scanCooldown = 0;
+	private int retreatTicks = 0;
+	@Nullable
+	private LivingEntity retreatFrom;
+
+	public SurveyorDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
+		super(entityType, world);
+		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.experiencePoints = 5;
+	}
+
+	public static DefaultAttributeContainer.Builder createSurveyorDroneAttributes() {
+		return MobEntity.createMobAttributes()
+				.add(EntityAttributes.GENERIC_MAX_HEALTH, 12.0)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.6)
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0);
+	}
+
+	@Override
+	protected void initGoals() {
+		this.goalSelector.add(1, new RetreatGoal(this));
+		this.goalSelector.add(2, new ScanPlayerGoal(this));
+		this.goalSelector.add(3, new HoverWanderGoal(this));
+		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
+		this.goalSelector.add(5, new LookAroundGoal(this));
+	}
+
+	@Override
+	protected EntityNavigation createNavigation(World world) {
+		BirdNavigation navigation = new BirdNavigation(this, world);
+		navigation.setCanPathThroughDoors(false);
+		navigation.setCanSwim(false);
+		navigation.setCanEnterOpenDoors(true);
+		return navigation;
+	}
+
+	@Override
+	public void tickMovement() {
+		super.tickMovement();
+		if (!this.getWorld().isClient) {
+			if (this.scanCooldown > 0) {
+				this.scanCooldown--;
+			}
+			if (this.retreatTicks > 0) {
+				this.retreatTicks--;
+				if (this.retreatTicks == 0) {
+					this.retreatFrom = null;
+				}
+			}
+		}
+	}
+
+	public boolean isScanReady() {
+		return this.scanCooldown <= 0;
+	}
+
+	public void setScanCooldown(int ticks) {
+		this.scanCooldown = ticks;
+	}
+
+	public void beginRetreat(@Nullable LivingEntity threat, int ticks) {
+		this.retreatFrom = threat;
+		this.retreatTicks = ticks;
+	}
+
+	public boolean isRetreating() {
+		return this.retreatTicks > 0;
+	}
+
+	@Nullable
+	public LivingEntity getRetreatFrom() {
+		return this.retreatFrom;
+	}
+
+	@Override
+	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
+		// Machines don't bleed — poison does nothing. Wither, per the design
+		// doc, tears through drone plating just fine.
+		if (effect.getEffectType() == StatusEffects.POISON) {
+			return false;
+		}
+		return super.canHaveStatusEffect(effect);
+	}
+
+	@Override
+	public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
+		return false;
+	}
+
+	@Override
+	protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
+	}
+
+	@Override
+	public void checkDespawn() {
+		// Program hardware is deployed deliberately; it never just despawns.
+	}
+
+	@Override
+	protected SoundEvent getAmbientSound() {
+		return P7Sounds.DRONE_AMBIENT;
+	}
+
+	@Override
+	protected SoundEvent getHurtSound(DamageSource source) {
+		return P7Sounds.DRONE_HURT;
+	}
+
+	@Override
+	protected SoundEvent getDeathSound() {
+		return P7Sounds.DRONE_DEATH;
+	}
+
+	@Override
+	public int getMinAmbientSoundDelay() {
+		return 60;
+	}
+
+	@Override
+	protected float getSoundVolume() {
+		return 0.7f;
+	}
+
+	@Override
+	public void writeCustomDataToNbt(NbtCompound nbt) {
+		super.writeCustomDataToNbt(nbt);
+		nbt.putInt("ScanCooldown", this.scanCooldown);
+	}
+
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt) {
+		super.readCustomDataFromNbt(nbt);
+		this.scanCooldown = nbt.getInt("ScanCooldown");
+	}
+}
