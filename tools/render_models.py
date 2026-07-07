@@ -443,16 +443,20 @@ HEAVY_ATTACK_PARTS = [
 ]
 
 IFV_PARTS = [
-    {"origin": (-9, -4, -14), "size": (18, 9, 28), "uv": (0, 0), "ops": [("move", (0, 11, 0))]},
-    {"origin": (-8, -12, -10), "size": (16, 8, 20), "uv": (0, 38), "ops": [("move", (0, 11, 0))]},
-    # turret (body child at 0,-12,-2), posed traversed for the preview
-    {"origin": (-5, -6, -5), "size": (10, 6, 10), "uv": (73, 38),
-     "ops": [("roty", -12), ("move", (0, -1, -2))]},
-    {"origin": (-1, -5, -16), "size": (2, 2, 11), "uv": (73, 55),
-     "ops": [("roty", -12), ("move", (0, -1, -2))]},
-] + [
-    {"origin": (-2.5, -2.5, -2.5), "size": (5, 5, 5), "uv": (93, 0), "ops": [("move", (x, 21.5, z))]}
-    for x in (-9, 9) for z in (-9, 0, 9)
+    # big dominant chassis + two ground-flush track runs
+    {"origin": (-8, -6, -14), "size": (16, 14, 28), "uv": (0, 0), "ops": [("move", (0, 11, 0))]},
+    {"origin": (8, 4, -15), "size": (3, 9, 30), "uv": (0, 44), "ops": [("move", (0, 11, 0))]},
+    {"origin": (-11, 4, -15), "size": (3, 9, 30), "uv": (0, 44), "ops": [("move", (0, 11, 0))]},
+    # sloped glacis (body child at 0,8,-14, pitch 0.42)
+    {"origin": (-8, -14, 0), "size": (16, 14, 2), "uv": (0, 90),
+     "ops": [("rotx", -24.1), ("move", (0, 19, -14))]},
+    # small turret (body child at 0,-6,2), posed traversed for the preview
+    {"origin": (-4, -7, -4), "size": (8, 7, 8), "uv": (90, 0),
+     "ops": [("roty", -12), ("move", (0, 5, 2))]},
+    {"origin": (-0.5, -5, -22), "size": (1, 1, 16), "uv": (90, 44),
+     "ops": [("roty", -12), ("move", (0, 5, 2))]},
+    {"origin": (-1, -9, -1), "size": (2, 2, 3), "uv": (90, 64),
+     "ops": [("roty", -12), ("move", (0, 5, 2))]},
 ]
 
 GUNBOAT_PARTS = [
