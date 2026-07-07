@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import dev.rheava.program7.Program7;
-import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.DropPodEntity;
+import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
 import net.minecraft.advancement.AdvancementEntry;
@@ -52,6 +52,19 @@ public class ProgramDirectorState extends PersistentState {
 	/** What one attack drone costs the Program to field. */
 	private static final Map<String, Integer> ATTACK_DRONE_COST = Map.of(
 			Resources.IRON, 4, Resources.GUNPOWDER, 4, Resources.REDSTONE, 2);
+	/** What one medium attack drone costs the Program to field. */
+	private static final Map<String, Integer> MEDIUM_ATTACK_DRONE_COST = Map.of(
+			Resources.IRON, 6, Resources.GUNPOWDER, 2, Resources.REDSTONE, 3);
+	/** What one sniper drone costs the Program to field. */
+	private static final Map<String, Integer> SNIPER_DRONE_COST = Map.of(
+			Resources.IRON, 5, Resources.COPPER, 3, Resources.REDSTONE, 4);
+	/**
+	 * Day 14+: waves start folding in Tier 2 hardware alongside the attack
+	 * drones. There is no hard ceiling on this escalation yet — that lands
+	 * with the base-attackability phase, which caps Tier 3 properly.
+	 */
+	private static final long TIER_2_ESCALATION_DAY = 14L * 24000L;
+	private static final double SNIPER_DRONE_CHANCE = 0.25;
 	/** The starter stockpile every pod brings down with it. */
 	private static final Map<String, Integer> POD_STOCKPILE = Map.of(
 			Resources.IRON, 64, Resources.COPPER, 48, Resources.REDSTONE, 32,
@@ -282,22 +295,40 @@ public class ProgramDirectorState extends PersistentState {
 			return;
 		}
 		for (int i = 0; i < dispatch.count; i++) {
-			double angle = world.getRandom().nextDouble() * Math.PI * 2.0;
-			double distance = 40.0 + world.getRandom().nextDouble() * 20.0;
-			int x = (int) (player.getX() + Math.cos(angle) * distance);
-			int z = (int) (player.getZ() + Math.sin(angle) * distance);
-			world.getChunk(new BlockPos(x, 64, z));
-			int surfaceY = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
-			double y = Math.max(surfaceY + 12, player.getY() + 10);
+			this.spawnEscort(world, player, P7Entities.ATTACK_DRONE.get().create(world));
+		}
 
-			AttackDroneEntity drone = P7Entities.ATTACK_DRONE.get().create(world);
-			if (drone != null) {
-				drone.refreshPositionAndAngles(x + 0.5, y, z + 0.5,
-						world.getRandom().nextFloat() * 360.0f, 0.0f);
-				drone.setTarget(player);
-				world.spawnEntity(drone);
+		// Day 14+: waves start folding Tier 2 hardware in alongside the
+		// attack drones. No hard cap on this yet — that arrives with the
+		// base-attackability phase, which properly gates Tier 3 escalation.
+		if (world.getTime() >= TIER_2_ESCALATION_DAY) {
+			if (this.tryConsume(MEDIUM_ATTACK_DRONE_COST)) {
+				this.spawnEscort(world, player, P7Entities.MEDIUM_ATTACK_DRONE.get().create(world));
+			}
+			if (world.getRandom().nextDouble() < SNIPER_DRONE_CHANCE
+					&& this.tryConsume(SNIPER_DRONE_COST)) {
+				this.spawnEscort(world, player, P7Entities.SNIPER_DRONE.get().create(world));
 			}
 		}
+	}
+
+	/** Drop one Program flier in near the player, targeting them immediately. */
+	private void spawnEscort(ServerWorld world, ServerPlayerEntity player, @Nullable ProgramDroneEntity drone) {
+		if (drone == null) {
+			return;
+		}
+		double angle = world.getRandom().nextDouble() * Math.PI * 2.0;
+		double distance = 40.0 + world.getRandom().nextDouble() * 20.0;
+		int x = (int) (player.getX() + Math.cos(angle) * distance);
+		int z = (int) (player.getZ() + Math.sin(angle) * distance);
+		world.getChunk(new BlockPos(x, 64, z));
+		int surfaceY = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
+		double y = Math.max(surfaceY + 12, player.getY() + 10);
+
+		drone.refreshPositionAndAngles(x + 0.5, y, z + 0.5,
+				world.getRandom().nextFloat() * 360.0f, 0.0f);
+		drone.setTarget(player);
+		world.spawnEntity(drone);
 	}
 
 	public int getGlobalThreat() {

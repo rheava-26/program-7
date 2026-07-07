@@ -77,8 +77,8 @@ Units marked ✅ are implemented; the rest are specs for their phase.
 | **Light recon drone** (Surveyor) | Flying scanner: approaches, profiles the player over ~3.5 s of accelerating beeps, files intel, retreats; steals unattended item drops as cargo | ✅ |
 | **Light combat drone** (Attack Drone) | Fast suicide flyer: chases, arms at contact range, detonates; committed once armed | ✅ |
 | **Basic mining drone** (Harvester) | Wheeled hauler: mines ore/logs by tag, banks a 12-unit hopper into the ledger; unarmed, panics | ✅ |
-| **Logistics drone** | Small flyer ferrying parts between assembler and storage inside the perimeter | — |
-| **Wheeled logistics drone** | Ground hauler moving crates between harvest sites and base; lays slab paths; gold stripes = priority cargo | — |
+| **Logistics drone** | Small flyer ferrying parts between assembler and storage inside the perimeter | ✅ |
+| **Wheeled logistics drone** | Ground hauler moving crates between harvest sites and base; lays slab paths; gold stripes = priority cargo | ✅ (paths later) |
 | **Basic ground drone** | Tiny armored car with a small gun — perimeter pest control, built to fight off zombies and skeletons, not players | ✅ |
 | **Basic autogun** | Fixed small-caliber turret with a visible sweep cone; limited ammo feed | ✅ |
 
@@ -86,21 +86,21 @@ Units marked ✅ are implemented; the rest are specs for their phase.
 *Heavier Tier 1 evolutions. Some need landing pads; some cost upkeep per
 unit time or self-sustain off their own power.*
 
-| Unit | Role |
-|---|---|
-| **Medium attack drone** | The workhorse gun flyer: strafing runs, retreats to rearm |
-| **Long-range sniper drone** | Highly fragile platform with a big, slow-firing weapon — glass cannon standoff |
-| **Medium mining drone** | Bores into cave systems following ore density; deploys light beacons |
-| **Laser mining carrier** | Drone carrying crates + multiple mining lasers — mobile strip-mine |
-| **Medium transport drone** | Carries two crates of resources at once |
-| **Air UAV drone** | Simple winged propeller drone; requires a **launch catapult** structure; loiters and spots for the base |
-| **Basic mortar** | Fixed indirect fire at spotted static targets; shells whistle before landing |
-| **Self-propelled mortar drone** | The mortar, mobile — repositions between volleys |
-| **Light anti-tank gun/emplacement** | High single-shot damage vs. golems, vehicles, and armored players |
-| **Unarmed car** | Fast ground scout/courier |
-| **Unarmed speedboat** | Water logistics and scouting |
-| **Underwater mining craft** | Harvests seabed resources (and finds guardians the hard way) |
-| **Light anti-air drone / ground AA** | Counters elytra players and (later) player drones |
+| Unit | Role | Status |
+|---|---|---|
+| **Medium attack drone** | The workhorse gun flyer: strafing runs, retreats to rearm | ✅ (rearm later) |
+| **Long-range sniper drone** | Highly fragile platform with a big, slow-firing weapon — glass cannon standoff | ✅ |
+| **Medium mining drone** | Bores into cave systems following ore density; deploys light beacons | — |
+| **Laser mining carrier** | Drone carrying crates + multiple mining lasers — mobile strip-mine | — |
+| **Medium transport drone** | Carries two crates of resources at once | — |
+| **Air UAV drone** | Simple winged propeller drone; requires a **launch catapult** structure; loiters and spots for the base | — |
+| **Basic mortar** | Fixed indirect fire at spotted static targets; shells whistle before landing | ✅ |
+| **Self-propelled mortar drone** | The mortar, mobile — repositions between volleys | — |
+| **Light anti-tank gun/emplacement** | High single-shot damage vs. golems, vehicles, and armored players | — |
+| **Unarmed car** | Fast ground scout/courier | — |
+| **Unarmed speedboat** | Water logistics and scouting | — |
+| **Underwater mining craft** | Harvests seabed resources (and finds guardians the hard way) | — |
+| **Light anti-air drone / ground AA** | Counters elytra players and (later) player drones | — |
 
 ## TIER 3 — WAR ECONOMY
 *Counter-adaptation live. This is the wall until you kill a main base.*

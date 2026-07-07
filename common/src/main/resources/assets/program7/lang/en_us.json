@@ -12,6 +12,11 @@
   "item.program7.harvester_drone_spawn_egg": "Harvester Drone Spawn Egg",
   "item.program7.ground_drone_spawn_egg": "Ground Drone Spawn Egg",
   "item.program7.autogun_turret_spawn_egg": "Autogun Turret Spawn Egg",
+  "item.program7.logistics_drone_spawn_egg": "Logistics Drone Spawn Egg",
+  "item.program7.wheeled_hauler_spawn_egg": "Wheeled Hauler Spawn Egg",
+  "item.program7.medium_attack_drone_spawn_egg": "Medium Attack Drone Spawn Egg",
+  "item.program7.sniper_drone_spawn_egg": "Sniper Drone Spawn Egg",
+  "item.program7.mortar_emplacement_spawn_egg": "Mortar Emplacement Spawn Egg",
 
   "block.program7.probe_core": "Probe Core",
   "block.program7.drone_wreck": "Drone Wreck",
@@ -23,6 +28,12 @@
   "entity.program7.autogun_turret": "Autogun Turret",
   "entity.program7.ground_drone": "Ground Drone",
   "entity.program7.drop_pod": "Drop Pod",
+  "entity.program7.logistics_drone": "Logistics Drone",
+  "entity.program7.wheeled_hauler": "Wheeled Hauler",
+  "entity.program7.medium_attack_drone": "Medium Attack Drone",
+  "entity.program7.sniper_drone": "Sniper Drone",
+  "entity.program7.mortar_emplacement": "Mortar Emplacement",
+  "entity.program7.mortar_shell": "Mortar Shell",
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 
@@ -39,6 +50,10 @@
   "subtitles.program7.event.drop_pod.descent": "Something roars in the sky",
   "subtitles.program7.event.drop_pod.impact": "Distant impact",
   "subtitles.program7.unit.gun_fire": "Autogun fires",
+  "subtitles.program7.unit.sniper_fire": "Sniper shot cracks",
+  "subtitles.program7.unit.mortar_fire": "Mortar thumps",
+  "subtitles.program7.unit.mortar_whistle": "Shell whistles down",
+  "subtitles.program7.unit.mortar_impact": "Shell detonates",
   "subtitles.program7.block.assembler.working": "Assembler machining",
   "subtitles.program7.block.assembler.complete": "Assembler finishes a unit"
 }

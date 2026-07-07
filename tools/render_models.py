@@ -147,6 +147,8 @@ def render(name, texture_path, parts):
                 for op in ops:
                     if op[0] == "roty":
                         p = rot_y(p, math.radians(op[1]))
+                    elif op[0] == "rotx":
+                        p = rot_x(p, math.radians(op[1]))
                     elif op[0] == "rotz":
                         p = rot_z(p, math.radians(op[1]))
                     elif op[0] == "move":
@@ -267,19 +269,101 @@ GROUND_DRONE_PARTS = [
 ]
 
 AUTOGUN_PARTS = [
-    # base plate + pedestal (pivot 0,24,0)
-    {"origin": (-4, -2, -4), "size": (8, 2, 8), "uv": (0, 0), "ops": [("move", (0, 24, 0))]},
-    {"origin": (-2, -8, -2), "size": (4, 6, 4), "uv": (0, 11), "ops": [("move", (0, 24, 0))]},
+    # v3 open frame: ground pad + central column (pivot 0,24,0)
+    {"origin": (-3, -1, -3), "size": (6, 1, 6), "uv": (0, 0), "ops": [("move", (0, 24, 0))]},
+    {"origin": (-1, -10, -1), "size": (2, 9, 2), "uv": (0, 8), "ops": [("move", (0, 24, 0))]},
 ] + [
-    # head (base child at 0,-8,0), posed mid-pan for the preview
-    {"origin": origin, "size": size, "uv": uv, "ops": [("roty", 25), ("move", (0, 16, 0))]}
+    # four legs splayed from one point (Java pitch 0.40, yaw pi/4 + i*pi/2)
+    {"origin": (-0.5, 0, -0.5), "size": (1, 7, 1), "uv": (9, 8),
+     "ops": [("rotx", 22.9), ("roty", 45 + i * 90), ("move", (0, 16, 0))]}
+    for i in range(4)
+] + [
+    # head (base child at 0,-11,0 -> absolute y 13), posed mid-pan
+    {"origin": origin, "size": size, "uv": uv, "ops": [("roty", 25), ("move", (0, 13, 0))]}
     for origin, size, uv in (
-        ((-3, -2, -3), (6, 4, 6), (17, 11)),
-        ((-2, -1, -9), (1, 1, 6), (42, 11)),
-        ((1, -1, -9), (1, 1, 6), (42, 11)),
-        ((-1, -3, -1), (2, 1, 2), (42, 19)),
-        ((3, -1.5, -1), (2, 3, 4), (33, 22)),
+        ((-2.5, -1.5, -1), (1, 3, 2), (14, 8)),
+        ((1.5, -1.5, -1), (1, 3, 2), (14, 8)),
+        ((-1.5, -1.5, -4.5), (3, 3, 7), (20, 8)),
+        ((-0.5, -0.5, -10.5), (1, 1, 6), (40, 8)),
+        ((-1, -1, -11.5), (2, 2, 1), (40, 16)),
+        ((1.5, -0.5, -2), (2, 4, 3), (46, 16)),
+        ((-1, -3.5, -2.5), (2, 1, 2), (0, 20)),
     )
+]
+
+
+def quad_arms(pivots, arm_len, arm_uv, pod_uv, rotor_size, rotor_uv):
+    """Four corner rotor arms matching the shared Java construction."""
+    parts = []
+    yaw_for = {(-1, -1): -45, (1, -1): 45, (-1, 1): -135, (1, 1): 135}
+    spins = (20, -35, 50, -10)
+    for i, (ax, ay, az) in enumerate(pivots):
+        yaw = yaw_for[(1 if ax > 0 else -1, 1 if az > 0 else -1)]
+        base = [("roty", yaw), ("move", (ax, ay, az))]
+        parts.append({"origin": (-0.5, -0.5, -arm_len), "size": (1, 1, arm_len),
+                      "uv": arm_uv, "ops": list(base)})
+        parts.append({"origin": (-1, -1.5, -arm_len - 1), "size": (2, 2, 2),
+                      "uv": pod_uv, "ops": list(base)})
+        half = rotor_size / 2.0
+        parts.append({"origin": (-half, -0.5, -half), "size": (rotor_size, 1, rotor_size),
+                      "uv": rotor_uv,
+                      "ops": [("roty", spins[i]), ("move", (0, -2, -arm_len))] + list(base)})
+    return parts
+
+
+LOGISTICS_PARTS = [
+    {"origin": (-3.5, -1.5, -3), "size": (7, 3, 6), "uv": (0, 0), "ops": [("move", (0, 16, 0))]},
+    {"origin": (-1.5, -0.5, -4), "size": (3, 1, 1), "uv": (28, 0), "ops": [("move", (0, 16, 0))]},
+    # underslung cargo crate (body child at 0,1.5,0)
+    {"origin": (-2.5, 0, -2.5), "size": (5, 4, 5), "uv": (0, 10), "ops": [("move", (0, 17.5, 0))]},
+] + quad_arms([(x, 15, z) for x in (-3, 3) for z in (-2.5, 2.5)], 4, (37, 0), (37, 7), 7, (0, 20))
+
+HAULER_PARTS = [
+    {"origin": (-4, -2, -5), "size": (8, 4, 10), "uv": (0, 0), "ops": [("move", (0, 18.5, 0))]},
+    {"origin": (-2.5, -6, -1), "size": (5, 4, 5), "uv": (0, 15), "ops": [("move", (0, 18.5, 0))]},
+    {"origin": (-2, -1, -5.5), "size": (4, 2, 1), "uv": (21, 15), "ops": [("move", (0, 18.5, 0))]},
+] + [
+    {"origin": (-1.5, -1.5, -1.5), "size": (3, 3, 3), "uv": (37, 0), "ops": [("move", (x, 21.5, z))]}
+    for x in (-4, 4) for z in (-3.5, 3.5)
+]
+
+MEDIUM_ATTACK_PARTS = [
+    {"origin": (-4.5, -2, -5), "size": (9, 4, 10), "uv": (0, 0), "ops": [("move", (0, 17, 0))]},
+    {"origin": (-1.5, 0, -7), "size": (3, 2, 4), "uv": (0, 15), "ops": [("move", (0, 17, 0))]},
+    {"origin": (-0.5, 0.5, -10), "size": (1, 1, 3), "uv": (15, 15), "ops": [("move", (0, 17, 0))]},
+    {"origin": (-2.5, -1.5, -5.5), "size": (5, 1, 1), "uv": (24, 15), "ops": [("move", (0, 17, 0))]},
+] + quad_arms([(x, 15, z) for x in (-4, 4) for z in (-4, 4)], 5, (38, 19), (38, 26), 8, (0, 32))
+
+SNIPER_PARTS = [
+    {"origin": (-2.5, -2, -3.5), "size": (5, 4, 7), "uv": (0, 0), "ops": [("move", (0, 14, 0))]},
+    {"origin": (-0.5, -0.5, -13), "size": (1, 1, 10), "uv": (0, 12), "ops": [("move", (0, 14, 0))]},
+    {"origin": (-0.5, -2, -8), "size": (1, 1, 3), "uv": (24, 12), "ops": [("move", (0, 14, 0))]},
+    # stabilizer fins (Java roll -0.45/+0.45 at body-relative pivots ±2.5,0.5,2)
+    {"origin": (-0.5, -1.5, -1.5), "size": (1, 3, 3), "uv": (33, 12),
+     "ops": [("rotz", -25.8), ("move", (2.5, 14.5, 2))]},
+    {"origin": (-0.5, -1.5, -1.5), "size": (1, 3, 3), "uv": (33, 12),
+     "ops": [("rotz", 25.8), ("move", (-2.5, 14.5, 2))]},
+] + quad_arms([(x, 12, z) for x in (-2.5, 2.5) for z in (-2.5, 2.5)], 4, (42, 0), (42, 6), 7, (0, 24))
+
+# carriage children live at absolute (0,23,0); posed traversed 15deg for the preview
+_MORTAR_CARRIAGE = [("roty", 15), ("move", (0, 23, 0))]
+MORTAR_PARTS = [
+    {"origin": (-3.5, -1, -3.5), "size": (7, 1, 7), "uv": (0, 0), "ops": [("move", (0, 24, 0))]},
+    {"origin": (2.5, -2, -2), "size": (2, 2, 4), "uv": (18, 10), "ops": list(_MORTAR_CARRIAGE)},
+    {"origin": (3, -4, -1), "size": (1, 2, 1), "uv": (31, 10), "ops": list(_MORTAR_CARRIAGE)},
+    {"origin": (-3, -1, 2), "size": (2, 1, 2), "uv": (36, 10), "ops": list(_MORTAR_CARRIAGE)},
+    # tube leaned back for high-angle fire (Java pitch -0.5 at carriage-child pivot 0,0,1)
+    {"origin": (-1.5, -9, -1.5), "size": (3, 9, 3), "uv": (0, 10),
+     "ops": [("rotx", -28.6), ("move", (0, 0, 1))] + _MORTAR_CARRIAGE},
+    {"origin": (-0.5, -5, -0.5), "size": (1, 5, 1), "uv": (13, 10),
+     "ops": [("rotx", -20), ("move", (1.5, 0, -1.5))] + _MORTAR_CARRIAGE},
+    {"origin": (-0.5, -5, -0.5), "size": (1, 5, 1), "uv": (13, 10),
+     "ops": [("rotx", -20), ("move", (-1.5, 0, -1.5))] + _MORTAR_CARRIAGE},
+]
+
+SHELL_PARTS = [
+    {"origin": (-1, -2, -1), "size": (2, 3, 2), "uv": (0, 0), "ops": [("move", (0, 8, 0))]},
+    {"origin": (-0.5, 1, -0.5), "size": (1, 1, 1), "uv": (8, 0), "ops": [("move", (0, 8, 0))]},
 ]
 
 ASSEMBLER_PARTS = [
@@ -295,6 +379,13 @@ def main():
     render("ground_drone", os.path.join(TEX, "entity/ground_drone.png"), GROUND_DRONE_PARTS)
     render("autogun_turret", os.path.join(TEX, "entity/autogun_turret.png"), AUTOGUN_PARTS)
     render("assembler", os.path.join(TEX, "block/assembler.png"), ASSEMBLER_PARTS)
+    render("logistics_drone", os.path.join(TEX, "entity/logistics_drone.png"), LOGISTICS_PARTS)
+    render("wheeled_hauler", os.path.join(TEX, "entity/wheeled_hauler.png"), HAULER_PARTS)
+    render("medium_attack_drone", os.path.join(TEX, "entity/medium_attack_drone.png"),
+           MEDIUM_ATTACK_PARTS)
+    render("sniper_drone", os.path.join(TEX, "entity/sniper_drone.png"), SNIPER_PARTS)
+    render("mortar_emplacement", os.path.join(TEX, "entity/mortar_emplacement.png"), MORTAR_PARTS)
+    render("mortar_shell", os.path.join(TEX, "entity/mortar_shell.png"), SHELL_PARTS)
 
 
 if __name__ == "__main__":

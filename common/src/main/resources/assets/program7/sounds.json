@@ -59,6 +59,30 @@
       { "name": "minecraft:entity.firework_rocket.blast", "type": "event" }
     ]
   },
+  "unit.sniper_fire": {
+    "subtitle": "subtitles.program7.unit.sniper_fire",
+    "sounds": [
+      { "name": "minecraft:item.crossbow.shoot", "type": "event" }
+    ]
+  },
+  "unit.mortar_fire": {
+    "subtitle": "subtitles.program7.unit.mortar_fire",
+    "sounds": [
+      { "name": "minecraft:entity.firework_rocket.launch", "type": "event" }
+    ]
+  },
+  "unit.mortar_whistle": {
+    "subtitle": "subtitles.program7.unit.mortar_whistle",
+    "sounds": [
+      { "name": "minecraft:entity.phantom.swoop", "type": "event" }
+    ]
+  },
+  "unit.mortar_impact": {
+    "subtitle": "subtitles.program7.unit.mortar_impact",
+    "sounds": [
+      { "name": "minecraft:entity.generic.explode", "type": "event" }
+    ]
+  },
   "block.assembler.working": {
     "subtitle": "subtitles.program7.block.assembler.working",
     "sounds": [

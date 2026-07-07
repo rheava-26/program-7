@@ -13,8 +13,20 @@ import dev.rheava.program7.client.render.GroundDroneModel;
 import dev.rheava.program7.client.render.GroundDroneRenderer;
 import dev.rheava.program7.client.render.HarvesterDroneModel;
 import dev.rheava.program7.client.render.HarvesterDroneRenderer;
+import dev.rheava.program7.client.render.LogisticsDroneModel;
+import dev.rheava.program7.client.render.LogisticsDroneRenderer;
+import dev.rheava.program7.client.render.MediumAttackDroneModel;
+import dev.rheava.program7.client.render.MediumAttackDroneRenderer;
+import dev.rheava.program7.client.render.MortarEmplacementModel;
+import dev.rheava.program7.client.render.MortarEmplacementRenderer;
+import dev.rheava.program7.client.render.MortarShellModel;
+import dev.rheava.program7.client.render.MortarShellRenderer;
 import dev.rheava.program7.client.render.QuadRotorDroneModel;
+import dev.rheava.program7.client.render.SniperDroneModel;
+import dev.rheava.program7.client.render.SniperDroneRenderer;
 import dev.rheava.program7.client.render.SurveyorDroneRenderer;
+import dev.rheava.program7.client.render.WheeledHaulerModel;
+import dev.rheava.program7.client.render.WheeledHaulerRenderer;
 import dev.rheava.program7.network.InterferencePayload;
 import dev.rheava.program7.registry.P7Entities;
 
@@ -34,6 +46,18 @@ public final class Program7Client {
 				GroundDroneModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(AutogunTurretModel.LAYER,
 				AutogunTurretModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(LogisticsDroneModel.LAYER,
+				LogisticsDroneModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(WheeledHaulerModel.LAYER,
+				WheeledHaulerModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(MediumAttackDroneModel.LAYER,
+				MediumAttackDroneModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(SniperDroneModel.LAYER,
+				SniperDroneModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(MortarEmplacementModel.LAYER,
+				MortarEmplacementModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(MortarShellModel.LAYER,
+				MortarShellModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
@@ -41,6 +65,12 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.DROP_POD, DropPodRenderer::new);
 		EntityRendererRegistry.register(P7Entities.GROUND_DRONE, GroundDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.AUTOGUN_TURRET, AutogunTurretRenderer::new);
+		EntityRendererRegistry.register(P7Entities.LOGISTICS_DRONE, LogisticsDroneRenderer::new);
+		EntityRendererRegistry.register(P7Entities.WHEELED_HAULER, WheeledHaulerRenderer::new);
+		EntityRendererRegistry.register(P7Entities.MEDIUM_ATTACK_DRONE, MediumAttackDroneRenderer::new);
+		EntityRendererRegistry.register(P7Entities.SNIPER_DRONE, SniperDroneRenderer::new);
+		EntityRendererRegistry.register(P7Entities.MORTAR_EMPLACEMENT, MortarEmplacementRenderer::new);
+		EntityRendererRegistry.register(P7Entities.MORTAR_SHELL, MortarShellRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,

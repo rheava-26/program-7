@@ -19,12 +19,14 @@ import net.minecraft.util.math.Vec3d;
  * counterplay even before cover comes into it.
  */
 public class GunAttackGoal extends Goal {
-	private final ProgramDroneEntity shooter;
+	// shooter/range/damage are protected: subclasses (the sniper's standoff
+	// variant) build their own movement and accuracy rules on top of them.
+	protected final ProgramDroneEntity shooter;
 	/** Movement speed while closing in; 0 for stationary mounts. */
 	private final double speed;
-	private final double range;
+	protected final double range;
 	private final int fireInterval;
-	private final float damage;
+	protected final float damage;
 	private int cooldown;
 
 	public GunAttackGoal(ProgramDroneEntity shooter, double speed, double range,
@@ -94,7 +96,10 @@ public class GunAttackGoal extends Goal {
 		}
 	}
 
-	private void fire(LivingEntity target, double distance) {
+	// Overridable, along with the hitChance()/playFireSound() hooks below,
+	// so a mount with a different gun or accuracy model doesn't have to
+	// duplicate the tracer and particle work.
+	protected void fire(LivingEntity target, double distance) {
 		if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
 			return;
 		}
@@ -102,8 +107,7 @@ public class GunAttackGoal extends Goal {
 		Vec3d aim = target.getBoundingBox().getCenter();
 
 		// Accuracy degrades with range; a miss still draws a tracer past you.
-		boolean hit = this.shooter.getRandom().nextDouble()
-				< 0.9 - (distance / this.range) * 0.35;
+		boolean hit = this.shooter.getRandom().nextDouble() < this.hitChance(distance);
 		if (!hit) {
 			aim = aim.add((this.shooter.getRandom().nextDouble() - 0.5) * 2.4,
 					(this.shooter.getRandom().nextDouble() - 0.5) * 1.6,
@@ -121,10 +125,20 @@ public class GunAttackGoal extends Goal {
 			world.spawnParticles(ParticleTypes.CRIT, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
 		}
 
-		this.shooter.playSound(P7Sounds.GUN_FIRE.get(), 1.0f,
-				1.1f + this.shooter.getRandom().nextFloat() * 0.2f);
+		this.playFireSound();
 		if (hit) {
 			target.damage(this.shooter.getDamageSources().mobAttack(this.shooter), this.damage);
 		}
+	}
+
+	/** Chance of a hit at the given distance. Falls off linearly with range. */
+	protected double hitChance(double distance) {
+		return 0.9 - (distance / this.range) * 0.35;
+	}
+
+	/** The report itself; broken out so mounts with a different gun can swap it. */
+	protected void playFireSound() {
+		this.shooter.playSound(P7Sounds.GUN_FIRE.get(), 1.0f,
+				1.1f + this.shooter.getRandom().nextFloat() * 0.2f);
 	}
 }

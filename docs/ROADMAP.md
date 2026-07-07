@@ -94,7 +94,16 @@ Phases are ordered so every phase ships something playable, and the Director
       perimeter patroller, only fights players in revenge) and basic
       autogun turret (bolted-down fixed defense, faster firing, helpless
       out of line of sight)
-- [ ] Logistics drones (flying + wheeled)
+- [x] Logistics drones (flying + wheeled): every assembler build's payment
+      now physically travels from the probe core as courier cargo —
+      shoot the courier down and the resources spill out as yours; the
+      Program writes off payments lost in transit
+- [x] First Tier 2 units: medium attack drone (strafing gun flyer),
+      long-range sniper drone (fragile standoff, backs away if you close),
+      basic mortar (fixed emplacement, arcing shells that whistle before
+      impact); waves start including Tier 2 hardware from day 14
+- [x] Autogun v3 remodel: taller open skeletal frame — light turrets don't
+      hide their ammo feed; shrouds are for the heavier tiers
 - [x] Wreck blocks: destroyed drones leave a debris-pile block holding
       their loot-table salvage plus carried cargo; right-click to pull
       parts out (collapses when emptied), break to spill everything
