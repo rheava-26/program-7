@@ -45,12 +45,13 @@ public class HarvesterDroneModel extends SinglePartEntityModel<HarvesterDroneEnt
 						.uv(0, 18).cuboid(-3.0f, -4.5f, -2.0f, 6.0f, 2.0f, 4.0f),
 				ModelTransform.pivot(0.0f, 19.5f, 0.0f));
 
+		// Fat industrial wheels, sticking out past the hull.
 		ModelPartBuilder wheel = ModelPartBuilder.create()
-				.uv(37, 0).cuboid(-1.0f, -1.0f, -1.0f, 2.0f, 2.0f, 2.0f);
-		body.addChild("wheel_fl", wheel, ModelTransform.pivot(-4.0f, 3.5f, -2.5f));
-		body.addChild("wheel_fr", wheel, ModelTransform.pivot(4.0f, 3.5f, -2.5f));
-		body.addChild("wheel_bl", wheel, ModelTransform.pivot(-4.0f, 3.5f, 2.5f));
-		body.addChild("wheel_br", wheel, ModelTransform.pivot(4.0f, 3.5f, 2.5f));
+				.uv(37, 0).cuboid(-1.5f, -1.5f, -1.5f, 3.0f, 3.0f, 3.0f);
+		body.addChild("wheel_fl", wheel, ModelTransform.pivot(-5.0f, 3.0f, -2.5f));
+		body.addChild("wheel_fr", wheel, ModelTransform.pivot(5.0f, 3.0f, -2.5f));
+		body.addChild("wheel_bl", wheel, ModelTransform.pivot(-5.0f, 3.0f, 2.5f));
+		body.addChild("wheel_br", wheel, ModelTransform.pivot(5.0f, 3.0f, 2.5f));
 
 		return TexturedModelData.of(modelData, 64, 64);
 	}

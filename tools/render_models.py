@@ -86,6 +86,12 @@ def rot_x(p, angle):
     return (x, y * c - z * s, y * s + z * c)
 
 
+
+
+def rot_z(p, angle):
+    x, y, z = p
+    c, s = math.cos(angle), math.sin(angle)
+    return (x * c - y * s, x * s + y * c, z)
 def box_faces(part):
     """Faces of one cuboid: (name, corner_fn(a,b)->model xyz, uv rect)."""
     ox, oy, oz = part["origin"]
@@ -133,14 +139,18 @@ def render(name, texture_path, parts):
     # Gather projected faces.
     faces = []
     for part in parts:
-        pivot = part["pivot"]
-        yaw = math.radians(part.get("yaw", 0.0))
+        ops = part.get("ops", [])
         for face_name, corner, (u0, v0, u1, v1) in box_faces(part):
             pts = []
             for a, b in ((0, 0), (1, 0), (0, 1)):
                 p = corner(a, b)
-                p = rot_y(p, yaw)
-                p = (p[0] + pivot[0], p[1] + pivot[1], p[2] + pivot[2])
+                for op in ops:
+                    if op[0] == "roty":
+                        p = rot_y(p, math.radians(op[1]))
+                    elif op[0] == "rotz":
+                        p = rot_z(p, math.radians(op[1]))
+                    elif op[0] == "move":
+                        p = (p[0] + op[1][0], p[1] + op[1][1], p[2] + op[1][2])
                 pts.append(project(p))
             faces.append((face_name, pts, (u0, v0, u1, v1)))
 
@@ -197,37 +207,49 @@ def render(name, texture_path, parts):
 
 
 # ------------------------------------------------------- model definitions
-# Keep in sync with the Java model classes.
+# Keep in sync with the Java model classes. Each part carries an "ops" list
+# applied in order to its local-space corners: ("roty", deg), ("rotz", deg),
+# ("move", (x, y, z)). This supports rotated arms with spinning rotor
+# children and rolled armor panels.
 
 def quad_rotor_parts():
     parts = [
-        {"origin": (-4, -2, -4), "size": (8, 4, 8), "uv": (0, 0), "pivot": (0, 17, 0)},
-        {"origin": (-2, -1, -5), "size": (4, 2, 1), "uv": (0, 13), "pivot": (0, 17, 0)},
+        {"origin": (-5, -1.5, -4), "size": (10, 3, 8), "uv": (0, 0), "ops": [("move", (0, 18, 0))]},
+        {"origin": (-4, -3.5, -3), "size": (8, 2, 6), "uv": (0, 12), "ops": [("move", (0, 18, 0))]},
+        {"origin": (-3, -1, -6), "size": (6, 2, 2), "uv": (0, 21), "ops": [("move", (0, 18, 0))]},
+        {"origin": (-3, 1.5, -3), "size": (6, 2, 6), "uv": (0, 26), "ops": [("move", (0, 18, 0))]},
+        # rolled armor cheeks (roll = z rotation, matches ModelTransform.of roll 0.30 rad)
+        {"origin": (-1, -1.5, -3.5), "size": (1, 3, 7), "uv": (29, 12),
+         "ops": [("rotz", 17.2), ("move", (-5, 18, 0))]},
+        {"origin": (0, -1.5, -3.5), "size": (1, 3, 7), "uv": (29, 12),
+         "ops": [("rotz", -17.2), ("move", (5, 18, 0))]},
     ]
-    for (dx, dz), spin in (((-3, -3), 25), ((3, -3), -25), ((-3, 3), 40), ((3, 3), -40)):
-        parts.append({"origin": (-2, -0.5, -2), "size": (4, 1, 4), "uv": (33, 0),
-                      "pivot": (dx, 14.5, dz), "yaw": spin})
+    arms = (((-3.5, -2.5), -45, 20), ((3.5, -2.5), 45, -35), ((-3.5, 2.5), -135, 50), ((3.5, 2.5), 135, -10))
+    for (ax, az), yaw, spin in arms:
+        base = [("roty", yaw), ("move", (ax, 16.5, az))]
+        parts.append({"origin": (-0.5, -0.5, -5), "size": (1, 1, 5), "uv": (37, 0), "ops": list(base)})
+        parts.append({"origin": (-1, -1.5, -6), "size": (2, 2, 2), "uv": (37, 7), "ops": list(base)})
+        parts.append({"origin": (-3.5, -0.5, -3.5), "size": (7, 1, 7), "uv": (0, 35),
+                      "ops": [("roty", spin), ("move", (0, -2, -5))] + list(base)})
     return parts
 
 
 HARVESTER_PARTS = [
-    {"origin": (-5, -2.5, -4), "size": (10, 5, 8), "uv": (0, 0), "pivot": (0, 19.5, 0)},
-    {"origin": (-2, -1, -5), "size": (4, 2, 1), "uv": (0, 14), "pivot": (0, 19.5, 0)},
-    {"origin": (-3, -4.5, -2), "size": (6, 2, 4), "uv": (0, 18), "pivot": (0, 19.5, 0)},
-    {"origin": (-1, -1, -1), "size": (2, 2, 2), "uv": (37, 0), "pivot": (-4, 23, -2.5)},
-    {"origin": (-1, -1, -1), "size": (2, 2, 2), "uv": (37, 0), "pivot": (4, 23, -2.5)},
-    {"origin": (-1, -1, -1), "size": (2, 2, 2), "uv": (37, 0), "pivot": (-4, 23, 2.5)},
-    {"origin": (-1, -1, -1), "size": (2, 2, 2), "uv": (37, 0), "pivot": (4, 23, 2.5)},
+    {"origin": (-5, -2.5, -4), "size": (10, 5, 8), "uv": (0, 0), "ops": [("move", (0, 19.5, 0))]},
+    {"origin": (-2, -1, -5), "size": (4, 2, 1), "uv": (0, 14), "ops": [("move", (0, 19.5, 0))]},
+    {"origin": (-3, -4.5, -2), "size": (6, 2, 4), "uv": (0, 18), "ops": [("move", (0, 19.5, 0))]},
+] + [
+    {"origin": (-1.5, -1.5, -1.5), "size": (3, 3, 3), "uv": (37, 0), "ops": [("move", (x, 22.5, z))]}
+    for x in (-5, 5) for z in (-2.5, 2.5)
 ]
 
 PROBE_CORE_PARTS = [
-    {"origin": (-8, 0, -8), "size": (16, 16, 16), "uv_all": (0, 0, 16, 16), "pivot": (0, 0, 0)},
+    {"origin": (-8, 0, -8), "size": (16, 16, 16), "uv_all": (0, 0, 16, 16), "ops": []},
 ]
 
 
 def main():
-    surveyor_eye = quad_rotor_parts()
-    render("surveyor_drone", os.path.join(TEX, "entity/surveyor_drone.png"), surveyor_eye)
+    render("surveyor_drone", os.path.join(TEX, "entity/surveyor_drone.png"), quad_rotor_parts())
     render("attack_drone", os.path.join(TEX, "entity/attack_drone.png"), quad_rotor_parts())
     render("harvester_drone", os.path.join(TEX, "entity/harvester_drone.png"), HARVESTER_PARTS)
     render("probe_core", os.path.join(TEX, "block/probe_core.png"), PROBE_CORE_PARTS)

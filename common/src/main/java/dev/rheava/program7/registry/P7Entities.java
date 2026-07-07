@@ -24,7 +24,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<SurveyorDroneEntity>> SURVEYOR_DRONE =
 			ENTITIES.register("surveyor_drone",
 					() -> EntityType.Builder.create(SurveyorDroneEntity::new, SpawnGroup.MISC)
-							.dimensions(0.9f, 0.7f)
+							.dimensions(1.0f, 0.55f)
 							.maxTrackingRange(10)
 							.build());
 
@@ -32,7 +32,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<AttackDroneEntity>> ATTACK_DRONE =
 			ENTITIES.register("attack_drone",
 					() -> EntityType.Builder.create(AttackDroneEntity::new, SpawnGroup.MISC)
-							.dimensions(0.9f, 0.7f)
+							.dimensions(1.0f, 0.55f)
 							.maxTrackingRange(10)
 							.build());
 
