@@ -4,7 +4,6 @@ import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.ai.ChaseAndDetonateGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.registry.P7Sounds;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -13,24 +12,20 @@ import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
  * Tier 1 response unit: a small, fast, expendable flyer that chases its
  * target down and detonates — creeper logic with rotors. Once the fuse is
  * lit it is committed; the accelerating beep is the only warning. Shooting
- * it down before it arms yields its warhead as salvage.
+ * it down before it arms leaves a wreck with its warhead inside; letting it
+ * detonate leaves nothing.
  */
-public class AttackDroneEntity extends PathAwareEntity {
+public class AttackDroneEntity extends ProgramDroneEntity {
 	private static final int FUSE_TICKS = 30;
 
 	private boolean armed = false;
@@ -95,49 +90,12 @@ public class AttackDroneEntity extends PathAwareEntity {
 	}
 
 	private void explode() {
+		// Discarded, not killed: a detonation consumes the drone, no wreck.
 		this.discard();
-		// With terrain destruction configured on, MOB still defers to the
-		// mobGriefing gamerule; configured off, no blocks break at all.
 		World.ExplosionSourceType sourceType = Program7.CONFIG.terrainDestruction
 				? World.ExplosionSourceType.MOB
 				: World.ExplosionSourceType.NONE;
 		this.getWorld().createExplosion(this, this.getX(), this.getY(), this.getZ(), 2.0f, sourceType);
-	}
-
-	@Override
-	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-		if (effect.getEffectType() == StatusEffects.POISON) {
-			return false;
-		}
-		return super.canHaveStatusEffect(effect);
-	}
-
-	@Override
-	public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
-		return false;
-	}
-
-	@Override
-	protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
-	}
-
-	@Override
-	public void checkDespawn() {
-	}
-
-	@Override
-	protected SoundEvent getAmbientSound() {
-		return P7Sounds.DRONE_AMBIENT.get();
-	}
-
-	@Override
-	protected SoundEvent getHurtSound(DamageSource source) {
-		return P7Sounds.DRONE_HURT.get();
-	}
-
-	@Override
-	protected SoundEvent getDeathSound() {
-		return P7Sounds.DRONE_DEATH.get();
 	}
 
 	@Override

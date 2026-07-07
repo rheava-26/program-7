@@ -5,6 +5,7 @@ import dev.rheava.program7.command.Program7Command;
 import dev.rheava.program7.config.P7Config;
 import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.network.InterferenceManager;
+import dev.rheava.program7.registry.P7BlockEntities;
 import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
 import dev.rheava.program7.registry.P7Items;
@@ -37,6 +38,7 @@ public final class Program7 {
 	public static void init() {
 		P7Sounds.register();
 		P7Blocks.register();
+		P7BlockEntities.register();
 		P7Entities.register();
 		P7Items.register();
 		Program7Command.register();

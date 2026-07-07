@@ -44,7 +44,7 @@ public class ScanPlayerGoal extends Goal {
 
 	@Override
 	public boolean canStart() {
-		if (!this.drone.isScanReady() || this.drone.isRetreating()) {
+		if (!this.drone.isScanReady() || this.drone.isRetreating() || this.drone.isScrambled()) {
 			return false;
 		}
 		PlayerEntity player = this.drone.getWorld().getClosestPlayer(this.drone, DETECTION_RANGE);

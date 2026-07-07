@@ -3,6 +3,7 @@ package dev.rheava.program7.registry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.block.DroneWreckBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
@@ -26,6 +27,14 @@ public final class P7Blocks {
 					.requiresTool()
 					.sounds(BlockSoundGroup.NETHERITE)
 					.luminance(state -> 7)));
+
+	/** Crash-site remains of a destroyed drone; holds its salvage. */
+	public static final RegistrySupplier<Block> DRONE_WRECK = BLOCKS.register("drone_wreck",
+			() -> new DroneWreckBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(1.0f)
+					.sounds(BlockSoundGroup.NETHERITE)
+					.nonOpaque()));
 
 	public static void register() {
 		BLOCKS.register();

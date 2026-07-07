@@ -7,8 +7,6 @@ import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.ScanPlayerGoal;
 import dev.rheava.program7.entity.ai.StealItemsGoal;
-import dev.rheava.program7.registry.P7Sounds;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.control.FlightMoveControl;
@@ -18,9 +16,6 @@ import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -28,8 +23,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,16 +32,17 @@ import org.jetbrains.annotations.Nullable;
  * <p>It is not a fighter. It closes to standoff range, sweeps the target with
  * an escalating scan (beeping faster and faster the closer it is to done),
  * files a threat profile with the Program Director, then withdraws before you
- * can grab it. Killing one interrupts the report and drops salvageable parts.
+ * can grab it. Killing one interrupts the report; its wreck holds its salvage
+ * plus everything it stole.
  */
-public class SurveyorDroneEntity extends PathAwareEntity {
+public class SurveyorDroneEntity extends ProgramDroneEntity {
 	private static final int CARGO_CAPACITY = 3;
 
 	private int scanCooldown = 0;
 	private int retreatTicks = 0;
 	@Nullable
 	private LivingEntity retreatFrom;
-	/** Stolen goods. Drops back out when the drone is destroyed. */
+	/** Stolen goods. Ends up in the wreck when the drone is destroyed. */
 	private final List<ItemStack> cargo = new ArrayList<>();
 
 	public SurveyorDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
@@ -133,54 +127,11 @@ public class SurveyorDroneEntity extends PathAwareEntity {
 	}
 
 	@Override
-	public void onDeath(DamageSource damageSource) {
-		super.onDeath(damageSource);
-		// The thief spills everything it took.
-		if (!this.getWorld().isClient) {
-			for (ItemStack stack : this.cargo) {
-				this.dropStack(stack);
-			}
-			this.cargo.clear();
-		}
-	}
-
-	@Override
-	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-		// Machines don't bleed — poison does nothing. Wither, per the design
-		// doc, tears through drone plating just fine.
-		if (effect.getEffectType() == StatusEffects.POISON) {
-			return false;
-		}
-		return super.canHaveStatusEffect(effect);
-	}
-
-	@Override
-	public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
-		return false;
-	}
-
-	@Override
-	protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
-	}
-
-	@Override
-	public void checkDespawn() {
-		// Program hardware is deployed deliberately; it never just despawns.
-	}
-
-	@Override
-	protected SoundEvent getAmbientSound() {
-		return P7Sounds.DRONE_AMBIENT.get();
-	}
-
-	@Override
-	protected SoundEvent getHurtSound(DamageSource source) {
-		return P7Sounds.DRONE_HURT.get();
-	}
-
-	@Override
-	protected SoundEvent getDeathSound() {
-		return P7Sounds.DRONE_DEATH.get();
+	protected List<ItemStack> getExtraWreckSalvage() {
+		// The thief's wreck holds everything it took.
+		List<ItemStack> stolen = new ArrayList<>(this.cargo);
+		this.cargo.clear();
+		return stolen;
 	}
 
 	@Override

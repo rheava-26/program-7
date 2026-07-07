@@ -1,0 +1,58 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "program7:block/drone_wreck",
+    "w": "program7:block/drone_wreck"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 2],
+      "to": [14, 3, 13],
+      "faces": {
+        "down": { "texture": "#w", "uv": [0, 0, 13, 11] },
+        "up": { "texture": "#w", "uv": [0, 0, 13, 11] },
+        "north": { "texture": "#w", "uv": [0, 10, 13, 13] },
+        "south": { "texture": "#w", "uv": [0, 10, 13, 13] },
+        "west": { "texture": "#w", "uv": [0, 10, 11, 13] },
+        "east": { "texture": "#w", "uv": [0, 10, 11, 13] }
+      }
+    },
+    {
+      "from": [4, 3, 5],
+      "to": [12, 6, 11],
+      "rotation": { "origin": [8, 3, 8], "axis": "y", "angle": 22.5 },
+      "faces": {
+        "up": { "texture": "#w", "uv": [2, 2, 10, 8] },
+        "north": { "texture": "#w", "uv": [0, 13, 8, 16] },
+        "south": { "texture": "#w", "uv": [0, 13, 8, 16] },
+        "west": { "texture": "#w", "uv": [4, 13, 10, 16] },
+        "east": { "texture": "#w", "uv": [4, 13, 10, 16] }
+      }
+    },
+    {
+      "from": [0, 1, 9],
+      "to": [7, 2, 12],
+      "rotation": { "origin": [1, 1, 10], "axis": "z", "angle": 22.5 },
+      "faces": {
+        "up": { "texture": "#w", "uv": [8, 13, 15, 16] },
+        "down": { "texture": "#w", "uv": [8, 13, 15, 16] },
+        "north": { "texture": "#w", "uv": [8, 14, 15, 15] },
+        "south": { "texture": "#w", "uv": [8, 14, 15, 15] },
+        "west": { "texture": "#w", "uv": [8, 13, 11, 14] },
+        "east": { "texture": "#w", "uv": [8, 13, 11, 14] }
+      }
+    },
+    {
+      "from": [10, 3, 2],
+      "to": [13, 5, 5],
+      "rotation": { "origin": [11, 3, 3], "axis": "x", "angle": -22.5 },
+      "faces": {
+        "up": { "texture": "#w", "uv": [11, 0, 14, 3] },
+        "north": { "texture": "#w", "uv": [11, 2, 14, 4] },
+        "south": { "texture": "#w", "uv": [11, 2, 14, 4] },
+        "west": { "texture": "#w", "uv": [11, 2, 14, 4] },
+        "east": { "texture": "#w", "uv": [11, 2, 14, 4] }
+      }
+    }
+  ]
+}

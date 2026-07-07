@@ -92,11 +92,15 @@ Phases are ordered so every phase ships something playable, and the Director
 - [ ] Basic ground drone (tiny armored car with a small gun — anti-mob
       perimeter unit), basic autogun turret, logistics drones (flying +
       wheeled)
-- [ ] Wreck blocks: destroyed drones crash into lootable wreck containers
-      instead of spraying items
-- [ ] Drone combat physics: one-hit fragility for small frames,
-      knockback/punch scrambling + crash, readable ram-attack aiming,
-      motor/rotor quick-kill hitboxes
+- [x] Wreck blocks: destroyed drones leave a debris-pile block holding
+      their loot-table salvage plus carried cargo; right-click to pull
+      parts out (collapses when emptied), break to spill everything
+- [x] Drone combat physics v1 (in the shared ProgramDroneEntity base):
+      swords/axes deal 2.5x to fliers (usually one-hit), Knockback/Punch
+      hits scramble fliers — stabilizers cut out, wild spin and drift, and
+      terrain contact while tumbling is a crash
+- [ ] Drone combat physics v2: readable ram-attack aiming, motor/rotor
+      quick-kill hitboxes
 - [ ] Tier system enforcement in the Director (Tier 3 hard cap until first
       main-base kill)
 - [ ] Orbital resupply event at large bases (loud, bright, psionic spike)

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import dev.rheava.program7.entity.ai.DepositCargoGoal;
 import dev.rheava.program7.entity.ai.MineResourceGoal;
-import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.EscapeDangerGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -13,14 +12,10 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
 
 /**
@@ -29,7 +24,7 @@ import net.minecraft.world.World;
  * unarmed — it panics when hurt. Killing haulers is economic warfare: every
  * dead harvester is a response the Director can't afford later.
  */
-public class HarvesterDroneEntity extends PathAwareEntity {
+public class HarvesterDroneEntity extends ProgramDroneEntity {
 	public static final int CARGO_CAPACITY = 12;
 
 	/** Ledger units by resource key, mined but not yet delivered. */
@@ -47,6 +42,12 @@ public class HarvesterDroneEntity extends PathAwareEntity {
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 32.0)
 				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.0)
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.4);
+	}
+
+	@Override
+	protected boolean isFlier() {
+		// Ground unit: knockback shoves it around but doesn't scramble it.
+		return false;
 	}
 
 	@Override
@@ -80,33 +81,6 @@ public class HarvesterDroneEntity extends PathAwareEntity {
 		Map<String, Integer> drained = new HashMap<>(this.cargo);
 		this.cargo.clear();
 		return drained;
-	}
-
-	@Override
-	public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-		if (effect.getEffectType() == StatusEffects.POISON) {
-			return false;
-		}
-		return super.canHaveStatusEffect(effect);
-	}
-
-	@Override
-	public void checkDespawn() {
-	}
-
-	@Override
-	protected SoundEvent getAmbientSound() {
-		return P7Sounds.DRONE_AMBIENT.get();
-	}
-
-	@Override
-	protected SoundEvent getHurtSound(DamageSource source) {
-		return P7Sounds.DRONE_HURT.get();
-	}
-
-	@Override
-	protected SoundEvent getDeathSound() {
-		return P7Sounds.DRONE_DEATH.get();
 	}
 
 	@Override

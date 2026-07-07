@@ -47,6 +47,12 @@ reverse-engineered and turned against it.
   tag), grinds them out with visible crack stages, hauls a full hopper back
   to the probe core and deposits into the ledger. Unarmed; panics when hurt.
   Two arrive with every pod — killing haulers starves future responses.
+- **Wreck blocks** — destroyed drones crash into a lootable debris pile
+  holding their salvage (plus anything they stole). Right-click to pull
+  parts out; it collapses when emptied.
+- **Combat physics v1** — swords and axes shred small fliers (usually one
+  hit); Knockback/Punch-enchanted hits scramble a flier's stabilizers and
+  send it tumbling — terrain contact while tumbling is a crash.
 
 - **Surveyor Drone** — the Program's flying recon unit. It closes in on
   players, sweeps them with an accelerating scan (the beeping speeds up as it

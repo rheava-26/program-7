@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      { "model": "program7:block/drone_wreck" },
+      { "model": "program7:block/drone_wreck", "y": 90 },
+      { "model": "program7:block/drone_wreck", "y": 180 },
+      { "model": "program7:block/drone_wreck", "y": 270 }
+    ]
+  }
+}

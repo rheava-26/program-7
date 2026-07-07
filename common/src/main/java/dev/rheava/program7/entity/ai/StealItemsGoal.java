@@ -32,7 +32,8 @@ public class StealItemsGoal extends Goal {
 
 	@Override
 	public boolean canStart() {
-		if (!Program7.CONFIG.itemStealing || this.drone.isRetreating() || this.drone.isCargoFull()) {
+		if (!Program7.CONFIG.itemStealing || this.drone.isRetreating() || this.drone.isCargoFull()
+				|| this.drone.isScrambled()) {
 			return false;
 		}
 		if (this.cooldown > 0) {

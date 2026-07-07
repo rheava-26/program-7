@@ -2,31 +2,32 @@ package dev.rheava.program7.entity.ai;
 
 import java.util.EnumSet;
 
-import dev.rheava.program7.entity.SurveyorDroneEntity;
+import dev.rheava.program7.entity.ProgramDroneEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 
 /**
- * Idle patrol: drift to a nearby open-air position and hold. Keeps the drone
- * looking busy (and audibly whirring around) between scans.
+ * Idle patrol: drift to a nearby open-air position and hold. Keeps a flier
+ * looking busy (and audibly whirring around) between jobs.
  */
 public class HoverWanderGoal extends Goal {
-	private final SurveyorDroneEntity drone;
+	private final ProgramDroneEntity drone;
 
-	public HoverWanderGoal(SurveyorDroneEntity drone) {
+	public HoverWanderGoal(ProgramDroneEntity drone) {
 		this.drone = drone;
 		this.setControls(EnumSet.of(Goal.Control.MOVE));
 	}
 
 	@Override
 	public boolean canStart() {
-		return this.drone.getNavigation().isIdle() && this.drone.getRandom().nextInt(30) == 0;
+		return this.drone.getNavigation().isIdle() && !this.drone.isScrambled()
+				&& this.drone.getRandom().nextInt(30) == 0;
 	}
 
 	@Override
 	public boolean shouldContinue() {
-		return !this.drone.getNavigation().isIdle() && !this.drone.isRetreating();
+		return !this.drone.getNavigation().isIdle() && !this.drone.isScrambled();
 	}
 
 	@Override

@@ -24,7 +24,7 @@ public class ChaseAndDetonateGoal extends Goal {
 	@Override
 	public boolean canStart() {
 		LivingEntity target = this.drone.getTarget();
-		return target != null && target.isAlive();
+		return target != null && target.isAlive() && !this.drone.isScrambled();
 	}
 
 	@Override
