@@ -48,6 +48,8 @@ public class ProgramDirectorState extends PersistentState {
 
 	/** Survive this long after landfall (7 in-game days) for the advancement. */
 	private static final long SEVEN_DAYS = 7L * 24000L;
+	/** Every active probe core gets resupplied from orbit this often. */
+	private static final long RESUPPLY_INTERVAL = 3L * 24000L;
 
 	/** What one attack drone costs the Program to field. */
 	private static final Map<String, Integer> ATTACK_DRONE_COST = Map.of(
@@ -77,6 +79,9 @@ public class ProgramDirectorState extends PersistentState {
 	private boolean podDeployed = false;
 	@Nullable
 	private BlockPos probeCorePos = null;
+	/** Every probe core site the Program has planted, live or since razed. */
+	private final List<BlockPos> coreSites = new ArrayList<>();
+	private long lastResupplyTime = 0L;
 	private final Map<UUID, PlayerIntel> intel = new HashMap<>();
 	private final List<PendingDispatch> dispatches = new ArrayList<>();
 	/**
@@ -116,6 +121,17 @@ public class ProgramDirectorState extends PersistentState {
 				for (ServerPlayerEntity player : world.getPlayers()) {
 					player.getAdvancementTracker().grantCriterion(advancement, "survived");
 				}
+			}
+		}
+
+		if (world.getTime() - this.lastResupplyTime >= RESUPPLY_INTERVAL) {
+			this.pruneDeadCoreSites(world);
+			if (!this.coreSites.isEmpty()) {
+				for (BlockPos site : this.coreSites) {
+					OrbitalResupplyEvent.runAt(world, site);
+				}
+				this.lastResupplyTime = world.getTime();
+				this.markDirty();
 			}
 		}
 
@@ -185,12 +201,20 @@ public class ProgramDirectorState extends PersistentState {
 		ProgramDirectorState state = get(world);
 		state.podDeployed = true;
 		state.probeCorePos = pos;
+		if (!state.coreSites.contains(pos)) {
+			state.coreSites.add(pos);
+		}
 		if (state.landedAt < 0) {
 			state.landedAt = world.getTime();
 		}
 		// Every pod arrives with a stockpile; re-insertions restock the war.
 		POD_STOCKPILE.forEach(state::addResource);
 		state.markDirty();
+	}
+
+	/** Drop any core site whose block is no longer actually a probe core. */
+	private void pruneDeadCoreSites(ServerWorld world) {
+		this.coreSites.removeIf(site -> !world.getBlockState(site).isOf(P7Blocks.PROBE_CORE.get()));
 	}
 
 	public void addResource(String key, int amount) {
@@ -368,6 +392,15 @@ public class ProgramDirectorState extends PersistentState {
 			nbt.putIntArray("ProbeCorePos", new int[] {
 					this.probeCorePos.getX(), this.probeCorePos.getY(), this.probeCorePos.getZ()});
 		}
+		nbt.putLong("LastResupplyTime", this.lastResupplyTime);
+
+		NbtList coreSitesList = new NbtList();
+		for (BlockPos site : this.coreSites) {
+			NbtCompound tag = new NbtCompound();
+			tag.putIntArray("Pos", new int[] {site.getX(), site.getY(), site.getZ()});
+			coreSitesList.add(tag);
+		}
+		nbt.put("CoreSites", coreSitesList);
 
 		NbtList intelList = new NbtList();
 		this.intel.forEach((uuid, entry) -> {
@@ -409,6 +442,15 @@ public class ProgramDirectorState extends PersistentState {
 			int[] pos = nbt.getIntArray("ProbeCorePos");
 			if (pos.length == 3) {
 				state.probeCorePos = new BlockPos(pos[0], pos[1], pos[2]);
+			}
+		}
+		state.lastResupplyTime = nbt.contains("LastResupplyTime") ? nbt.getLong("LastResupplyTime") : 0L;
+
+		NbtList coreSitesList = nbt.getList("CoreSites", NbtElement.COMPOUND_TYPE);
+		for (int i = 0; i < coreSitesList.size(); i++) {
+			int[] pos = coreSitesList.getCompound(i).getIntArray("Pos");
+			if (pos.length == 3) {
+				state.coreSites.add(new BlockPos(pos[0], pos[1], pos[2]));
 			}
 		}
 

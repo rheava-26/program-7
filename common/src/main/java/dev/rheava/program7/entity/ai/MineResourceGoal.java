@@ -3,7 +3,8 @@ package dev.rheava.program7.entity.ai;
 import java.util.EnumSet;
 
 import dev.rheava.program7.director.HarvestTargets;
-import dev.rheava.program7.entity.HarvesterDroneEntity;
+import dev.rheava.program7.entity.CargoHauler;
+import dev.rheava.program7.entity.ProgramDroneEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.sound.SoundCategory;
@@ -22,21 +23,23 @@ public class MineResourceGoal extends Goal {
 	private static final int MINE_TICKS = 80;
 	private static final int STUCK_LIMIT = 300;
 
-	private final HarvesterDroneEntity drone;
+	private final ProgramDroneEntity drone;
+	private final CargoHauler hauler;
 	@Nullable
 	private BlockPos target;
 	private int progress;
 	private int stuckTicks;
 	private int searchCooldown;
 
-	public MineResourceGoal(HarvesterDroneEntity drone) {
+	public <T extends ProgramDroneEntity & CargoHauler> MineResourceGoal(T drone) {
 		this.drone = drone;
+		this.hauler = drone;
 		this.setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
 	}
 
 	@Override
 	public boolean canStart() {
-		if (this.drone.isCargoFull()) {
+		if (this.hauler.isCargoFull()) {
 			return false;
 		}
 		if (this.searchCooldown > 0) {
@@ -63,7 +66,7 @@ public class MineResourceGoal extends Goal {
 	@Override
 	public boolean shouldContinue() {
 		return this.target != null
-				&& !this.drone.isCargoFull()
+				&& !this.hauler.isCargoFull()
 				&& this.stuckTicks < STUCK_LIMIT
 				&& HarvestTargets.resourceFor(this.drone.getWorld().getBlockState(this.target)) != null;
 	}
@@ -113,7 +116,7 @@ public class MineResourceGoal extends Goal {
 		if (this.progress >= MINE_TICKS) {
 			String resource = HarvestTargets.resourceFor(state);
 			if (resource != null) {
-				this.drone.addCargo(resource,
+				this.hauler.addCargo(resource,
 						HarvestTargets.yieldFor(resource, this.drone.getRandom()));
 			}
 			this.drone.getWorld().breakBlock(this.target, false, this.drone);

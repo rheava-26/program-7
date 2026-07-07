@@ -4,7 +4,8 @@ import java.util.EnumSet;
 import java.util.Map;
 
 import dev.rheava.program7.director.ProgramDirectorState;
-import dev.rheava.program7.entity.HarvesterDroneEntity;
+import dev.rheava.program7.entity.CargoHauler;
+import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.particle.ParticleTypes;
@@ -21,19 +22,21 @@ public class DepositCargoGoal extends Goal {
 	private static final double DEPOSIT_RANGE = 3.5;
 	private static final int STUCK_LIMIT = 600;
 
-	private final HarvesterDroneEntity drone;
+	private final ProgramDroneEntity drone;
+	private final CargoHauler hauler;
 	@Nullable
 	private BlockPos corePos;
 	private int stuckTicks;
 
-	public DepositCargoGoal(HarvesterDroneEntity drone) {
+	public <T extends ProgramDroneEntity & CargoHauler> DepositCargoGoal(T drone) {
 		this.drone = drone;
+		this.hauler = drone;
 		this.setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
 	}
 
 	@Override
 	public boolean canStart() {
-		if (!this.drone.isCargoFull() || !(this.drone.getWorld() instanceof ServerWorld world)) {
+		if (!this.hauler.isCargoFull() || !(this.drone.getWorld() instanceof ServerWorld world)) {
 			return false;
 		}
 		this.corePos = ProgramDirectorState.get(world).getProbeCorePos();
@@ -42,7 +45,7 @@ public class DepositCargoGoal extends Goal {
 
 	@Override
 	public boolean shouldContinue() {
-		return this.corePos != null && this.drone.cargoTotal() > 0 && this.stuckTicks < STUCK_LIMIT;
+		return this.corePos != null && this.hauler.cargoTotal() > 0 && this.stuckTicks < STUCK_LIMIT;
 	}
 
 	@Override
@@ -69,7 +72,7 @@ public class DepositCargoGoal extends Goal {
 		}
 
 		ProgramDirectorState state = ProgramDirectorState.get(world);
-		for (Map.Entry<String, Integer> entry : this.drone.drainCargo().entrySet()) {
+		for (Map.Entry<String, Integer> entry : this.hauler.drainCargo().entrySet()) {
 			state.addResource(entry.getKey(), entry.getValue());
 		}
 		this.drone.playSound(P7Sounds.DRONE_SCAN_BEEP.get(), 0.8f, 1.8f);

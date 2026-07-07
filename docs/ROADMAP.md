@@ -115,7 +115,15 @@ Phases are ordered so every phase ships something playable, and the Director
       quick-kill hitboxes
 - [ ] Tier system enforcement in the Director (Tier 3 hard cap until first
       main-base kill)
-- [ ] Orbital resupply event at large bases (loud, bright, psionic spike)
+- [x] Orbital resupply event: every 3 in-game days each surviving probe
+      core calls down a capsule — thunder-loud, a glowing column visible
+      from far off, a psionic interference spike pointing at the base, and
+      a ledger refill. Bases left alone compound; raze them early
+- [x] Second Tier 2 wave: medium mining drone (airborne harvester, double
+      hopper), transport drone (two-crate heavy courier, sent for payments
+      of 12+ units), anti-air turret (open-frame flak that only tracks
+      airborne targets — landing breaks its lock), scout car (fast unarmed
+      spotter that paints you for every idle combat unit within 48 blocks)
 
 ## Phase 3 — Adaptation & Counterplay
 

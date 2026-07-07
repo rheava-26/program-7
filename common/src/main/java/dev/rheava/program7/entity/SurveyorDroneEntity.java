@@ -8,7 +8,6 @@ import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.ScanPlayerGoal;
 import dev.rheava.program7.entity.ai.StealItemsGoal;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -24,7 +23,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * The Surveyor Drone — Program 7's eyes on the ground.
@@ -39,9 +37,6 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 	private static final int CARGO_CAPACITY = 3;
 
 	private int scanCooldown = 0;
-	private int retreatTicks = 0;
-	@Nullable
-	private LivingEntity retreatFrom;
 	/** Stolen goods. Ends up in the wreck when the drone is destroyed. */
 	private final List<ItemStack> cargo = new ArrayList<>();
 
@@ -85,12 +80,6 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 			if (this.scanCooldown > 0) {
 				this.scanCooldown--;
 			}
-			if (this.retreatTicks > 0) {
-				this.retreatTicks--;
-				if (this.retreatTicks == 0) {
-					this.retreatFrom = null;
-				}
-			}
 		}
 	}
 
@@ -100,20 +89,6 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 
 	public void setScanCooldown(int ticks) {
 		this.scanCooldown = ticks;
-	}
-
-	public void beginRetreat(@Nullable LivingEntity threat, int ticks) {
-		this.retreatFrom = threat;
-		this.retreatTicks = ticks;
-	}
-
-	public boolean isRetreating() {
-		return this.retreatTicks > 0;
-	}
-
-	@Nullable
-	public LivingEntity getRetreatFrom() {
-		return this.retreatFrom;
 	}
 
 	public boolean isCargoFull() {

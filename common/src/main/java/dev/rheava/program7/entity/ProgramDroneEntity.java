@@ -30,6 +30,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Base class for all Program hardware. Encodes the faction-wide combat feel:
@@ -48,6 +49,9 @@ import net.minecraft.world.World;
  */
 public abstract class ProgramDroneEntity extends PathAwareEntity {
 	private int scrambledTicks = 0;
+	private int retreatTicks = 0;
+	@Nullable
+	private LivingEntity retreatFrom;
 
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -65,6 +69,26 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 
 	public boolean isScrambled() {
 		return this.scrambledTicks > 0;
+	}
+
+	/**
+	 * Shared "break contact" state used by {@link dev.rheava.program7.entity.ai.RetreatGoal}.
+	 * Any drone that needs to bug out — after finishing a job, or just because
+	 * it got hurt and it doesn't fight back — calls this instead of each unit
+	 * rolling its own flee timer.
+	 */
+	public void beginRetreat(@Nullable LivingEntity threat, int ticks) {
+		this.retreatFrom = threat;
+		this.retreatTicks = ticks;
+	}
+
+	public boolean isRetreating() {
+		return this.retreatTicks > 0;
+	}
+
+	@Nullable
+	public LivingEntity getRetreatFrom() {
+		return this.retreatFrom;
 	}
 
 	@Override
@@ -105,18 +129,26 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	@Override
 	public void tickMovement() {
 		super.tickMovement();
-		if (!this.getWorld().isClient && this.scrambledTicks > 0) {
-			this.scrambledTicks--;
-			// Stabilizers are gone: no pathing, wild spin, drifting thrust.
-			this.getNavigation().stop();
-			this.setYaw(this.getYaw() + (this.random.nextFloat() - 0.5f) * 45.0f);
-			this.addVelocity((this.random.nextDouble() - 0.5) * 0.12,
-					(this.random.nextDouble() - 0.5) * 0.08,
-					(this.random.nextDouble() - 0.5) * 0.12);
-			if (this.horizontalCollision) {
-				// Slammed into terrain while tumbling.
-				this.damage(this.getDamageSources().flyIntoWall(), 5.0f);
-				this.scrambledTicks = Math.min(this.scrambledTicks, 4);
+		if (!this.getWorld().isClient) {
+			if (this.scrambledTicks > 0) {
+				this.scrambledTicks--;
+				// Stabilizers are gone: no pathing, wild spin, drifting thrust.
+				this.getNavigation().stop();
+				this.setYaw(this.getYaw() + (this.random.nextFloat() - 0.5f) * 45.0f);
+				this.addVelocity((this.random.nextDouble() - 0.5) * 0.12,
+						(this.random.nextDouble() - 0.5) * 0.08,
+						(this.random.nextDouble() - 0.5) * 0.12);
+				if (this.horizontalCollision) {
+					// Slammed into terrain while tumbling.
+					this.damage(this.getDamageSources().flyIntoWall(), 5.0f);
+					this.scrambledTicks = Math.min(this.scrambledTicks, 4);
+				}
+			}
+			if (this.retreatTicks > 0) {
+				this.retreatTicks--;
+				if (this.retreatTicks == 0) {
+					this.retreatFrom = null;
+				}
 			}
 		}
 	}

@@ -78,6 +78,21 @@ public final class P7Items {
 			ITEMS.register("mortar_emplacement_spawn_egg",
 					() -> new ArchitecturySpawnEggItem(P7Entities.MORTAR_EMPLACEMENT, 0x23272b, 0x6b7684,
 							new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> MEDIUM_MINING_DRONE_SPAWN_EGG =
+			ITEMS.register("medium_mining_drone_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.MEDIUM_MINING_DRONE, 0x23272b, 0xb9932a,
+							new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> TRANSPORT_DRONE_SPAWN_EGG =
+			ITEMS.register("transport_drone_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.TRANSPORT_DRONE, 0x23272b, 0xe8c84a,
+							new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> ANTI_AIR_TURRET_SPAWN_EGG =
+			ITEMS.register("anti_air_turret_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.ANTI_AIR_TURRET, 0x23272b, 0x8fb7d1,
+							new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> SCOUT_CAR_SPAWN_EGG = ITEMS.register("scout_car_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.SCOUT_CAR, 0x23272b, 0x27e2d3,
+					new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();

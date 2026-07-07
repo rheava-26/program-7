@@ -8,6 +8,7 @@ import dev.rheava.program7.entity.AutogunTurretEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
+import dev.rheava.program7.entity.TransportDroneEntity;
 import dev.rheava.program7.entity.WheeledHaulerEntity;
 import dev.rheava.program7.registry.P7BlockEntities;
 import dev.rheava.program7.registry.P7Blocks;
@@ -56,6 +57,8 @@ public class AssemblerBlockEntity extends BlockEntity {
 	private static final double COMPLEMENT_RADIUS = 48.0;
 	private static final int GROUND_DRONE_QUOTA = 2;
 	private static final int AUTOGUN_QUOTA = 2;
+	/** Cargo big enough that the heavy courier gets the job instead of the light one. */
+	private static final int HEAVY_COURIER_THRESHOLD = 12;
 
 	private static final String JOB_GROUND_DRONE = "ground_drone";
 	private static final String JOB_AUTOGUN_TURRET = "autogun_turret";
@@ -161,9 +164,16 @@ public class AssemblerBlockEntity extends BlockEntity {
 	@Nullable
 	private static ProgramDroneEntity spawnCourier(ServerWorld world, BlockPos corePos, BlockPos destination,
 			String job, Map<String, Integer> cargo) {
-		ProgramDroneEntity courier = world.random.nextBoolean()
-				? P7Entities.LOGISTICS_DRONE.get().create(world)
-				: P7Entities.WHEELED_HAULER.get().create(world);
+		int cargoTotal = cargo.values().stream().mapToInt(Integer::intValue).sum();
+		ProgramDroneEntity courier;
+		if (cargoTotal >= HEAVY_COURIER_THRESHOLD) {
+			// Big payment: send the heavy courier instead of the 50/50 light pick.
+			courier = P7Entities.TRANSPORT_DRONE.get().create(world);
+		} else {
+			courier = world.random.nextBoolean()
+					? P7Entities.LOGISTICS_DRONE.get().create(world)
+					: P7Entities.WHEELED_HAULER.get().create(world);
+		}
 		if (courier == null) {
 			return null;
 		}
@@ -173,6 +183,8 @@ public class AssemblerBlockEntity extends BlockEntity {
 			logisticsDrone.beginMission(destination, job, cargo);
 		} else if (courier instanceof WheeledHaulerEntity wheeledHauler) {
 			wheeledHauler.beginMission(destination, job, cargo);
+		} else if (courier instanceof TransportDroneEntity transportDrone) {
+			transportDrone.beginMission(destination, job, cargo);
 		}
 		world.spawnEntity(courier);
 		return courier;

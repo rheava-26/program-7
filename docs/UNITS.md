@@ -90,17 +90,17 @@ unit time or self-sustain off their own power.*
 |---|---|---|
 | **Medium attack drone** | The workhorse gun flyer: strafing runs, retreats to rearm | ✅ (rearm later) |
 | **Long-range sniper drone** | Highly fragile platform with a big, slow-firing weapon — glass cannon standoff | ✅ |
-| **Medium mining drone** | Bores into cave systems following ore density; deploys light beacons | — |
+| **Medium mining drone** | Bores into cave systems following ore density; deploys light beacons | ✅ (boring/beacons later) |
 | **Laser mining carrier** | Drone carrying crates + multiple mining lasers — mobile strip-mine | — |
-| **Medium transport drone** | Carries two crates of resources at once | — |
+| **Medium transport drone** | Carries two crates of resources at once | ✅ |
 | **Air UAV drone** | Simple winged propeller drone; requires a **launch catapult** structure; loiters and spots for the base | — |
 | **Basic mortar** | Fixed indirect fire at spotted static targets; shells whistle before landing | ✅ |
 | **Self-propelled mortar drone** | The mortar, mobile — repositions between volleys | — |
 | **Light anti-tank gun/emplacement** | High single-shot damage vs. golems, vehicles, and armored players | — |
-| **Unarmed car** | Fast ground scout/courier | — |
+| **Unarmed car** | Fast ground scout/courier | ✅ (Scout Car) |
 | **Unarmed speedboat** | Water logistics and scouting | — |
 | **Underwater mining craft** | Harvests seabed resources (and finds guardians the hard way) | — |
-| **Light anti-air drone / ground AA** | Counters elytra players and (later) player drones | — |
+| **Light anti-air drone / ground AA** | Counters elytra players and (later) player drones | ✅ (ground AA) |
 
 ## TIER 3 — WAR ECONOMY
 *Counter-adaptation live. This is the wall until you kill a main base.*

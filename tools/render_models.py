@@ -366,6 +366,52 @@ SHELL_PARTS = [
     {"origin": (-0.5, 1, -0.5), "size": (1, 1, 1), "uv": (8, 0), "ops": [("move", (0, 8, 0))]},
 ]
 
+MINING_PARTS = [
+    {"origin": (-4, -2, -4), "size": (8, 4, 8), "uv": (0, 0), "ops": [("move", (0, 17, 0))]},
+    {"origin": (-1.5, -1, -7), "size": (3, 2, 3), "uv": (0, 15), "ops": [("move", (0, 17, 0))]},
+    {"origin": (-0.5, -0.5, -9), "size": (1, 1, 2), "uv": (15, 15), "ops": [("move", (0, 17, 0))]},
+    {"origin": (-2, 2, -2), "size": (4, 2, 4), "uv": (24, 15), "ops": [("move", (0, 17, 0))]},
+    {"origin": (-1.5, -0.5, -4.5), "size": (3, 1, 1), "uv": (42, 15), "ops": [("move", (0, 17, 0))]},
+] + quad_arms([(x, 15, z) for x in (-3.5, 3.5) for z in (-3.5, 3.5)], 5, (40, 0), (40, 7), 8, (0, 32))
+
+TRANSPORT_PARTS = [
+    {"origin": (-4, -1.5, -3.5), "size": (8, 3, 7), "uv": (0, 0), "ops": [("move", (0, 16.5, 0))]},
+    {"origin": (-1.5, -0.5, -4.5), "size": (3, 1, 1), "uv": (31, 0), "ops": [("move", (0, 16.5, 0))]},
+    {"origin": (-2, 0, -2), "size": (4, 4, 4), "uv": (0, 11), "ops": [("move", (2.25, 18, 0))]},
+    {"origin": (-2, 0, -2), "size": (4, 4, 4), "uv": (0, 11), "ops": [("move", (-2.25, 18, 0))]},
+] + quad_arms([(x, 15.5, z) for x in (-3.5, 3.5) for z in (-3, 3)], 5, (40, 3), (40, 11), 8, (0, 20))
+
+AA_TURRET_PARTS = [
+    {"origin": (-3, -1, -3), "size": (6, 1, 6), "uv": (0, 0), "ops": [("move", (0, 24, 0))]},
+    {"origin": (-1, -12, -1), "size": (2, 11, 2), "uv": (0, 8), "ops": [("move", (0, 24, 0))]},
+] + [
+    {"origin": (-0.5, 0, -0.5), "size": (1, 7, 1), "uv": (9, 8),
+     "ops": [("rotx", 22.9), ("roty", 45 + i * 90), ("move", (0, 16, 0))]}
+    for i in range(4)
+] + [
+    # head (base child at 0,-13,0 -> absolute y 11), posed panning + elevated
+    {"origin": origin, "size": size, "uv": uv,
+     "ops": [("rotx", -25), ("roty", 25), ("move", (0, 11, 0))]}
+    for origin, size, uv in (
+        ((-2, -1, -2), (4, 2, 4), (14, 8)),
+        ((-1.5, -0.75, -9), (1, 1, 7), (30, 8)),
+        ((0.5, -0.75, -9), (1, 1, 7), (30, 8)),
+        ((-2, -4, 0.5), (4, 3, 1), (46, 8)),
+        ((2, -1, -2), (2, 3, 3), (0, 24)),
+        ((-4, -1, -2), (2, 3, 3), (0, 24)),
+    )
+]
+
+SCOUT_CAR_PARTS = [
+    {"origin": (-4, -1.5, -6), "size": (8, 3, 12), "uv": (0, 0), "ops": [("move", (0, 19, 0))]},
+    {"origin": (-2.5, -3.5, -2), "size": (5, 2, 5), "uv": (0, 16), "ops": [("move", (0, 19, 0))]},
+    {"origin": (-2.5, -0.5, -6.5), "size": (5, 1, 1), "uv": (21, 16), "ops": [("move", (0, 19, 0))]},
+    {"origin": (2.5, -7.5, 4.5), "size": (1, 6, 1), "uv": (35, 16), "ops": [("move", (0, 19, 0))]},
+] + [
+    {"origin": (-1.5, -1.5, -1.5), "size": (3, 3, 3), "uv": (40, 16), "ops": [("move", (x, 21.5, z))]}
+    for x in (-4, 4) for z in (-4, 4)
+]
+
 ASSEMBLER_PARTS = [
     {"origin": (-8, 0, -8), "size": (16, 16, 16), "uv_all": (0, 0, 16, 16), "ops": []},
 ]
@@ -386,6 +432,10 @@ def main():
     render("sniper_drone", os.path.join(TEX, "entity/sniper_drone.png"), SNIPER_PARTS)
     render("mortar_emplacement", os.path.join(TEX, "entity/mortar_emplacement.png"), MORTAR_PARTS)
     render("mortar_shell", os.path.join(TEX, "entity/mortar_shell.png"), SHELL_PARTS)
+    render("medium_mining_drone", os.path.join(TEX, "entity/medium_mining_drone.png"), MINING_PARTS)
+    render("transport_drone", os.path.join(TEX, "entity/transport_drone.png"), TRANSPORT_PARTS)
+    render("anti_air_turret", os.path.join(TEX, "entity/anti_air_turret.png"), AA_TURRET_PARTS)
+    render("scout_car", os.path.join(TEX, "entity/scout_car.png"), SCOUT_CAR_PARTS)
 
 
 if __name__ == "__main__":

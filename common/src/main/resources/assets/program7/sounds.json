@@ -94,5 +94,11 @@
     "sounds": [
       { "name": "minecraft:block.anvil.use", "type": "event" }
     ]
+  },
+  "event.orbital_resupply": {
+    "subtitle": "subtitles.program7.event.orbital_resupply",
+    "sounds": [
+      { "name": "minecraft:entity.lightning_bolt.thunder", "type": "event" }
+    ]
   }
 }

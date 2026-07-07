@@ -2,19 +2,22 @@ package dev.rheava.program7.entity.ai;
 
 import java.util.EnumSet;
 
-import dev.rheava.program7.entity.SurveyorDroneEntity;
+import dev.rheava.program7.entity.ProgramDroneEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.Vec3d;
 
 /**
- * Break contact after a completed scan: climb and put distance between the
- * drone and whoever it just profiled. Surveyors don't fight — they leave.
+ * Break contact: climb (or, for a ground unit, just bolt) and put distance
+ * between the drone and whatever it's fleeing. Originally the surveyor's
+ * post-scan withdrawal; generalized onto {@link ProgramDroneEntity} so any
+ * unarmed unit that flees — the surveyor after a completed scan, the scout
+ * car after taking a hit — can reuse the same goal.
  */
 public class RetreatGoal extends Goal {
-	private final SurveyorDroneEntity drone;
+	private final ProgramDroneEntity drone;
 
-	public RetreatGoal(SurveyorDroneEntity drone) {
+	public RetreatGoal(ProgramDroneEntity drone) {
 		this.drone = drone;
 		this.setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
 	}

@@ -4,12 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.rheava.program7.entity.ai.DepositCargoGoal;
+import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.MineResourceGoal;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.EscapeDangerGoal;
-import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.BirdNavigation;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
@@ -19,35 +21,31 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 
 /**
- * The economy on wheels: finds ore and wood the Program needs, grinds it out
- * of the ground, and hauls it home to the Director's ledger. Completely
- * unarmed — it panics when hurt. Killing haulers is economic warfare: every
- * dead harvester is a response the Director can't afford later.
+ * Tier 2 workhorse: the harvester's airborne cousin, same mine-and-bank job
+ * but faster and with a bigger hopper — flies straight over terrain the
+ * wheeled unit has to path around. Completely unarmed — it panics when hurt.
+ *
+ * <p>Cave-boring and light beacons are a later pass; out of scope here.
  */
-public class HarvesterDroneEntity extends ProgramDroneEntity implements CargoHauler {
-	public static final int CARGO_CAPACITY = 12;
+public class MediumMiningDroneEntity extends ProgramDroneEntity implements CargoHauler {
+	public static final int CARGO_CAPACITY = 24;
 
 	/** Ledger units by resource key, mined but not yet delivered. */
 	private final Map<String, Integer> cargo = new HashMap<>();
 
-	public HarvesterDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
+	public MediumMiningDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.experiencePoints = 5;
+		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.experiencePoints = 8;
 	}
 
-	public static DefaultAttributeContainer.Builder createHarvesterDroneAttributes() {
+	public static DefaultAttributeContainer.Builder createMediumMiningDroneAttributes() {
 		return MobEntity.createMobAttributes()
-				.add(EntityAttributes.GENERIC_MAX_HEALTH, 16.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.25)
+				.add(EntityAttributes.GENERIC_MAX_HEALTH, 18.0)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.5)
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 32.0)
-				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.0)
-				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.4);
-	}
-
-	@Override
-	protected boolean isFlier() {
-		// Ground unit: knockback shoves it around but doesn't scramble it.
-		return false;
+				.add(EntityAttributes.GENERIC_ARMOR, 2.0);
 	}
 
 	@Override
@@ -55,9 +53,17 @@ public class HarvesterDroneEntity extends ProgramDroneEntity implements CargoHau
 		this.goalSelector.add(1, new EscapeDangerGoal(this, 1.5));
 		this.goalSelector.add(2, new DepositCargoGoal(this));
 		this.goalSelector.add(3, new MineResourceGoal(this));
-		this.goalSelector.add(4, new WanderAroundFarGoal(this, 0.8));
+		this.goalSelector.add(4, new HoverWanderGoal(this));
 		this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
-		this.goalSelector.add(6, new LookAroundGoal(this));
+	}
+
+	@Override
+	protected EntityNavigation createNavigation(World world) {
+		BirdNavigation navigation = new BirdNavigation(this, world);
+		navigation.setCanPathThroughDoors(false);
+		navigation.setCanSwim(false);
+		navigation.setCanEnterOpenDoors(true);
+		return navigation;
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.entity.AntiAirTurretEntity;
 import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.AutogunTurretEntity;
 import dev.rheava.program7.entity.DropPodEntity;
@@ -11,10 +12,13 @@ import dev.rheava.program7.entity.GroundDroneEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumAttackDroneEntity;
+import dev.rheava.program7.entity.MediumMiningDroneEntity;
 import dev.rheava.program7.entity.MortarEmplacementEntity;
 import dev.rheava.program7.entity.MortarShellEntity;
+import dev.rheava.program7.entity.ScoutCarEntity;
 import dev.rheava.program7.entity.SniperDroneEntity;
 import dev.rheava.program7.entity.SurveyorDroneEntity;
+import dev.rheava.program7.entity.TransportDroneEntity;
 import dev.rheava.program7.entity.WheeledHaulerEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
@@ -124,6 +128,38 @@ public final class P7Entities {
 							.maxTrackingRange(32)
 							.build());
 
+	/** Tier 2 flying miner: the harvester's job, airborne, faster, bigger hopper. */
+	public static final RegistrySupplier<EntityType<MediumMiningDroneEntity>> MEDIUM_MINING_DRONE =
+			ENTITIES.register("medium_mining_drone",
+					() -> EntityType.Builder.create(MediumMiningDroneEntity::new, SpawnGroup.MISC)
+							.dimensions(1.0f, 0.8f)
+							.maxTrackingRange(10)
+							.build());
+
+	/** Tier 2 heavy courier: two crates, sent when the payment is too big for the light couriers. */
+	public static final RegistrySupplier<EntityType<TransportDroneEntity>> TRANSPORT_DRONE =
+			ENTITIES.register("transport_drone",
+					() -> EntityType.Builder.create(TransportDroneEntity::new, SpawnGroup.MISC)
+							.dimensions(0.9f, 0.7f)
+							.maxTrackingRange(10)
+							.build());
+
+	/** Tier 2 fixed anti-air: open-frame flak mount, blind against anything on the ground. */
+	public static final RegistrySupplier<EntityType<AntiAirTurretEntity>> ANTI_AIR_TURRET =
+			ENTITIES.register("anti_air_turret",
+					() -> EntityType.Builder.create(AntiAirTurretEntity::new, SpawnGroup.MISC)
+							.dimensions(0.8f, 1.5f)
+							.maxTrackingRange(10)
+							.build());
+
+	/** Tier 2 unarmed scout: fast, fragile, and paints you for everything nearby. */
+	public static final RegistrySupplier<EntityType<ScoutCarEntity>> SCOUT_CAR =
+			ENTITIES.register("scout_car",
+					() -> EntityType.Builder.create(ScoutCarEntity::new, SpawnGroup.MISC)
+							.dimensions(0.9f, 0.6f)
+							.maxTrackingRange(10)
+							.build());
+
 	public static void register() {
 		ENTITIES.register();
 
@@ -139,6 +175,11 @@ public final class P7Entities {
 		EntityAttributeRegistry.register(SNIPER_DRONE, SniperDroneEntity::createSniperDroneAttributes);
 		EntityAttributeRegistry.register(MORTAR_EMPLACEMENT,
 				MortarEmplacementEntity::createMortarEmplacementAttributes);
+		EntityAttributeRegistry.register(MEDIUM_MINING_DRONE,
+				MediumMiningDroneEntity::createMediumMiningDroneAttributes);
+		EntityAttributeRegistry.register(TRANSPORT_DRONE, TransportDroneEntity::createTransportDroneAttributes);
+		EntityAttributeRegistry.register(ANTI_AIR_TURRET, AntiAirTurretEntity::createAntiAirTurretAttributes);
+		EntityAttributeRegistry.register(SCOUT_CAR, ScoutCarEntity::createScoutCarAttributes);
 	}
 
 	private P7Entities() {
