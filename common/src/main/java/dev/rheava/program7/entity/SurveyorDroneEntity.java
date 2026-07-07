@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
+import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.ScanPlayerGoal;
 import dev.rheava.program7.entity.ai.StealItemsGoal;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
@@ -42,7 +42,7 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 
 	public SurveyorDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.moveControl = new InertialFlightMoveControl(this, 20, true, 1.0f);
 		this.experiencePoints = 5;
 	}
 

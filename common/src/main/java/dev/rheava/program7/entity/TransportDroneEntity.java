@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.SupplyRunGoal;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -35,7 +35,7 @@ public class TransportDroneEntity extends ProgramDroneEntity implements CourierU
 
 	public TransportDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.moveControl = new InertialFlightMoveControl(this, 20, true, 3.0f);
 		this.experiencePoints = 6;
 	}
 

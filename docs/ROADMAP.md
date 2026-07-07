@@ -85,11 +85,14 @@ Phases are ordered so every phase ships something playable, and the Director
       UNITS.md): planted beside every probe core, watches the base's guard
       complement and builds replacements paid from the Director's ledger.
       Tiered assembler sizes (larger classes per tech tier) still to come
-- [ ] Support infrastructure system: runways / launch catapults / loading
-      docks / harbors gate and repair their unit classes; destroying
-      support strands dependent units
-- [ ] Movement inertia layer: no instant stops, turn-rate limits scaling
-      with unit mass (warships slowest)
+- [x] Support infrastructure v1 — the launch catapult: planted at every
+      base, slings a fixed-wing Air UAV that circles and spots; break the
+      catapult and nothing replaces a downed UAV (runways / loading docks /
+      harbors for the bigger unit classes still to come)
+- [x] Movement inertia layer: InertialFlightMoveControl blends acceleration
+      and clamps turn rate by airframe mass (surveyor 1.0 → transport 3.0 →
+      heavy attack drone 4.0); no instant stops, heavy units telegraph
+      every maneuver
 - [x] Basic ground drone (tiny armored car with a hitscan turret — anti-mob
       perimeter patroller, only fights players in revenge) and basic
       autogun turret (bolted-down fixed defense, faster firing, helpless
@@ -111,8 +114,20 @@ Phases are ordered so every phase ships something playable, and the Director
       swords/axes deal 2.5x to fliers (usually one-hit), Knockback/Punch
       hits scramble fliers — stabilizers cut out, wild spin and drift, and
       terrain contact while tumbling is a crash
-- [ ] Drone combat physics v2: readable ram-attack aiming, motor/rotor
-      quick-kill hitboxes
+- [x] Drone combat physics v2: attack-drone rams are telegraphed (stop,
+      15-tick locked aim with a particle warning, then a committed straight
+      dash — strafe to dodge, bait it into a wall to kill it), and rotor
+      quick-kills: hits landing in the top slice of a flier's hitbox do
+      1.5x and instantly scramble it
+- [x] First Tier 3 units (all player-height or bigger per design rule):
+      heavy attack drone (car-sized burst-fire gun flyer), IFV (cannon +
+      deploys a ground-drone fireteam from its bay), gunboat (toughest
+      hull in the game, water-locked, helpless if beached; harbors gate
+      its production later), recon helicopter (hunts you and pins a
+      searchlight on you), mobile battery center (repair aura; brownout
+      debuffs nearby units when killed)
+- [x] Air UAV v2 remodel: modern military drone silhouette — long slim
+      fuselage, satcom nose, high-aspect wing, V-tail, rear pusher prop
 - [ ] Tier system enforcement in the Director (Tier 3 hard cap until first
       main-base kill)
 - [x] Orbital resupply event: every 3 in-game days each surviving probe

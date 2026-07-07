@@ -5,6 +5,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.block.AssemblerBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlockEntity;
+import dev.rheava.program7.block.LaunchCatapultBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.RegistryKeys;
 
@@ -21,6 +22,11 @@ public final class P7BlockEntities {
 			BLOCK_ENTITIES.register("assembler",
 					() -> BlockEntityType.Builder.create(AssemblerBlockEntity::new,
 							P7Blocks.ASSEMBLER.get()).build(null));
+
+	public static final RegistrySupplier<BlockEntityType<LaunchCatapultBlockEntity>> LAUNCH_CATAPULT =
+			BLOCK_ENTITIES.register("launch_catapult",
+					() -> BlockEntityType.Builder.create(LaunchCatapultBlockEntity::new,
+							P7Blocks.LAUNCH_CATAPULT.get()).build(null));
 
 	public static void register() {
 		BLOCK_ENTITIES.register();

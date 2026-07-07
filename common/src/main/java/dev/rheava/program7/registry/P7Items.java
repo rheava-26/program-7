@@ -45,6 +45,8 @@ public final class P7Items {
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> ASSEMBLER = ITEMS.register("assembler",
 			() -> new BlockItem(P7Blocks.ASSEMBLER.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> LAUNCH_CATAPULT = ITEMS.register("launch_catapult",
+			() -> new BlockItem(P7Blocks.LAUNCH_CATAPULT.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> SURVEYOR_DRONE_SPAWN_EGG = ITEMS.register("surveyor_drone_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.SURVEYOR_DRONE, 0x23272b, 0x27e2d3,
@@ -93,6 +95,27 @@ public final class P7Items {
 	public static final RegistrySupplier<Item> SCOUT_CAR_SPAWN_EGG = ITEMS.register("scout_car_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.SCOUT_CAR, 0x23272b, 0x27e2d3,
 					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> AIR_UAV_SPAWN_EGG = ITEMS.register("air_uav_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.AIR_UAV, 0x23272b, 0xa8c8e0,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> HEAVY_ATTACK_DRONE_SPAWN_EGG =
+			ITEMS.register("heavy_attack_drone_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.HEAVY_ATTACK_DRONE, 0x23272b, 0xb32020,
+							new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> IFV_SPAWN_EGG = ITEMS.register("ifv_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.IFV, 0x23272b, 0x5a6b3a,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> GUNBOAT_SPAWN_EGG = ITEMS.register("gunboat_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.GUNBOAT, 0x23272b, 0x2f4f6f,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> RECON_HELICOPTER_SPAWN_EGG =
+			ITEMS.register("recon_helicopter_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.RECON_HELICOPTER, 0x23272b, 0x62d0e8,
+							new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> BATTERY_CENTER_SPAWN_EGG =
+			ITEMS.register("battery_center_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.BATTERY_CENTER, 0x23272b, 0xf0e13a,
+							new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();

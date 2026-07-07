@@ -4,17 +4,23 @@ import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.entity.AirUAVEntity;
 import dev.rheava.program7.entity.AntiAirTurretEntity;
 import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.AutogunTurretEntity;
+import dev.rheava.program7.entity.BatteryCenterEntity;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
+import dev.rheava.program7.entity.GunboatEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
+import dev.rheava.program7.entity.HeavyAttackDroneEntity;
+import dev.rheava.program7.entity.IFVEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumAttackDroneEntity;
 import dev.rheava.program7.entity.MediumMiningDroneEntity;
 import dev.rheava.program7.entity.MortarEmplacementEntity;
 import dev.rheava.program7.entity.MortarShellEntity;
+import dev.rheava.program7.entity.ReconHelicopterEntity;
 import dev.rheava.program7.entity.ScoutCarEntity;
 import dev.rheava.program7.entity.SniperDroneEntity;
 import dev.rheava.program7.entity.SurveyorDroneEntity;
@@ -160,6 +166,54 @@ public final class P7Entities {
 							.maxTrackingRange(10)
 							.build());
 
+	/** Fixed-wing spotter circling its base; needs a launch catapult to exist at all. */
+	public static final RegistrySupplier<EntityType<AirUAVEntity>> AIR_UAV =
+			ENTITIES.register("air_uav",
+					() -> EntityType.Builder.create(AirUAVEntity::new, SpawnGroup.MISC)
+							.dimensions(1.4f, 0.5f)
+							.maxTrackingRange(16)
+							.build());
+
+	/** Tier 3 car-sized armored gun flyer: burst-fire machine guns, engages from far away. */
+	public static final RegistrySupplier<EntityType<HeavyAttackDroneEntity>> HEAVY_ATTACK_DRONE =
+			ENTITIES.register("heavy_attack_drone",
+					() -> EntityType.Builder.create(HeavyAttackDroneEntity::new, SpawnGroup.MISC)
+							.dimensions(1.8f, 1.8f)
+							.maxTrackingRange(12)
+							.build());
+
+	/** Tier 3 armored fighting vehicle: cannon plus a light-drone fireteam in the bay. */
+	public static final RegistrySupplier<EntityType<IFVEntity>> IFV =
+			ENTITIES.register("ifv",
+					() -> EntityType.Builder.create(IFVEntity::new, SpawnGroup.MISC)
+							.dimensions(1.6f, 2.2f)
+							.maxTrackingRange(12)
+							.build());
+
+	/** Tier 3 armed water presence: the toughest hull afloat, helpless if beached. */
+	public static final RegistrySupplier<EntityType<GunboatEntity>> GUNBOAT =
+			ENTITIES.register("gunboat",
+					() -> EntityType.Builder.create(GunboatEntity::new, SpawnGroup.MISC)
+							.dimensions(2.8f, 2.0f)
+							.maxTrackingRange(12)
+							.build());
+
+	/** Tier 3 fast aerial spotter: orbits you with a searchlight pinned on. */
+	public static final RegistrySupplier<EntityType<ReconHelicopterEntity>> RECON_HELICOPTER =
+			ENTITIES.register("recon_helicopter",
+					() -> EntityType.Builder.create(ReconHelicopterEntity::new, SpawnGroup.MISC)
+							.dimensions(1.8f, 1.6f)
+							.maxTrackingRange(16)
+							.build());
+
+	/** Tier 3 rolling power bank: heals nearby units; browns them out when it dies. */
+	public static final RegistrySupplier<EntityType<BatteryCenterEntity>> BATTERY_CENTER =
+			ENTITIES.register("battery_center",
+					() -> EntityType.Builder.create(BatteryCenterEntity::new, SpawnGroup.MISC)
+							.dimensions(1.6f, 2.0f)
+							.maxTrackingRange(12)
+							.build());
+
 	public static void register() {
 		ENTITIES.register();
 
@@ -180,6 +234,14 @@ public final class P7Entities {
 		EntityAttributeRegistry.register(TRANSPORT_DRONE, TransportDroneEntity::createTransportDroneAttributes);
 		EntityAttributeRegistry.register(ANTI_AIR_TURRET, AntiAirTurretEntity::createAntiAirTurretAttributes);
 		EntityAttributeRegistry.register(SCOUT_CAR, ScoutCarEntity::createScoutCarAttributes);
+		EntityAttributeRegistry.register(AIR_UAV, AirUAVEntity::createAirUAVAttributes);
+		EntityAttributeRegistry.register(HEAVY_ATTACK_DRONE,
+				HeavyAttackDroneEntity::createHeavyAttackDroneAttributes);
+		EntityAttributeRegistry.register(IFV, IFVEntity::createIFVAttributes);
+		EntityAttributeRegistry.register(GUNBOAT, GunboatEntity::createGunboatAttributes);
+		EntityAttributeRegistry.register(RECON_HELICOPTER,
+				ReconHelicopterEntity::createReconHelicopterAttributes);
+		EntityAttributeRegistry.register(BATTERY_CENTER, BatteryCenterEntity::createBatteryCenterAttributes);
 	}
 
 	private P7Entities() {

@@ -36,6 +36,7 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> MORTAR_IMPACT = register("unit.mortar_impact");
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_WORKING = register("block.assembler.working");
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_COMPLETE = register("block.assembler.complete");
+	public static final RegistrySupplier<SoundEvent> CATAPULT_LAUNCH = register("block.catapult.launch");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

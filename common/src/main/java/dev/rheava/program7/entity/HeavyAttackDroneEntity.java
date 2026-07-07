@@ -1,0 +1,69 @@
+package dev.rheava.program7.entity;
+
+import dev.rheava.program7.entity.ai.BurstGunAttackGoal;
+import dev.rheava.program7.entity.ai.HoverWanderGoal;
+import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.goal.ActiveTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.pathing.BirdNavigation;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.World;
+
+/**
+ * Tier 3 wall: a car-sized armored gun flyer built around a machine gun that
+ * hoses targets with bursts instead of single shots. It's still a flier by
+ * the faction's rules — rotor quick-kills and the Knockback/Punch scramble
+ * both still land on it exactly like any other airframe — this thing is
+ * big, not invincible. What actually protects it is mass: its
+ * {@link InertialFlightMoveControl} spools up and banks slowly, so every
+ * maneuver telegraphs and surviving it is about reading those turns, not
+ * simply out-tanking the gun.
+ */
+public class HeavyAttackDroneEntity extends ProgramDroneEntity {
+	public HeavyAttackDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
+		super(entityType, world);
+		this.moveControl = new InertialFlightMoveControl(this, 20, true, 4.0f);
+		this.experiencePoints = 20;
+	}
+
+	public static DefaultAttributeContainer.Builder createHeavyAttackDroneAttributes() {
+		return MobEntity.createMobAttributes()
+				.add(EntityAttributes.GENERIC_MAX_HEALTH, 60.0)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.5)
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
+				.add(EntityAttributes.GENERIC_ARMOR, 10.0)
+				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.8);
+	}
+
+	@Override
+	protected void initGoals() {
+		this.goalSelector.add(1, new BurstGunAttackGoal(this, 1.0, 24.0, 4, 50, 3.0f));
+		this.goalSelector.add(3, new HoverWanderGoal(this));
+		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));
+
+		this.targetSelector.add(1, new ActiveTargetGoal<>(this, PlayerEntity.class, true));
+		this.targetSelector.add(2, new ActiveTargetGoal<>(this, HostileEntity.class, 10, true, false, null));
+	}
+
+	@Override
+	protected EntityNavigation createNavigation(World world) {
+		BirdNavigation navigation = new BirdNavigation(this, world);
+		navigation.setCanPathThroughDoors(false);
+		navigation.setCanSwim(false);
+		navigation.setCanEnterOpenDoors(true);
+		return navigation;
+	}
+
+	@Override
+	public int getMinAmbientSoundDelay() {
+		return 60;
+	}
+}

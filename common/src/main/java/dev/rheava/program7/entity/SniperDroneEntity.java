@@ -1,9 +1,9 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
+import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.SniperAttackGoal;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -26,7 +26,7 @@ import net.minecraft.world.World;
 public class SniperDroneEntity extends ProgramDroneEntity {
 	public SniperDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.moveControl = new InertialFlightMoveControl(this, 20, true, 1.2f);
 		this.experiencePoints = 12;
 	}
 

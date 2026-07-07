@@ -402,6 +402,105 @@ AA_TURRET_PARTS = [
     )
 ]
 
+AIR_UAV_PARTS = [
+    # v2: modern military drone — long fuselage, satcom nose, V-tail, pusher prop
+    {"origin": (-1.5, -1.5, -9), "size": (3, 3, 19), "uv": (0, 0), "ops": [("move", (0, 14, 0))]},
+    {"origin": (-2, -3.5, -9), "size": (4, 2, 4), "uv": (0, 23), "ops": [("move", (0, 14, 0))]},
+    {"origin": (-14, -0.5, -1), "size": (28, 1, 3), "uv": (0, 30), "ops": [("move", (0, 14, 0))]},
+    {"origin": (-1, 1.5, -7), "size": (2, 1, 2), "uv": (44, 23), "ops": [("move", (0, 14, 0))]},
+    # V-tail (Java roll -0.6/+0.6 at body-relative pivots ±1,0,8.5)
+    {"origin": (-0.5, -5, -1), "size": (1, 5, 2), "uv": (20, 23),
+     "ops": [("rotz", -34.4), ("move", (1, 14, 8.5))]},
+    {"origin": (-0.5, -5, -1), "size": (1, 5, 2), "uv": (20, 23),
+     "ops": [("rotz", 34.4), ("move", (-1, 14, 8.5))]},
+    # rear pusher prop (body child at 0,0,10), posed mid-spin
+    {"origin": (-2.5, -2.5, -0.5), "size": (5, 5, 1), "uv": (30, 23),
+     "ops": [("rotz", 20), ("move", (0, 14, 10))]},
+]
+
+HEAVY_ATTACK_PARTS = [
+    {"origin": (-12, -5, -14), "size": (24, 10, 28), "uv": (0, 0), "ops": [("move", (0, 8, 0))]},
+    {"origin": (-4, 5, -10), "size": (8, 4, 6), "uv": (0, 40), "ops": [("move", (0, 8, 0))]},
+    {"origin": (-3, 6, -16), "size": (1, 1, 6), "uv": (29, 40), "ops": [("move", (0, 8, 0))]},
+    {"origin": (2, 6, -16), "size": (1, 1, 6), "uv": (29, 40), "ops": [("move", (0, 8, 0))]},
+    {"origin": (-5, -3, -15), "size": (10, 3, 1), "uv": (44, 40), "ops": [("move", (0, 8, 0))]},
+    {"origin": (-1, -4, -10), "size": (2, 8, 20), "uv": (0, 50),
+     "ops": [("rotz", -6.9), ("move", (12, 9, 0))]},
+    {"origin": (-1, -4, -10), "size": (2, 8, 20), "uv": (0, 50),
+     "ops": [("rotz", 6.9), ("move", (-12, 9, 0))]},
+] + [
+    part
+    for ax, az, yaw, spin in ((-10, -10, -45, 20), (10, -10, 45, -35),
+                              (-10, 10, -135, 50), (10, 10, 135, -10))
+    for part in (
+        {"origin": (-1, -1, -10), "size": (2, 2, 10), "uv": (67, 40),
+         "ops": [("roty", yaw), ("move", (ax, 2, az))]},
+        {"origin": (-2, -3, -12), "size": (4, 4, 4), "uv": (67, 53),
+         "ops": [("roty", yaw), ("move", (ax, 2, az))]},
+        {"origin": (-7, -0.5, -7), "size": (14, 1, 14), "uv": (0, 80),
+         "ops": [("roty", spin), ("move", (0, -3, -10)), ("roty", yaw), ("move", (ax, 2, az))]},
+    )
+]
+
+IFV_PARTS = [
+    {"origin": (-9, -4, -14), "size": (18, 9, 28), "uv": (0, 0), "ops": [("move", (0, 11, 0))]},
+    {"origin": (-8, -12, -10), "size": (16, 8, 20), "uv": (0, 38), "ops": [("move", (0, 11, 0))]},
+    # turret (body child at 0,-12,-2), posed traversed for the preview
+    {"origin": (-5, -6, -5), "size": (10, 6, 10), "uv": (73, 38),
+     "ops": [("roty", -12), ("move", (0, -1, -2))]},
+    {"origin": (-1, -5, -16), "size": (2, 2, 11), "uv": (73, 55),
+     "ops": [("roty", -12), ("move", (0, -1, -2))]},
+] + [
+    {"origin": (-2.5, -2.5, -2.5), "size": (5, 5, 5), "uv": (93, 0), "ops": [("move", (x, 21.5, z))]}
+    for x in (-9, 9) for z in (-9, 0, 9)
+]
+
+GUNBOAT_PARTS = [
+    {"origin": (-10, -4, -24), "size": (20, 8, 24), "uv": (0, 0), "ops": [("move", (0, 20, 0))]},
+    {"origin": (-10, -4, 0), "size": (20, 8, 24), "uv": (0, 0), "ops": [("move", (0, 20, 0))]},
+    {"origin": (-6, -10, -6), "size": (12, 6, 16), "uv": (0, 33), "ops": [("move", (0, 20, 0))]},
+    {"origin": (-1, -16, 2), "size": (2, 6, 2), "uv": (90, 33), "ops": [("move", (0, 20, 0))]},
+    {"origin": (-2, -14, 8), "size": (4, 5, 4), "uv": (90, 44), "ops": [("move", (0, 20, 0))]},
+    # bow turret (body child at 0,-4,-16), posed traversed
+    {"origin": (-4, -4, -4), "size": (8, 4, 8), "uv": (57, 33),
+     "ops": [("roty", 18), ("move", (0, 16, -16))]},
+    {"origin": (-2, -3, -12), "size": (1, 1, 8), "uv": (57, 46),
+     "ops": [("roty", 18), ("move", (0, 16, -16))]},
+    {"origin": (1, -3, -12), "size": (1, 1, 8), "uv": (57, 46),
+     "ops": [("roty", 18), ("move", (0, 16, -16))]},
+]
+
+RECON_HELI_PARTS = [
+    {"origin": (-5, -5, -12), "size": (10, 10, 20), "uv": (0, 0), "ops": [("move", (0, 12, 0))]},
+    {"origin": (-1.5, -3, 8), "size": (3, 3, 14), "uv": (0, 31), "ops": [("move", (0, 12, 0))]},
+    {"origin": (-0.5, -7, 20), "size": (1, 4, 3), "uv": (35, 31), "ops": [("move", (0, 12, 0))]},
+    {"origin": (-1.5, 5, -10), "size": (3, 2, 3), "uv": (80, 0), "ops": [("move", (0, 12, 0))]},
+    {"origin": (-0.5, 0, -8), "size": (1, 1, 16), "uv": (44, 31), "ops": [("move", (4, 17, 0))]},
+    {"origin": (-0.5, 0, -8), "size": (1, 1, 16), "uv": (44, 31), "ops": [("move", (-4, 17, 0))]},
+    # main rotor (body child at 0,-5.5,0) and tail rotor (0,-1.5,21.5), posed spinning
+    {"origin": (-14, -0.5, -1.5), "size": (28, 1, 3), "uv": (0, 50),
+     "ops": [("roty", 30), ("move", (0, 6.5, 0))]},
+    {"origin": (-0.5, -3, -3), "size": (1, 6, 6), "uv": (64, 50),
+     "ops": [("rotx", 30), ("move", (0, 10.5, 21.5))]},
+]
+
+BATTERY_CENTER_PARTS = [
+    {"origin": (-9, -3, -13), "size": (18, 8, 26), "uv": (0, 0), "ops": [("move", (0, 11, 0))]},
+    {"origin": (-7, -9, -9), "size": (14, 6, 8), "uv": (0, 35), "ops": [("move", (0, 11, 0))]},
+    {"origin": (-7, -9, 1), "size": (14, 6, 8), "uv": (0, 35), "ops": [("move", (0, 11, 0))]},
+    {"origin": (-6, -7, -13), "size": (12, 4, 4), "uv": (45, 35), "ops": [("move", (0, 11, 0))]},
+    {"origin": (-1, -14, 6), "size": (2, 5, 2), "uv": (78, 35), "ops": [("move", (0, 11, 0))]},
+] + [
+    {"origin": (-2.5, -2.5, -2.5), "size": (5, 5, 5), "uv": (93, 0), "ops": [("move", (x, 21.5, z))]}
+    for x in (-9, 9) for z in (-9, 0, 9)
+]
+
+# The catapult block preview uses the rail-top texture on all faces; in game
+# the sides use launch_catapult_side via the cube_bottom_top model.
+LAUNCH_CATAPULT_PARTS = [
+    {"origin": (-8, 0, -8), "size": (16, 16, 16), "uv_all": (0, 0, 16, 16), "ops": []},
+]
+
 SCOUT_CAR_PARTS = [
     {"origin": (-4, -1.5, -6), "size": (8, 3, 12), "uv": (0, 0), "ops": [("move", (0, 19, 0))]},
     {"origin": (-2.5, -3.5, -2), "size": (5, 2, 5), "uv": (0, 16), "ops": [("move", (0, 19, 0))]},
@@ -436,6 +535,17 @@ def main():
     render("transport_drone", os.path.join(TEX, "entity/transport_drone.png"), TRANSPORT_PARTS)
     render("anti_air_turret", os.path.join(TEX, "entity/anti_air_turret.png"), AA_TURRET_PARTS)
     render("scout_car", os.path.join(TEX, "entity/scout_car.png"), SCOUT_CAR_PARTS)
+    render("air_uav", os.path.join(TEX, "entity/air_uav.png"), AIR_UAV_PARTS)
+    render("launch_catapult", os.path.join(TEX, "block/launch_catapult_top.png"),
+           LAUNCH_CATAPULT_PARTS)
+    render("heavy_attack_drone", os.path.join(TEX, "entity/heavy_attack_drone.png"),
+           HEAVY_ATTACK_PARTS)
+    render("ifv", os.path.join(TEX, "entity/ifv.png"), IFV_PARTS)
+    render("gunboat", os.path.join(TEX, "entity/gunboat.png"), GUNBOAT_PARTS)
+    render("recon_helicopter", os.path.join(TEX, "entity/recon_helicopter.png"),
+           RECON_HELI_PARTS)
+    render("battery_center", os.path.join(TEX, "entity/battery_center.png"),
+           BATTERY_CENTER_PARTS)
 
 
 if __name__ == "__main__":

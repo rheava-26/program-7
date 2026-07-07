@@ -5,9 +5,9 @@ import java.util.Map;
 
 import dev.rheava.program7.entity.ai.DepositCargoGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
+import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.MineResourceGoal;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.EscapeDangerGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
@@ -35,7 +35,7 @@ public class MediumMiningDroneEntity extends ProgramDroneEntity implements Cargo
 
 	public MediumMiningDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.moveControl = new InertialFlightMoveControl(this, 20, true, 2.5f);
 		this.experiencePoints = 8;
 	}
 

@@ -2,8 +2,8 @@ package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.GunAttackGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
+import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.control.FlightMoveControl;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
@@ -24,7 +24,7 @@ import net.minecraft.world.World;
 public class MediumAttackDroneEntity extends ProgramDroneEntity {
 	public MediumAttackDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.moveControl = new FlightMoveControl(this, 20, true);
+		this.moveControl = new InertialFlightMoveControl(this, 20, true, 1.8f);
 		this.experiencePoints = 10;
 	}
 

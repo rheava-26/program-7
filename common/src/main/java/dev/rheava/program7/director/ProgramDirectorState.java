@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.registry.P7Blocks;
@@ -196,6 +197,7 @@ public class ProgramDirectorState extends PersistentState {
 	public static void deployProbeAt(ServerWorld world, BlockPos pos) {
 		world.setBlockState(pos, P7Blocks.PROBE_CORE.get().getDefaultState());
 		placeAssembler(world, pos);
+		placeLaunchCatapult(world, pos);
 		DropPodEntity.spawnLandingComplement(world, pos);
 
 		ProgramDirectorState state = get(world);
@@ -260,6 +262,29 @@ public class ProgramDirectorState extends PersistentState {
 			}
 		}
 		world.setBlockState(core.north(3), P7Blocks.ASSEMBLER.get().getDefaultState());
+	}
+
+	/**
+	 * Plant the launch catapult a short distance from the probe core, facing
+	 * away from it so the sling fires outward. Same scan pattern as {@link
+	 * #placeAssembler}, just a longer offset; falls back to due south of the
+	 * core, facing south, if the terrain doesn't cooperate.
+	 */
+	private static void placeLaunchCatapult(ServerWorld world, BlockPos core) {
+		for (Direction direction : Direction.Type.HORIZONTAL) {
+			BlockPos base = core.offset(direction, 5);
+			for (int dy = 2; dy >= -3; dy--) {
+				BlockPos candidate = base.up(dy);
+				if (world.getBlockState(candidate).isReplaceable()
+						&& world.getBlockState(candidate.down()).isSolidBlock(world, candidate.down())) {
+					world.setBlockState(candidate, P7Blocks.LAUNCH_CATAPULT.get().getDefaultState()
+							.with(LaunchCatapultBlock.FACING, direction));
+					return;
+				}
+			}
+		}
+		world.setBlockState(core.south(5), P7Blocks.LAUNCH_CATAPULT.get().getDefaultState()
+				.with(LaunchCatapultBlock.FACING, Direction.SOUTH));
 	}
 
 	@Nullable

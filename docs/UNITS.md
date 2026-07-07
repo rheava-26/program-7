@@ -93,7 +93,7 @@ unit time or self-sustain off their own power.*
 | **Medium mining drone** | Bores into cave systems following ore density; deploys light beacons | ✅ (boring/beacons later) |
 | **Laser mining carrier** | Drone carrying crates + multiple mining lasers — mobile strip-mine | — |
 | **Medium transport drone** | Carries two crates of resources at once | ✅ |
-| **Air UAV drone** | Simple winged propeller drone; requires a **launch catapult** structure; loiters and spots for the base | — |
+| **Air UAV drone** | Simple winged propeller drone; requires a **launch catapult** structure; loiters and spots for the base | ✅ |
 | **Basic mortar** | Fixed indirect fire at spotted static targets; shells whistle before landing | ✅ |
 | **Self-propelled mortar drone** | The mortar, mobile — repositions between volleys | — |
 | **Light anti-tank gun/emplacement** | High single-shot damage vs. golems, vehicles, and armored players | — |
@@ -105,19 +105,19 @@ unit time or self-sustain off their own power.*
 ## TIER 3 — WAR ECONOMY
 *Counter-adaptation live. This is the wall until you kill a main base.*
 
-| Unit | Role |
-|---|---|
-| **Heavy attack drone** | Car-sized, heavily armored: machine guns, grenade launchers, OR quad light missile launchers; costs serious resources; engages from far away |
-| **Basic IFV** | Infantry-fighting-vehicle analog: carries light drones forward, fire support |
-| **Mobile battery center** | Rolling power bank — extends operations far from base; killing it browns-out local units |
-| **Heavy boring/mining drones** | Industrial extraction; tunnel networks between sites |
-| **Cruise missile launcher** | Long-range strike at scouted static targets; missiles are interceptable |
-| **Artillery & larger SAMs** | Area bombardment; serious anti-air coverage |
-| **Small gunboats & corvettes** | Armed water presence |
-| **Ground-penetrating radar scanner** | Finds YOUR underground base |
-| **Combat air drone** | Fixed-wing unit strafing ground targets with light guns |
-| **Recon helicopter** | Fast aerial spotter with a searchlight cone |
-| **Repair/excavation mech** | Fixes structures and units, digs fortification lines |
+| Unit | Role | Status |
+|---|---|---|
+| **Heavy attack drone** | Car-sized, heavily armored: machine guns, grenade launchers, OR quad light missile launchers; costs serious resources; engages from far away | ✅ (burst MGs; launchers later) |
+| **Basic IFV** | Infantry-fighting-vehicle analog: carries light drones forward, fire support | ✅ |
+| **Mobile battery center** | Rolling power bank — extends operations far from base; killing it browns-out local units | ✅ |
+| **Heavy boring/mining drones** | Industrial extraction; tunnel networks between sites | — |
+| **Cruise missile launcher** | Long-range strike at scouted static targets; missiles are interceptable | — |
+| **Artillery & larger SAMs** | Area bombardment; serious anti-air coverage | — |
+| **Small gunboats & corvettes** | Armed water presence | ✅ (gunboat; corvettes later) |
+| **Ground-penetrating radar scanner** | Finds YOUR underground base | — |
+| **Combat air drone** | Fixed-wing unit strafing ground targets with light guns | — |
+| **Recon helicopter** | Fast aerial spotter with a searchlight cone | ✅ |
+| **Repair/excavation mech** | Fixes structures and units, digs fortification lines | — |
 
 ## TIER 4 — DOMINION
 *Unlocked only after the Program loses (and replaces) a main base.*

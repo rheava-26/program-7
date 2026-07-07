@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "program7:block/launch_catapult", "y": 0 },
+    "facing=east": { "model": "program7:block/launch_catapult", "y": 90 },
+    "facing=south": { "model": "program7:block/launch_catapult", "y": 180 },
+    "facing=west": { "model": "program7:block/launch_catapult", "y": 270 }
+  }
+}

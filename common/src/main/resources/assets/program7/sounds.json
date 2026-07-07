@@ -95,6 +95,12 @@
       { "name": "minecraft:block.anvil.use", "type": "event" }
     ]
   },
+  "block.catapult.launch": {
+    "subtitle": "subtitles.program7.block.catapult.launch",
+    "sounds": [
+      { "name": "minecraft:block.piston.extend", "type": "event" }
+    ]
+  },
   "event.orbital_resupply": {
     "subtitle": "subtitles.program7.event.orbital_resupply",
     "sounds": [

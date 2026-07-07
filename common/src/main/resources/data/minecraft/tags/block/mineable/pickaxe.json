@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "program7:probe_core",
-    "program7:assembler"
+    "program7:assembler",
+    "program7:launch_catapult"
   ]
 }

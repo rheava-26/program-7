@@ -22,12 +22,15 @@ import net.minecraft.loot.LootTable;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextTypes;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +51,12 @@ import org.jetbrains.annotations.Nullable;
  * </ul>
  */
 public abstract class ProgramDroneEntity extends PathAwareEntity {
+	/**
+	 * Aim high to clip the rotors: a hit landing in this top slice of the
+	 * hitbox is treated as a disabling shot to the rotor plane, not a graze.
+	 */
+	private static final double ROTOR_HIT_SLICE_HEIGHT = 0.25;
+
 	private int scrambledTicks = 0;
 	private int retreatTicks = 0;
 	@Nullable
@@ -93,20 +102,64 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 
 	@Override
 	public boolean damage(DamageSource source, float amount) {
-		if (!this.getWorld().isClient && source.getAttacker() instanceof LivingEntity attacker) {
-			ItemStack weapon = attacker.getMainHandStack();
-			if (this.isFlier()
-					&& (weapon.getItem() instanceof SwordItem || weapon.getItem() instanceof AxeItem)) {
-				// Blades shred airframes: small drones usually die in one hit.
-				amount *= 2.5f;
+		if (!this.getWorld().isClient) {
+			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
+			if (attacker != null) {
+				ItemStack weapon = attacker.getMainHandStack();
+				if (this.isFlier()
+						&& (weapon.getItem() instanceof SwordItem || weapon.getItem() instanceof AxeItem)) {
+					// Blades shred airframes: small drones usually die in one hit.
+					amount *= 2.5f;
+				}
+				int scramblePower = this.getEnchantLevel(weapon, Enchantments.KNOCKBACK)
+						+ this.getEnchantLevel(weapon, Enchantments.PUNCH);
+				if (scramblePower > 0 && this.isFlier()) {
+					this.scramble(attacker, scramblePower);
+				}
 			}
-			int scramblePower = this.getEnchantLevel(weapon, Enchantments.KNOCKBACK)
-					+ this.getEnchantLevel(weapon, Enchantments.PUNCH);
-			if (scramblePower > 0 && this.isFlier()) {
-				this.scramble(attacker, scramblePower);
+
+			if (this.isFlier() && this.isRotorHit(source, attacker)) {
+				// Rotor-plane hit: stacks multiplicatively on top of whatever
+				// the blade bonus above already did, so a blade swung down
+				// from above a small flier is an even cleaner kill.
+				amount *= 1.5f;
+				if (attacker != null) {
+					this.scramble(attacker, 2);
+				}
+				this.spawnRotorHitEffects();
 			}
 		}
 		return super.damage(source, amount);
+	}
+
+	/**
+	 * A rotor-plane hit is one that lands in the top slice of the hitbox —
+	 * either a melee attacker looking down into it, or a projectile that
+	 * struck up there.
+	 */
+	private boolean isRotorHit(DamageSource source, @Nullable LivingEntity attacker) {
+		double sliceMinY = this.getBoundingBox().maxY - ROTOR_HIT_SLICE_HEIGHT;
+		if (attacker != null && attacker.getEyeY() >= sliceMinY) {
+			return true;
+		}
+		if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
+			Vec3d position = source.getPosition();
+			if (position != null && position.y >= sliceMinY) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void spawnRotorHitEffects() {
+		if (this.getWorld() instanceof ServerWorld serverWorld) {
+			Box box = this.getBoundingBox();
+			double x = (box.minX + box.maxX) / 2.0;
+			double z = (box.minZ + box.maxZ) / 2.0;
+			serverWorld.spawnParticles(ParticleTypes.CRIT, x, box.maxY, z, 8, 0.2, 0.05, 0.2, 0.02);
+			serverWorld.spawnParticles(ParticleTypes.SMOKE, x, box.maxY, z, 4, 0.15, 0.05, 0.15, 0.01);
+		}
+		this.playSound(P7Sounds.DRONE_HURT.get(), 1.0f, 0.6f);
 	}
 
 	private int getEnchantLevel(ItemStack weapon, RegistryKey<Enchantment> key) {

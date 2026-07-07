@@ -5,6 +5,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.block.AssemblerBlock;
 import dev.rheava.program7.block.DroneWreckBlock;
+import dev.rheava.program7.block.LaunchCatapultBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
@@ -45,6 +46,14 @@ public final class P7Blocks {
 					.requiresTool()
 					.sounds(BlockSoundGroup.NETHERITE)
 					.luminance(state -> 5)));
+
+	/** Support infrastructure: no catapult, no UAVs. Break it and the base goes blind upstairs. */
+	public static final RegistrySupplier<Block> LAUNCH_CATAPULT = BLOCKS.register("launch_catapult",
+			() -> new LaunchCatapultBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(8.0f, 200.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)));
 
 	public static void register() {
 		BLOCKS.register();

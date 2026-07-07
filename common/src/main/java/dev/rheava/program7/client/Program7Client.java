@@ -5,16 +5,26 @@ import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import dev.architectury.registry.client.rendering.EntityModelLayerRegistry;
+import dev.rheava.program7.client.render.AirUAVModel;
+import dev.rheava.program7.client.render.AirUAVRenderer;
 import dev.rheava.program7.client.render.AntiAirTurretModel;
 import dev.rheava.program7.client.render.AntiAirTurretRenderer;
 import dev.rheava.program7.client.render.AttackDroneRenderer;
 import dev.rheava.program7.client.render.AutogunTurretModel;
 import dev.rheava.program7.client.render.AutogunTurretRenderer;
+import dev.rheava.program7.client.render.BatteryCenterModel;
+import dev.rheava.program7.client.render.BatteryCenterRenderer;
 import dev.rheava.program7.client.render.DropPodRenderer;
+import dev.rheava.program7.client.render.GunboatModel;
+import dev.rheava.program7.client.render.GunboatRenderer;
 import dev.rheava.program7.client.render.GroundDroneModel;
 import dev.rheava.program7.client.render.GroundDroneRenderer;
 import dev.rheava.program7.client.render.HarvesterDroneModel;
 import dev.rheava.program7.client.render.HarvesterDroneRenderer;
+import dev.rheava.program7.client.render.HeavyAttackDroneModel;
+import dev.rheava.program7.client.render.HeavyAttackDroneRenderer;
+import dev.rheava.program7.client.render.IFVModel;
+import dev.rheava.program7.client.render.IFVRenderer;
 import dev.rheava.program7.client.render.LogisticsDroneModel;
 import dev.rheava.program7.client.render.LogisticsDroneRenderer;
 import dev.rheava.program7.client.render.MediumAttackDroneModel;
@@ -26,6 +36,8 @@ import dev.rheava.program7.client.render.MortarEmplacementRenderer;
 import dev.rheava.program7.client.render.MortarShellModel;
 import dev.rheava.program7.client.render.MortarShellRenderer;
 import dev.rheava.program7.client.render.QuadRotorDroneModel;
+import dev.rheava.program7.client.render.ReconHelicopterModel;
+import dev.rheava.program7.client.render.ReconHelicopterRenderer;
 import dev.rheava.program7.client.render.ScoutCarModel;
 import dev.rheava.program7.client.render.ScoutCarRenderer;
 import dev.rheava.program7.client.render.SniperDroneModel;
@@ -74,6 +86,18 @@ public final class Program7Client {
 				AntiAirTurretModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(ScoutCarModel.LAYER,
 				ScoutCarModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(AirUAVModel.LAYER,
+				AirUAVModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(HeavyAttackDroneModel.LAYER,
+				HeavyAttackDroneModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(IFVModel.LAYER,
+				IFVModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(GunboatModel.LAYER,
+				GunboatModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(ReconHelicopterModel.LAYER,
+				ReconHelicopterModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(BatteryCenterModel.LAYER,
+				BatteryCenterModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
@@ -91,6 +115,12 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.TRANSPORT_DRONE, TransportDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ANTI_AIR_TURRET, AntiAirTurretRenderer::new);
 		EntityRendererRegistry.register(P7Entities.SCOUT_CAR, ScoutCarRenderer::new);
+		EntityRendererRegistry.register(P7Entities.AIR_UAV, AirUAVRenderer::new);
+		EntityRendererRegistry.register(P7Entities.HEAVY_ATTACK_DRONE, HeavyAttackDroneRenderer::new);
+		EntityRendererRegistry.register(P7Entities.IFV, IFVRenderer::new);
+		EntityRendererRegistry.register(P7Entities.GUNBOAT, GunboatRenderer::new);
+		EntityRendererRegistry.register(P7Entities.RECON_HELICOPTER, ReconHelicopterRenderer::new);
+		EntityRendererRegistry.register(P7Entities.BATTERY_CENTER, BatteryCenterRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,
