@@ -2,6 +2,8 @@ package dev.rheava.program7.client;
 
 import dev.rheava.program7.client.render.AttackDroneRenderer;
 import dev.rheava.program7.client.render.DropPodRenderer;
+import dev.rheava.program7.client.render.HarvesterDroneModel;
+import dev.rheava.program7.client.render.HarvesterDroneRenderer;
 import dev.rheava.program7.client.render.QuadRotorDroneModel;
 import dev.rheava.program7.client.render.SurveyorDroneRenderer;
 import dev.rheava.program7.network.InterferencePayload;
@@ -20,9 +22,12 @@ public class Program7Client implements ClientModInitializer {
 				QuadRotorDroneModel::getTexturedModelData);
 		EntityModelLayerRegistry.registerModelLayer(QuadRotorDroneModel.ATTACK_LAYER,
 				QuadRotorDroneModel::getTexturedModelData);
+		EntityModelLayerRegistry.registerModelLayer(HarvesterDroneModel.LAYER,
+				HarvesterDroneModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
+		EntityRendererRegistry.register(P7Entities.HARVESTER_DRONE, HarvesterDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.DROP_POD, DropPodRenderer::new);
 
 		ClientPlayNetworking.registerGlobalReceiver(InterferencePayload.ID,

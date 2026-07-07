@@ -11,6 +11,7 @@ public final class Resources {
 	public static final String REDSTONE = "redstone";
 	public static final String COAL = "coal";
 	public static final String GUNPOWDER = "gunpowder";
+	public static final String WOOD = "wood";
 
 	private Resources() {
 	}

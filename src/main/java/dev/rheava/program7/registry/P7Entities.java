@@ -3,6 +3,7 @@ package dev.rheava.program7.registry;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.DropPodEntity;
+import dev.rheava.program7.entity.HarvesterDroneEntity;
 import dev.rheava.program7.entity.SurveyorDroneEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
@@ -33,6 +34,15 @@ public final class P7Entities {
 					.maxTrackingRange(10)
 					.build());
 
+	/** Wheeled ground hauler: mines what the Program needs, refills the ledger. */
+	public static final EntityType<HarvesterDroneEntity> HARVESTER_DRONE = Registry.register(
+			Registries.ENTITY_TYPE,
+			Program7.id("harvester_drone"),
+			EntityType.Builder.create(HarvesterDroneEntity::new, SpawnGroup.MISC)
+					.dimensions(1.0f, 0.9f)
+					.maxTrackingRange(10)
+					.build());
+
 	/** The pod mid-descent; long tracking range so the fireball reads from afar. */
 	public static final EntityType<DropPodEntity> DROP_POD = Registry.register(
 			Registries.ENTITY_TYPE,
@@ -45,6 +55,7 @@ public final class P7Entities {
 	public static void register() {
 		FabricDefaultAttributeRegistry.register(SURVEYOR_DRONE, SurveyorDroneEntity.createSurveyorDroneAttributes());
 		FabricDefaultAttributeRegistry.register(ATTACK_DRONE, AttackDroneEntity.createAttackDroneAttributes());
+		FabricDefaultAttributeRegistry.register(HARVESTER_DRONE, HarvesterDroneEntity.createHarvesterDroneAttributes());
 	}
 
 	private P7Entities() {

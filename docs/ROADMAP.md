@@ -46,14 +46,18 @@ Phases are ordered so every phase ships something playable, and the Director
 
 - [ ] Main pod becomes a fabricator block entity with starter stockpile
       (iron, copper, redstone, coal, gunpowder)
-- [ ] Harvester drone (actually breaks ore blocks, needs them, hauls them);
-      medium ground-based mining drones from the starter complement
+- [x] Harvester drone v1: wheeled ground unit that finds ore/logs (vanilla
+      block tags, so modded ores in those tags count), grinds blocks out
+      with visible crack stages and mining noise, hauls a 12-unit hopper
+      home and deposits into the ledger; unarmed, panics when hurt; two
+      arrive with every pod
 - [x] Resource ledger v1: every pod lands with a stockpile (iron, copper,
       redstone, coal, gunpowder); attack drone dispatches cost real
       resources and simply don't launch when the ledger can't pay —
       starving the base already works (moved up)
-- [ ] Resource ledger v2: harvesters refill it; iron/copper/redstone
-      appetite drives harvester targeting
+- [ ] Resource ledger v2: appetite-driven targeting (seek what the Director
+      is short on); harvester escorts; medium mining drones that bore into
+      cave systems
 - [ ] Territory outlining; terrain-aware expansion (mine into existing
       caves, fortify mountains/river crossings); mini outposts
 - [ ] Base structure growth: assembly bank, storage deck, warehouse,

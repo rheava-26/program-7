@@ -8,6 +8,8 @@ and escalating alongside you. Everything it fields can be shot down, salvaged,
 reverse-engineered and turned against it.
 
 - **[Design bible](docs/DESIGN.md)** — full concept, lore, systems
+- **[Unit bible](docs/UNITS.md)** — every unit's behavior, counters, salvage,
+  and the five Program tech tiers
 - **[Roadmap](docs/ROADMAP.md)** — phased implementation plan and status
 
 ## What's in the current build (Phase 0 + Phase 1 core)
@@ -40,6 +42,10 @@ reverse-engineered and turned against it.
   `/program7 status`.
 - **Item theft** — surveyors snatch unattended dropped items and carry them
   as cargo. Shoot the thief down and it all spills back out. Config-gated.
+- **Harvester Drone** — the economy on wheels. Finds ore and logs (by block
+  tag), grinds them out with visible crack stages, hauls a full hopper back
+  to the probe core and deposits into the ledger. Unarmed; panics when hurt.
+  Two arrive with every pod — killing haulers starves future responses.
 
 - **Surveyor Drone** — the Program's flying recon unit. It closes in on
   players, sweeps them with an accelerating scan (the beeping speeds up as it

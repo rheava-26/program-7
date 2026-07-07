@@ -77,7 +77,7 @@ public class DropPodEntity extends Entity {
 		this.discard();
 	}
 
-	/** Escort/recon complement that fans out from a fresh landing. */
+	/** Recon + extraction complement that fans out from a fresh landing. */
 	public static void spawnLandingComplement(ServerWorld world, BlockPos pos) {
 		for (int i = 0; i < 2; i++) {
 			SurveyorDroneEntity surveyor = P7Entities.SURVEYOR_DRONE.create(world);
@@ -88,6 +88,17 @@ public class DropPodEntity extends Entity {
 						pos.getZ() + 0.5 + world.getRandom().nextInt(9) - 4,
 						world.getRandom().nextFloat() * 360.0f, 0.0f);
 				world.spawnEntity(surveyor);
+			}
+		}
+		for (int i = 0; i < 2; i++) {
+			HarvesterDroneEntity harvester = P7Entities.HARVESTER_DRONE.create(world);
+			if (harvester != null) {
+				harvester.refreshPositionAndAngles(
+						pos.getX() + 0.5 + world.getRandom().nextInt(7) - 3,
+						pos.getY() + 1.0,
+						pos.getZ() + 0.5 + world.getRandom().nextInt(7) - 3,
+						world.getRandom().nextFloat() * 360.0f, 0.0f);
+				world.spawnEntity(harvester);
 			}
 		}
 	}
