@@ -153,7 +153,8 @@ weapon and rocket fuel.
   patrols to protect "their" villagers.
 - Explores the Nether after finding ruined portals; extends the network there.
 - Integrates Minecraft tech: diamond hardpoints on dronecraft (component
-  hitboxes — snipe a rotor to down a small drone), enchanting, sculk sensors,
+  hitboxes — snipe a rotor to down a small drone), enchanting (including
+  **self-enchanting their own plating and weapons**), sculk sensors,
   spawner mob farms, totems of undying on large drones, guardian beams,
   enchanted-trident interceptors stored in water, dispenser-style mass arrow
   launchers. Old equipment (bullets) is expensive but powerful — used
@@ -170,6 +171,8 @@ weapon and rocket fuel.
 - **Motor/rotor hitboxes** give quick kills on bigger frames.
 - Dead drones **crash into small wreck blocks** holding their salvage —
   looted like containers instead of item sprays on the ground.
+- **Momentum:** no unit stops on a dime; large units (warships especially)
+  turn slowly and must commit to maneuvers the player can read and punish.
 - The Program is **capped at Tier 3 until the player destroys a main base**
   for the first time (see UNITS.md for the full five-tier arsenal).
 - **Orbital resupply** drops at large bases are loud, bright, and felt as a

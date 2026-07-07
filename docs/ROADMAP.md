@@ -82,7 +82,13 @@ Phases are ordered so every phase ships something playable, and the Director
 ## Phase 2.5 — Assembly & Tier 1 Roster (next)
 
 - [ ] Assembler structure (battery + assembler = Tier 1 production per
-      UNITS.md); production queue driven by the Director's ledger
+      UNITS.md); production queue driven by the Director's ledger; tiered
+      assembler sizes (each tech tier needs a larger assembler class)
+- [ ] Support infrastructure system: runways / launch catapults / loading
+      docks / harbors gate and repair their unit classes; destroying
+      support strands dependent units
+- [ ] Movement inertia layer: no instant stops, turn-rate limits scaling
+      with unit mass (warships slowest)
 - [ ] Basic ground drone (tiny armored car with a small gun — anti-mob
       perimeter unit), basic autogun turret, logistics drones (flying +
       wheeled)

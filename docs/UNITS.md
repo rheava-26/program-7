@@ -19,6 +19,16 @@ Units marked ✅ are implemented; the rest are specs for their phase.
   unit time) or must self-sustain off their own power systems.
 - **Tier 3+** each require standing infrastructure, banked resources, and
   threat pressure.
+- **Bigger tiers need bigger assemblers.** Each tech tier requires a larger
+  assembler class to produce — from the pad-sized Tier 1 assembler up to
+  full fabricator complexes for Tier 5. Burning an assembler caps what the
+  base can build until it's rebuilt.
+- **Support infrastructure gates unit classes** — not just aircraft:
+  fixed-wing aircraft need **runways** (UAVs need launch catapults), mechs
+  need **loading docks**, warships need **harbors** (which is also where
+  they repair). No standing support = the unit class can't deploy, and
+  damaged units with nowhere to return degrade. Destroying support
+  facilities strands the units that depend on them.
 - **HARD CAP: the Program is locked to Tier 3 at maximum until the player
   destroys a main drone base for the first time.** Your first base kill is
   the door to Tiers 4–5 — for both of you.
@@ -42,6 +52,14 @@ Units marked ✅ are implemented; the rest are specs for their phase.
 - **Wrecks, not item sprays:** destroyed drones crash and leave a small
   **wreck block** at the crash site containing their salvage — loot it like
   a container. Big units leave bigger wrecks.
+- **Momentum is real:** units cannot come to a full stop instantly, and the
+  bigger the unit the more it must commit to its movements. Warships have a
+  slow turn rate; a gunship that commits to a strafe run overshoots; a
+  ramming drone that misses has to swing back around. Baiting commitment is
+  core counterplay.
+- **Self-enchanting:** once the Program unlocks enchanting, drones apply
+  enchantments to their *own* hardware — plating, weapons, rotors — not
+  just to stolen player gear.
 - **Sound attraction:** gunfire, explosions and machinery noise pull nearby
   units toward the source. Guns trade power for attention.
 - **Self-preservation:** units below ~30% health disengage toward friendly
