@@ -20,6 +20,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.PersistentState;
@@ -165,6 +166,7 @@ public class ProgramDirectorState extends PersistentState {
 	 */
 	public static void deployProbeAt(ServerWorld world, BlockPos pos) {
 		world.setBlockState(pos, P7Blocks.PROBE_CORE.get().getDefaultState());
+		placeAssembler(world, pos);
 		DropPodEntity.spawnLandingComplement(world, pos);
 
 		ProgramDirectorState state = get(world);
@@ -201,6 +203,26 @@ public class ProgramDirectorState extends PersistentState {
 
 	public Map<String, Integer> getResources() {
 		return Map.copyOf(this.resources);
+	}
+
+	/**
+	 * Plant the base's assembler a short distance from the probe core. Scans
+	 * the horizontal offsets at distance 3 for solid, unobstructed ground;
+	 * falls back to due north of the core if the terrain doesn't cooperate.
+	 */
+	private static void placeAssembler(ServerWorld world, BlockPos core) {
+		for (Direction direction : Direction.Type.HORIZONTAL) {
+			BlockPos base = core.offset(direction, 3);
+			for (int dy = 2; dy >= -3; dy--) {
+				BlockPos candidate = base.up(dy);
+				if (world.getBlockState(candidate).isReplaceable()
+						&& world.getBlockState(candidate.down()).isSolidBlock(world, candidate.down())) {
+					world.setBlockState(candidate, P7Blocks.ASSEMBLER.get().getDefaultState());
+					return;
+				}
+			}
+		}
+		world.setBlockState(core.north(3), P7Blocks.ASSEMBLER.get().getDefaultState());
 	}
 
 	@Nullable

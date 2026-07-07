@@ -28,6 +28,9 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> ATTACK_DRONE_FUSE = register("entity.attack_drone.fuse");
 	public static final RegistrySupplier<SoundEvent> DROP_POD_DESCENT = register("event.drop_pod.descent");
 	public static final RegistrySupplier<SoundEvent> DROP_POD_IMPACT = register("event.drop_pod.impact");
+	public static final RegistrySupplier<SoundEvent> GUN_FIRE = register("unit.gun_fire");
+	public static final RegistrySupplier<SoundEvent> ASSEMBLER_WORKING = register("block.assembler.working");
+	public static final RegistrySupplier<SoundEvent> ASSEMBLER_COMPLETE = register("block.assembler.complete");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

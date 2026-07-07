@@ -79,8 +79,8 @@ Units marked ✅ are implemented; the rest are specs for their phase.
 | **Basic mining drone** (Harvester) | Wheeled hauler: mines ore/logs by tag, banks a 12-unit hopper into the ledger; unarmed, panics | ✅ |
 | **Logistics drone** | Small flyer ferrying parts between assembler and storage inside the perimeter | — |
 | **Wheeled logistics drone** | Ground hauler moving crates between harvest sites and base; lays slab paths; gold stripes = priority cargo | — |
-| **Basic ground drone** | Tiny armored car with a small gun — perimeter pest control, built to fight off zombies and skeletons, not players | — |
-| **Basic autogun** | Fixed small-caliber turret with a visible sweep cone; limited ammo feed | — |
+| **Basic ground drone** | Tiny armored car with a small gun — perimeter pest control, built to fight off zombies and skeletons, not players | ✅ |
+| **Basic autogun** | Fixed small-caliber turret with a visible sweep cone; limited ammo feed | ✅ |
 
 ## TIER 2 — FOOTHOLD
 *Heavier Tier 1 evolutions. Some need landing pads; some cost upkeep per

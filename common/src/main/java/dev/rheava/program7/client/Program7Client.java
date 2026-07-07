@@ -6,7 +6,11 @@ import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import dev.architectury.registry.client.rendering.EntityModelLayerRegistry;
 import dev.rheava.program7.client.render.AttackDroneRenderer;
+import dev.rheava.program7.client.render.AutogunTurretModel;
+import dev.rheava.program7.client.render.AutogunTurretRenderer;
 import dev.rheava.program7.client.render.DropPodRenderer;
+import dev.rheava.program7.client.render.GroundDroneModel;
+import dev.rheava.program7.client.render.GroundDroneRenderer;
 import dev.rheava.program7.client.render.HarvesterDroneModel;
 import dev.rheava.program7.client.render.HarvesterDroneRenderer;
 import dev.rheava.program7.client.render.QuadRotorDroneModel;
@@ -26,11 +30,17 @@ public final class Program7Client {
 				QuadRotorDroneModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(HarvesterDroneModel.LAYER,
 				HarvesterDroneModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(GroundDroneModel.LAYER,
+				GroundDroneModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(AutogunTurretModel.LAYER,
+				AutogunTurretModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.HARVESTER_DRONE, HarvesterDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.DROP_POD, DropPodRenderer::new);
+		EntityRendererRegistry.register(P7Entities.GROUND_DRONE, GroundDroneRenderer::new);
+		EntityRendererRegistry.register(P7Entities.AUTOGUN_TURRET, AutogunTurretRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,

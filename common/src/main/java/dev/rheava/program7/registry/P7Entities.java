@@ -5,7 +5,9 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.AttackDroneEntity;
+import dev.rheava.program7.entity.AutogunTurretEntity;
 import dev.rheava.program7.entity.DropPodEntity;
+import dev.rheava.program7.entity.GroundDroneEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
 import dev.rheava.program7.entity.SurveyorDroneEntity;
 import net.minecraft.entity.EntityType;
@@ -52,12 +54,30 @@ public final class P7Entities {
 							.maxTrackingRange(32)
 							.build());
 
+	/** Tier 1 perimeter unit: a knee-high armored car with a small turreted gun. */
+	public static final RegistrySupplier<EntityType<GroundDroneEntity>> GROUND_DRONE =
+			ENTITIES.register("ground_drone",
+					() -> EntityType.Builder.create(GroundDroneEntity::new, SpawnGroup.MISC)
+							.dimensions(0.9f, 0.7f)
+							.maxTrackingRange(10)
+							.build());
+
+	/** Tier 1 fixed defense: a twin-barrel autogun bolted onto a pedestal. */
+	public static final RegistrySupplier<EntityType<AutogunTurretEntity>> AUTOGUN_TURRET =
+			ENTITIES.register("autogun_turret",
+					() -> EntityType.Builder.create(AutogunTurretEntity::new, SpawnGroup.MISC)
+							.dimensions(0.8f, 0.8f)
+							.maxTrackingRange(10)
+							.build());
+
 	public static void register() {
 		ENTITIES.register();
 
 		EntityAttributeRegistry.register(SURVEYOR_DRONE, SurveyorDroneEntity::createSurveyorDroneAttributes);
 		EntityAttributeRegistry.register(ATTACK_DRONE, AttackDroneEntity::createAttackDroneAttributes);
 		EntityAttributeRegistry.register(HARVESTER_DRONE, HarvesterDroneEntity::createHarvesterDroneAttributes);
+		EntityAttributeRegistry.register(GROUND_DRONE, GroundDroneEntity::createGroundDroneAttributes);
+		EntityAttributeRegistry.register(AUTOGUN_TURRET, AutogunTurretEntity::createAutogunTurretAttributes);
 	}
 
 	private P7Entities() {

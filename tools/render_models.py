@@ -247,12 +247,54 @@ PROBE_CORE_PARTS = [
     {"origin": (-8, 0, -8), "size": (16, 16, 16), "uv_all": (0, 0, 16, 16), "ops": []},
 ]
 
+GROUND_DRONE_PARTS = [
+    # body: hull + forward sensor strip (pivot 0,19,0)
+    {"origin": (-4.5, -2, -6.5), "size": (9, 4, 13), "uv": (0, 0), "ops": [("move", (0, 19, 0))]},
+    {"origin": (-2, -1.5, -7), "size": (4, 1, 1), "uv": (24, 25), "ops": [("move", (0, 19, 0))]},
+    # angled side skirts (Java roll -0.20/+0.20 rad at body-relative pivots ±4.5,0.5,0)
+    {"origin": (-0.5, -1.5, -5.5), "size": (1, 3, 11), "uv": (0, 17),
+     "ops": [("rotz", -11.5), ("move", (4.5, 19.5, 0))]},
+    {"origin": (-0.5, -1.5, -5.5), "size": (1, 3, 11), "uv": (0, 17),
+     "ops": [("rotz", 11.5), ("move", (-4.5, 19.5, 0))]},
+    # turret (body child at 0,-2,-1), posed slightly traversed for the preview
+    {"origin": (-2.5, -3, -2.5), "size": (5, 3, 5), "uv": (24, 17),
+     "ops": [("roty", -8), ("move", (0, 17, -1))]},
+    {"origin": (-0.5, -2.5, -7.5), "size": (1, 1, 5), "uv": (44, 17),
+     "ops": [("roty", -8), ("move", (0, 17, -1))]},
+] + [
+    {"origin": (-1.5, -1.5, -1.5), "size": (3, 3, 3), "uv": (46, 25), "ops": [("move", (x, 22.5, z))]}
+    for x in (-4.5, 4.5) for z in (-4, 4)
+]
+
+AUTOGUN_PARTS = [
+    # base plate + pedestal (pivot 0,24,0)
+    {"origin": (-4, -2, -4), "size": (8, 2, 8), "uv": (0, 0), "ops": [("move", (0, 24, 0))]},
+    {"origin": (-2, -8, -2), "size": (4, 6, 4), "uv": (0, 11), "ops": [("move", (0, 24, 0))]},
+] + [
+    # head (base child at 0,-8,0), posed mid-pan for the preview
+    {"origin": origin, "size": size, "uv": uv, "ops": [("roty", 25), ("move", (0, 16, 0))]}
+    for origin, size, uv in (
+        ((-3, -2, -3), (6, 4, 6), (17, 11)),
+        ((-2, -1, -9), (1, 1, 6), (42, 11)),
+        ((1, -1, -9), (1, 1, 6), (42, 11)),
+        ((-1, -3, -1), (2, 1, 2), (42, 19)),
+        ((3, -1.5, -1), (2, 3, 4), (33, 22)),
+    )
+]
+
+ASSEMBLER_PARTS = [
+    {"origin": (-8, 0, -8), "size": (16, 16, 16), "uv_all": (0, 0, 16, 16), "ops": []},
+]
+
 
 def main():
     render("surveyor_drone", os.path.join(TEX, "entity/surveyor_drone.png"), quad_rotor_parts())
     render("attack_drone", os.path.join(TEX, "entity/attack_drone.png"), quad_rotor_parts())
     render("harvester_drone", os.path.join(TEX, "entity/harvester_drone.png"), HARVESTER_PARTS)
     render("probe_core", os.path.join(TEX, "block/probe_core.png"), PROBE_CORE_PARTS)
+    render("ground_drone", os.path.join(TEX, "entity/ground_drone.png"), GROUND_DRONE_PARTS)
+    render("autogun_turret", os.path.join(TEX, "entity/autogun_turret.png"), AUTOGUN_PARTS)
+    render("assembler", os.path.join(TEX, "block/assembler.png"), ASSEMBLER_PARTS)
 
 
 if __name__ == "__main__":

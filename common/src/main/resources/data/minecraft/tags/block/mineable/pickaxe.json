@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "program7:probe_core"
+    "program7:probe_core",
+    "program7:assembler"
   ]
 }

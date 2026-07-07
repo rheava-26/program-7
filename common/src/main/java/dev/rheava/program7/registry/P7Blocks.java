@@ -3,6 +3,7 @@ package dev.rheava.program7.registry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.block.AssemblerBlock;
 import dev.rheava.program7.block.DroneWreckBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -35,6 +36,15 @@ public final class P7Blocks {
 					.strength(1.0f)
 					.sounds(BlockSoundGroup.NETHERITE)
 					.nonOpaque()));
+
+	/** The Program's Tier 1 production building: battery + assembler. */
+	public static final RegistrySupplier<Block> ASSEMBLER = BLOCKS.register("assembler",
+			() -> new AssemblerBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(12.0f, 300.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)
+					.luminance(state -> 5)));
 
 	public static void register() {
 		BLOCKS.register();

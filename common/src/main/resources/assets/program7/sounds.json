@@ -52,5 +52,23 @@
     "sounds": [
       { "name": "minecraft:entity.generic.explode", "type": "event" }
     ]
+  },
+  "unit.gun_fire": {
+    "subtitle": "subtitles.program7.unit.gun_fire",
+    "sounds": [
+      { "name": "minecraft:entity.firework_rocket.blast", "type": "event" }
+    ]
+  },
+  "block.assembler.working": {
+    "subtitle": "subtitles.program7.block.assembler.working",
+    "sounds": [
+      { "name": "minecraft:block.smithing_table.use", "type": "event" }
+    ]
+  },
+  "block.assembler.complete": {
+    "subtitle": "subtitles.program7.block.assembler.complete",
+    "sounds": [
+      { "name": "minecraft:block.anvil.use", "type": "event" }
+    ]
   }
 }

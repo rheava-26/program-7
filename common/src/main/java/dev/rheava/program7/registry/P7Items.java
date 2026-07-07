@@ -43,6 +43,8 @@ public final class P7Items {
 
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> ASSEMBLER = ITEMS.register("assembler",
+			() -> new BlockItem(P7Blocks.ASSEMBLER.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> SURVEYOR_DRONE_SPAWN_EGG = ITEMS.register("surveyor_drone_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.SURVEYOR_DRONE, 0x23272b, 0x27e2d3,
@@ -52,6 +54,12 @@ public final class P7Items {
 					new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> HARVESTER_DRONE_SPAWN_EGG = ITEMS.register("harvester_drone_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.HARVESTER_DRONE, 0x23272b, 0xdeb12d,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> GROUND_DRONE_SPAWN_EGG = ITEMS.register("ground_drone_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.GROUND_DRONE, 0x23272b, 0xc23b2e,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> AUTOGUN_TURRET_SPAWN_EGG = ITEMS.register("autogun_turret_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.AUTOGUN_TURRET, 0x23272b, 0x8a93a0,
 					new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static void register() {
