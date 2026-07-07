@@ -1,0 +1,10 @@
+architectury {
+    common(rootProject.enabled_platforms.split(','))
+}
+
+dependencies {
+    // Fabric Loader is present at compile time for @Environment annotations
+    // and friends; it is not a runtime dependency of the common module.
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+    modApi "dev.architectury:architectury:${rootProject.architectury_api_version}"
+}

@@ -42,6 +42,15 @@ Phases are ordered so every phase ships something playable, and the Director
 - [x] Config file scaffold (`config/program7.json`, see table in DESIGN.md);
       terrain-destruction toggle wired into attack drone explosions
 
+## Phase 1.5 — Multiloader ✅
+
+- [x] Architectury restructure: `common` (all gameplay + assets) +
+      `fabric` + `neoforge` modules; Yarn mappings kept everywhere via the
+      NeoForge mappings patch; registration through DeferredRegister,
+      events/networking through Architectury API
+- [x] Both loaders ship from one codebase: `./gradlew :fabric:build` /
+      `:neoforge:build`
+
 ## Phase 2 — The Base Lives
 
 - [ ] Main pod becomes a fabricator block entity with starter stockpile
@@ -69,6 +78,22 @@ Phases are ordered so every phase ships something playable, and the Director
 - [ ] Re-insertion after main outpost destruction: long wait, then far/more
       resources (player dominant), near network relink (player weak), or
       better scouted ground — always within a few thousand blocks
+
+## Phase 2.5 — Assembly & Tier 1 Roster (next)
+
+- [ ] Assembler structure (battery + assembler = Tier 1 production per
+      UNITS.md); production queue driven by the Director's ledger
+- [ ] Basic ground drone (tiny armored car with a small gun — anti-mob
+      perimeter unit), basic autogun turret, logistics drones (flying +
+      wheeled)
+- [ ] Wreck blocks: destroyed drones crash into lootable wreck containers
+      instead of spraying items
+- [ ] Drone combat physics: one-hit fragility for small frames,
+      knockback/punch scrambling + crash, readable ram-attack aiming,
+      motor/rotor quick-kill hitboxes
+- [ ] Tier system enforcement in the Director (Tier 3 hard cap until first
+      main-base kill)
+- [ ] Orbital resupply event at large bases (loud, bright, psionic spike)
 
 ## Phase 3 — Adaptation & Counterplay
 

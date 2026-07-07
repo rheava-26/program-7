@@ -1,0 +1,37 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "All-Rights-Reserved"
+issueTrackerURL = "https://github.com/rheava-26/program-7/issues"
+
+[[mods]]
+modId = "program7"
+version = "${version}"
+displayName = "Program 7"
+description = '''
+An automated orbital probe program has chosen your world as its testing ground.
+Its drop pods mine, build, adapt and escalate alongside you - fight back,
+salvage their technology, and turn it against them.
+'''
+authors = "Rheava"
+logoFile = "assets/program7/icon.png"
+
+[[dependencies.program7]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.program7]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.program7]]
+modId = "architectury"
+type = "required"
+versionRange = "[13.0.0,)"
+ordering = "AFTER"
+side = "BOTH"

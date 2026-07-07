@@ -8,237 +8,162 @@ Units marked ✅ are implemented; the rest are specs for their phase.
 - **Player risk tiers (1–3):** how dangerous the Program thinks *you* are
   (naked & dying = 1, iron-grade = 2, diamond+ = 3). Decides response size.
 - **Program tech tiers (1–5, below):** how far the *Program* has escalated.
-  Decides what units exist at all. You fight Tier 1 hardware on day 3 and
-  Tier 5 hardware in the endgame.
+  Decides what units exist at all.
 
-## Escalation: how the Program climbs tiers
+## Escalation rules
 
-Tier N+1 unlocks when the Program has **all three**:
-
-1. **Resources banked** — tiers are paid for out of the ledger; a starved
-   base cannot escalate.
-2. **Infrastructure built** — each tier needs its buildings standing
-   (assembly bank → outposts → integration sites → launch pads).
-3. **Pressure** — global threat level thresholds (player kills, base damage,
-   scans of high-tier players) push it to *want* the next tier.
-
-This means the player controls the clock: raid the ledger, burn the
-buildings, or lie low, and escalation stalls. Killing a main base can knock
-the Program back a full tier until re-insertion.
-
----
+- **Tier 1** requires nothing more than a **battery and an assembler** — the
+  landing kit can always rebuild it.
+- **Tier 2** units are heavier versions of Tier 1 vehicles and demand more:
+  some require **special landing pads**, some have **upkeep** (resources per
+  unit time) or must self-sustain off their own power systems.
+- **Tier 3+** each require standing infrastructure, banked resources, and
+  threat pressure.
+- **HARD CAP: the Program is locked to Tier 3 at maximum until the player
+  destroys a main drone base for the first time.** Your first base kill is
+  the door to Tiers 4–5 — for both of you.
+- Big bases receive **orbital resupply drops**: very loud, very bright
+  streaks from the sky, felt as a psionic spike in the background even from
+  far away. If you feel one land, you've located a major base.
 
 ## Common doctrine (applies to every unit)
 
 - **View boxes:** sensor units perceive through visible sight cones. Break
   line of sight and you are dark — hiding is always legal.
+- **Fragility is real:** small drones die to usually ONE hit from a sword or
+  axe. The threat is numbers, speed and initiative — not bullet sponges.
+- **Knockback/Punch enchants are anti-drone tech:** hitting a drone with
+  knockback throws it off course, scrambles its stabilizers, and can send it
+  crashing into terrain.
+- **Ram attacks aim:** drones physically angle toward the player and lead
+  their target when making ram/slam attacks — you can read the commit.
+- **Motor hitboxes:** hitting a drone's motors/rotors is a quick kill even
+  when the body would survive.
+- **Wrecks, not item sprays:** destroyed drones crash and leave a small
+  **wreck block** at the crash site containing their salvage — loot it like
+  a container. Big units leave bigger wrecks.
 - **Sound attraction:** gunfire, explosions and machinery noise pull nearby
   units toward the source. Guns trade power for attention.
-- **Self-preservation:** any unit below ~30% health, outnumbered, or
-  outgunned attempts to disengage toward friendly forces. Suicide-class
-  units are the explicit exception.
-- **Environment applies:** hostile mobs damage drones; drones fight back or
-  route around. Poison does nothing (machines), wither damage does.
-- **Everything drops salvage.** No unit is a wasted kill.
+- **Self-preservation:** units below ~30% health disengage toward friendly
+  forces (suicide-class units excepted).
+- **Environment applies:** hostile mobs damage drones; poison does nothing
+  (machines), wither damage tears through plating.
 
 ---
 
-## TIER 1 — PROBE (landing kit, days 2–7)
+## TIER 1 — PROBE KIT
+*Requires: a battery + an assembler. Nothing else.*
 
-The contents of the first pod. Cheap, curious, replaceable.
+| Unit | Role | Status |
+|---|---|---|
+| **Light recon drone** (Surveyor) | Flying scanner: approaches, profiles the player over ~3.5 s of accelerating beeps, files intel, retreats; steals unattended item drops as cargo | ✅ |
+| **Light combat drone** (Attack Drone) | Fast suicide flyer: chases, arms at contact range, detonates; committed once armed | ✅ |
+| **Basic mining drone** (Harvester) | Wheeled hauler: mines ore/logs by tag, banks a 12-unit hopper into the ledger; unarmed, panics | ✅ |
+| **Logistics drone** | Small flyer ferrying parts between assembler and storage inside the perimeter | — |
+| **Wheeled logistics drone** | Ground hauler moving crates between harvest sites and base; lays slab paths; gold stripes = priority cargo | — |
+| **Basic ground drone** | Tiny armored car with a small gun — perimeter pest control, built to fight off zombies and skeletons, not players | — |
+| **Basic autogun** | Fixed small-caliber turret with a visible sweep cone; limited ammo feed | — |
 
-### Surveyor Drone ✅
-| | |
+## TIER 2 — FOOTHOLD
+*Heavier Tier 1 evolutions. Some need landing pads; some cost upkeep per
+unit time or self-sustain off their own power.*
+
+| Unit | Role |
 |---|---|
-| Role | Recon / intel — the Program's eyes |
-| Chassis | Small quad-rotor flyer, red sensor bar |
-| HP / Speed | 12 / fast (flying 0.6) |
-| Armament | None |
-| Salvage | Power bank, transmitter, drone core (35%) |
+| **Medium attack drone** | The workhorse gun flyer: strafing runs, retreats to rearm |
+| **Long-range sniper drone** | Highly fragile platform with a big, slow-firing weapon — glass cannon standoff |
+| **Medium mining drone** | Bores into cave systems following ore density; deploys light beacons |
+| **Laser mining carrier** | Drone carrying crates + multiple mining lasers — mobile strip-mine |
+| **Medium transport drone** | Carries two crates of resources at once |
+| **Air UAV drone** | Simple winged propeller drone; requires a **launch catapult** structure; loiters and spots for the base |
+| **Basic mortar** | Fixed indirect fire at spotted static targets; shells whistle before landing |
+| **Self-propelled mortar drone** | The mortar, mobile — repositions between volleys |
+| **Light anti-tank gun/emplacement** | High single-shot damage vs. golems, vehicles, and armored players |
+| **Unarmed car** | Fast ground scout/courier |
+| **Unarmed speedboat** | Water logistics and scouting |
+| **Underwater mining craft** | Harvests seabed resources (and finds guardians the hard way) |
+| **Light anti-air drone / ground AA** | Counters elytra players and (later) player drones |
 
-**Behavior loop:** patrol territory → detect player within 24 blocks (line
-of sight) → approach to 5-block standoff → scan for ~3.5 s with accelerating
-beeps → file threat profile (risk tier, weapon profile, elytra, deaths) →
-psionic interference spike → hard retreat, 20 s scan cooldown.
-**Also:** steals unattended item drops (≤3 stacks of cargo) ✅; killing the
-thief spills everything back out.
-**Counters:** break line of sight mid-scan (interrupts the report), any
-ranged weapon (it never fights back), or just let it see nothing valuable.
+## TIER 3 — WAR ECONOMY
+*Counter-adaptation live. This is the wall until you kill a main base.*
 
-### Attack Drone ✅
-| | |
+| Unit | Role |
 |---|---|
-| Role | Tier-1 response / suicide interceptor |
-| Chassis | Quad-rotor, red hazard chevrons |
-| HP / Speed | 8 / very fast (flying 0.9) |
-| Armament | Contact-fused warhead (power ~2 explosion) |
-| Salvage | Gunpowder, explosive warhead (40%), power bank (50%) |
+| **Heavy attack drone** | Car-sized, heavily armored: machine guns, grenade launchers, OR quad light missile launchers; costs serious resources; engages from far away |
+| **Basic IFV** | Infantry-fighting-vehicle analog: carries light drones forward, fire support |
+| **Mobile battery center** | Rolling power bank — extends operations far from base; killing it browns-out local units |
+| **Heavy boring/mining drones** | Industrial extraction; tunnel networks between sites |
+| **Cruise missile launcher** | Long-range strike at scouted static targets; missiles are interceptable |
+| **Artillery & larger SAMs** | Area bombardment; serious anti-air coverage |
+| **Small gunboats & corvettes** | Armed water presence |
+| **Ground-penetrating radar scanner** | Finds YOUR underground base |
+| **Combat air drone** | Fixed-wing unit strafing ground targets with light guns |
+| **Recon helicopter** | Fast aerial spotter with a searchlight cone |
+| **Repair/excavation mech** | Fixes structures and units, digs fortification lines |
 
-**Behavior loop:** launched by the Director in response to a filed scan
-(count = player risk tier, capped by the ledger — 4 iron + 4 gunpowder +
-2 redstone each) → beeline to target → arm at ~2.75 blocks → 1.5 s
-accelerating fuse → detonate. **Once armed it never defuses.**
-**Counters:** shoot it down before it arms (full salvage), kite the armed
-drone into terrain, water, or other enemies; shields block the blast.
+## TIER 4 — DOMINION
+*Unlocked only after the Program loses (and replaces) a main base.*
 
-### Harvester Drone ✅
-| | |
+| Unit | Role |
 |---|---|
-| Role | Resource extraction — the economy on wheels |
-| Chassis | Wheeled all-terrain box with a cargo hopper, gold stripes |
-| HP / Speed | 16 / slow (0.25), high step height |
-| Armament | None — panics and flees when hurt |
-| Salvage | Iron ingots, power bank, drone core (20%) |
+| **Gunship** | House-sized rotor craft: autoguns + rockets + searchlight; the sneak-attack doctrine weapon |
+| **APC** | Armored drone-carrier; deploys squads at contact |
+| **Tank** | Direct-fire armor; breaches walls |
+| **Attack helicopter** | Fast rotary gun/rocket platform |
+| **Medium warship** | Naval gun platform + drone tender |
+| **Large cruise missile arrays** | Saturation strikes on fixed positions |
+| **Mobile command center** | Forward Director node — killing it lobotomizes local coordination |
+| **Self-propelled artillery** | Mobile big guns |
+| **MRLS artillery** | Rocket salvos over a wide area |
+| **Drone fabricator** | Field factory — produces Tier 1–2 units away from main base |
+| **Mining submarine** | Deep-water extraction |
+| **Light/medium combat mech** | Walking weapons platforms; terrain-agnostic |
+| **Heavy ground fortifications** | Bunker lines, walls, layered turret positions |
+| **CAS jet** | Close-air-support: TNT/bomb drops on marked targets |
+| **Cargo plane** | Long-haul logistics; airdrops crates/units to outposts |
 
-**Behavior loop:** scan ~20 blocks for ore (iron/copper/redstone/coal) or
-logs → drive adjacent → grind through the block over ~4 s (visible cracks,
-mining noise) → bank the yield as cargo → when full, drive home and deposit
-into the Director's ledger → repeat.
-**Counters:** it's defenseless — but killing harvesters is *economic*
-warfare: every dead hauler is a dispatch the Director can't afford later.
-Escorts arrive in Tier 2.
+## TIER 5 — ASCENSION
+*The endgame arsenal.*
 
-### Probe Core ✅ *(structure)*
-The fabricator seed. Iron-pick tier, very tough, glows. Cracking it drops
-the heavy salvage (drone cores, power banks, transmitters, iron) and — once
-main bases are real — ends this insertion.
-
----
-
-## TIER 2 — FOOTHOLD (industrial, first fortifications)
-
-The base becomes a *place*: defined territory, defended logistics.
-
-### Light Attack Drone
-Small quad-rotor with a single light autogun. HP ~14. Strafing runs at
-medium range, retreats to rearm after 2 magazines. The 60% of lockdown
-production. **Counter:** shields eat the small-caliber fire; snipe the rotor.
-
-### Wheeled Logistics Drone ("the lovable idiot")
-Unarmed hauler that ferries crates between harvest sites and base; lays
-slab paths and carves cave ramps as it goes. Gold-striped crates = priority
-cargo (iron/coal) and get an escort of 1–2 light attack drones.
-**Counter:** ambush the convoy, steal the crate (it's a placeable container
-holding real ledger resources).
-
-### Autoturret *(structure)*
-Fixed small-caliber emplacement with a visible sweep cone. Engages players
-and hostile mobs inside territory. Limited ammo feed — sustained assault can
-run a turret dry. **Counter:** approach outside the cone; break its ammo
-feeder block.
-
-### Mortar Emplacement *(structure)*
-Indirect fire against static targets it cannot see (called in by surveyors).
-Slow, loud, telegraphed — shells whistle before landing. **Counter:** keep
-moving; kill the spotter and the mortar goes blind.
-
-### Medium Mining Drone
-The two ground borers from the pod, upgraded role: tunnel into cave systems
-following ore density, deploying torch-like beacons. Creates the mine shafts
-the logistics drones service. **Counter:** collapse/flood the shaft; it digs
-predictable bores.
+| Unit | Role |
+|---|---|
+| **Large warships** | Capital naval units |
+| **Massive emplacements** | Superheavy fixed defenses |
+| **Superheavy artillery & SAM sites** | Map-scale reach; near-total air denial |
+| **Ballistic missile silos** | Strategic strikes; loud, visible, interceptable launches |
+| **Supersonic fighter jets** | Air supremacy; nearly uninterceptable without SAMs of your own |
+| **Large airships & carriers** | Flying bases launching combat air drones |
+| **Massive command centers / mobile bases** | The Program's crown pieces |
+| **Orbital satellites** | Scan coverage + resupply targeting; a prerequisite target for the anti-orbital endgame |
+| **Heavy combat mechs & tanks** | The final ground escalation |
 
 ---
 
-## TIER 3 — EXPANSION (war economy, counter-adaptation live)
+## Minecraft integrations (things drones discover and adopt)
 
-The Program now *reads* you. Weapon-profile counters activate.
+1. **Amethyst** → spyglass optics for long-range spotters, tempered glass
+   armor panels.
+2. **Glowstone** → enhanced searchlights/illumination projects; dust
+   coaters that tag targets with the glowing effect.
+3. **Ender pearls & chorus fruit** → emergency dodge blinks and
+   long-distance teleport logistics.
+4. **Potions** → dropped on players as area denial, or fitted to larger
+   ships as defensive dispensers.
+5. **TNT** → CAS/jet bomb drops; TNT-carrier drones that hit far harder
+   than standard suicide drones.
+6. **Blaze powder** → weapon fuel and rocket propellant.
 
-### Harasser Drone
-Anti-melee counter. Flying gun platform that maintains 15–25 block standoff,
-never closes. Sent against sword-profile players. **Counter:** bows/crossbows
-(it counters melee, not ranged), enclosed spaces where standoff is impossible.
-
-### Skirmisher Drone
-Car-sized ground unit: heavy machine gun + grenade launcher. HP ~60 with
-armored plating (firearm-resistant; enchanted weapons bypass). The Tier-3
-response backbone. Uses cover, suppresses while explosive drones flank.
-**Counter:** component hitboxes — track wheels and gun mount are soft spots;
-high ground it can't path to.
-
-### Interceptor Drone
-Anti-elytra counter. Water-docked, trident-armed; launches on flight
-detection and slams escaping players mid-air. **Counter:** don't fly in a
-straight line; bait the launch, then land — it must return to its dock.
-
-### Flying Logistics Drone
-Fast, fragile base-internal courier feeding assembly lines from storage.
-Lives inside the perimeter. **Counter:** killing them during a raid starves
-the assembly bank mid-fight — production stalls.
-
-### Micro-Assembly Swarm *(structure-adjacent)*
-The build system: clouds of tiny units that erect fortifications and
-assemble drones at the assembly bank. Scale up over time (buildings go up
-faster and faster). Individually trivial to kill; the swarm reforms unless
-the assembly bank itself is destroyed.
-
----
-
-## TIER 4 — DOMINION (world integration)
-
-The Program uses *Minecraft* against you.
-
-### Gunship
-House-sized rotor craft: dual autoguns + rocket pods + searchlight cone.
-The sneak-attack doctrine weapon — once the Program knows you exist, it
-waits for one of these, then comes at night. Component hitboxes: rotors
-(2), gun mounts, fuel tank (catastrophic). Totem of undying in late Tier 4
-(survives one kill). **Counter:** rotor-sniping drops it out of the sky;
-fight it under tree cover where the searchlight can't track.
-
-### Heavy Assault Drone
-Walking weapons platform, diamond-hardpoint armor. Slow, methodical,
-breaches walls. The 20% of lockdown production. **Counter:** it commits to
-straight lines — TNT mines, lava moats, iron golem gang-ups.
-
-### Thrall Golem
-Village-built iron golem with a control hardpoint on its head. Fights for
-the Program. **Counter:** snipe the (visible, glowing) hardpoint to free
-the golem — it immediately turns on its handlers.
-
-### Sensor Web *(structure)*
-Sculk-sensor pylons wired across territory: silent, no view cone, hears
-footsteps/blocks/gunfire. **Counter:** wool-muffled movement, sneaking —
-vanilla sculk rules honored.
-
----
-
-## TIER 5 — ASCENSION (endgame)
-
-### Bore Tunneler
-Building-sized subterranean platform that digs highway tunnels between
-outposts and *under* player bases (breaching floors during assaults).
-Component hitboxes: drill head, drive segments. **Counter:** fight it in
-its own tunnel where it can't turn; collapse charges.
-
-### Ballistic Missile Battery *(structure)*
-Long-range bombardment of fixed player structures the Program has scouted.
-Launches are loud, visible for hundreds of blocks, and interceptable
-(shoot the missile, Tier-4+ player AA works). **Counter:** mobile bases,
-interception, or killing the spotter network so it has stale coordinates.
-
-### Orbital Relay *(structure)*
-The uplink pads that talk to the station: enable re-insertion pods, orbital
-scans, and (endless-waves mode) the wave cycle. **Destroying every relay is
-a prerequisite for the anti-orbital endgame shot.**
-
-### Void Engine Construct
-The psionic endgame guardian: a drone built around a crew-linked void
-engine — esoteric weaponry (guardian-beam arrays, psionic interference
-projection at weaponized intensity). Drops the **cold fusion engine**.
-**Counter:** it is powered by a *mind* — the datapad reveals its link
-window; strike during relink.
-
----
+Plus the earlier set: villager trade networks, thrall golems, sculk sensor
+webs, spawner farms, totems on heavies, trident interceptors, enchanting.
 
 ## Salvage → player tech map (quick reference)
 
-| Part | Dropped by | Reverse-engineers into |
+| Part | Dropped by (in wrecks) | Reverse-engineers into |
 |---|---|---|
 | Power bank | Everything | Battery tech, energy weapons |
-| Drone core | Surveyor, harvester, cores | Player drones, automation |
-| Transmitter | Surveyor | Tracking chips, datapad, remote control |
+| Drone core | Recon, mining units, cores | Player drones, automation |
+| Transmitter | Recon/spotter units | Tracking chips, datapad, remote control |
 | Gun barrel | Gun-armed units | Firearms, turrets |
-| Explosive warhead | Attack drones, skirmishers | Missiles, mining charges |
+| Explosive warhead | Suicide/missile units | Missiles, mining charges |
 | Magazine | Gun-armed units | Ammo crafting |
-| Cold fusion engine | Void Engine Construct / main base | Player automation endgame |
+| Cold fusion engine | Main base kill | Player automation endgame |

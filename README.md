@@ -1,6 +1,7 @@
 # Program 7
 
-A Fabric mod for Minecraft **1.21.1**.
+A **multiloader** (Fabric + NeoForge, via Architectury) mod for Minecraft
+**1.21.1**.
 
 An automated orbital probe program has chosen your world as its testing
 ground. Its drop pods land, mine, build and adapt — profiling how you fight
@@ -72,25 +73,34 @@ reverse-engineered and turned against it.
 Requires Java 21.
 
 ```bash
-./gradlew build        # jar lands in build/libs/
-./gradlew runClient    # dev-launch a client
+./gradlew build                 # builds both loaders
+./gradlew :fabric:build         # Fabric jar  -> fabric/build/libs/
+./gradlew :neoforge:build       # NeoForge jar-> neoforge/build/libs/
+./gradlew :fabric:runClient     # dev-launch a Fabric client
+./gradlew :neoforge:runClient   # dev-launch a NeoForge client
 ```
 
-> Version pins live in `gradle.properties`. If dependency resolution ever
-> fails on `fabric_version` / `yarn_mappings`, grab the current numbers for
-> MC 1.21.1 from <https://fabricmc.net/develop> — everything else should
-> stand.
+> Version pins live in `gradle.properties`. If dependency resolution fails
+> on `fabric_version` / `yarn_mappings` / `architectury_api_version` /
+> `neoforge_version`, grab current numbers for MC 1.21.1 from
+> <https://fabricmc.net/develop>, <https://maven.architectury.dev/> and
+> <https://projects.neoforged.net/neoforged/neoforge> — everything else
+> should stand.
 
-## Project layout
+## Project layout (multiloader)
 
 ```
-src/main/java/dev/rheava/program7/
-  Program7.java            mod entrypoint
-  registry/                items, entities, sounds
-  entity/                  SurveyorDroneEntity + ai/ goals
-  director/                ProgramDirectorState, RiskAssessment, ScanRecord
-  command/                 /program7 debug commands
-  client/                  renderer + quad-rotor model
+common/    all gameplay code + assets/data (loader-agnostic, Architectury API)
+  src/main/java/dev/rheava/program7/
+    Program7.java            common entrypoint (init)
+    registry/                items, blocks, entities, sounds (DeferredRegister)
+    entity/                  drone entities + ai/ goals
+    director/                ProgramDirectorState, RiskAssessment, ledger
+    network/                 interference payload + server manager
+    command/                 /program7 debug commands
+    client/                  overlay, renderers, models
+fabric/    Fabric entrypoints + fabric.mod.json
+neoforge/  NeoForge entrypoint + neoforge.mods.toml
 ```
 
 ## License

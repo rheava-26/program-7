@@ -1,0 +1,64 @@
+package dev.rheava.program7.registry;
+
+import dev.architectury.core.item.ArchitecturySpawnEggItem;
+import dev.architectury.registry.CreativeTabRegistry;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
+import dev.rheava.program7.Program7;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.text.Text;
+import net.minecraft.util.Rarity;
+
+/**
+ * Salvage recovered from downed Program hardware. These are the seeds of the
+ * reverse-engineering tree: every piece of player tech (drones, firearms,
+ * scanners, turrets) will be crafted from parts looted off the Program.
+ */
+public final class P7Items {
+	public static final DeferredRegister<ItemGroup> TABS =
+			DeferredRegister.create(Program7.MOD_ID, RegistryKeys.ITEM_GROUP);
+	public static final DeferredRegister<Item> ITEMS =
+			DeferredRegister.create(Program7.MOD_ID, RegistryKeys.ITEM);
+
+	public static final RegistrySupplier<ItemGroup> MAIN_TAB = TABS.register("main",
+			() -> CreativeTabRegistry.create(Text.translatable("itemGroup.program7.main"),
+					() -> new ItemStack(P7Items.DRONE_CORE.get())));
+
+	public static final RegistrySupplier<Item> DRONE_CORE = ITEMS.register("drone_core",
+			() -> new Item(new Item.Settings().maxCount(16).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> POWER_BANK = ITEMS.register("power_bank",
+			() -> new Item(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> TRANSMITTER = ITEMS.register("transmitter",
+			() -> new Item(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> GUN_BARREL = ITEMS.register("gun_barrel",
+			() -> new Item(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> EXPLOSIVE_WARHEAD = ITEMS.register("explosive_warhead",
+			() -> new Item(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> MAGAZINE = ITEMS.register("magazine",
+			() -> new Item(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+
+	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
+			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+
+	public static final RegistrySupplier<Item> SURVEYOR_DRONE_SPAWN_EGG = ITEMS.register("surveyor_drone_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.SURVEYOR_DRONE, 0x23272b, 0x27e2d3,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> ATTACK_DRONE_SPAWN_EGG = ITEMS.register("attack_drone_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.ATTACK_DRONE, 0x23272b, 0xe83030,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> HARVESTER_DRONE_SPAWN_EGG = ITEMS.register("harvester_drone_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.HARVESTER_DRONE, 0x23272b, 0xdeb12d,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+
+	public static void register() {
+		TABS.register();
+		ITEMS.register();
+	}
+
+	private P7Items() {
+	}
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "program7",
+  "version": "${version}",
+  "name": "Program 7",
+  "description": "An automated orbital probe program has chosen your world as its testing ground. Its drop pods mine, build, adapt and escalate alongside you — fight back, salvage their technology, and turn it against them.",
+  "authors": [
+    "Rheava"
+  ],
+  "contact": {
+    "sources": "https://github.com/rheava-26/program-7"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/program7/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.rheava.program7.fabric.Program7Fabric"
+    ],
+    "client": [
+      "dev.rheava.program7.fabric.client.Program7FabricClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "architectury": ">=13.0.0"
+  }
+}

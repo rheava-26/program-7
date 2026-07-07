@@ -136,6 +136,16 @@ Small light drones → massive bore tunnelers → house-sized gunships → rocke
 launched back to orbit → ballistic missiles. They should never remain static,
 boring threats — the player develops, and the Program develops alongside.
 
+### Minecraft item integrations
+
+Drones *discover* the world's materials and fold them into their arsenal
+(full list in UNITS.md): amethyst → spotter optics and tempered glass;
+glowstone → searchlights and glowing-tag dust coaters; ender pearls /
+chorus fruit → dodge blinks and teleport logistics; potions → dropped on
+players or mounted as ship defenses; TNT → CAS bomb drops and TNT-carrier
+drones (much stronger than standard suicide attacks); blaze powder →
+weapon and rocket fuel.
+
 ### World integration (mid/late game)
 
 - Trades with villagers for emeralds; builds remote-controlled iron golems
@@ -148,6 +158,22 @@ boring threats — the player develops, and the Program develops alongside.
   enchanted-trident interceptors stored in water, dispenser-style mass arrow
   launchers. Old equipment (bullets) is expensive but powerful — used
   sparingly as they "drop down to your level".
+
+## Drone Combat Feel
+
+- **Small drones are one-hit kills** to a sword or axe — the horror is
+  numbers and initiative, never HP sponges.
+- **Knockback/Punch enchantments throw drones off course**, scramble their
+  flight, and can crash them outright.
+- Drones **physically angle toward the player and lead their aim** during
+  ram attacks — the commit is readable and dodgeable.
+- **Motor/rotor hitboxes** give quick kills on bigger frames.
+- Dead drones **crash into small wreck blocks** holding their salvage —
+  looted like containers instead of item sprays on the ground.
+- The Program is **capped at Tier 3 until the player destroys a main base**
+  for the first time (see UNITS.md for the full five-tier arsenal).
+- **Orbital resupply** drops at large bases are loud, bright, and felt as a
+  background psionic spike — a beacon telling you where the big base is.
 
 ## Fighting Back (the reward loop)
 
@@ -288,5 +314,8 @@ explosion particles and smoke.
 - **Sound events** are registered up-front with vanilla placeholder
   redirects (`sounds.json`), so custom recordings can drop in later without
   code changes.
-- **Target version:** Minecraft 1.21.1 (Fabric) — chosen for the breadth of
-  the mod ecosystem there, in service of Pillar 5.
+- **Target version:** Minecraft 1.21.1, **multiloader** (Fabric + NeoForge
+  via Architectury): all gameplay code lives in the loader-agnostic `common`
+  module; `fabric/` and `neoforge/` are thin entrypoint shims. Chosen so
+  compat targets on either loader (Cracker's Wither Storm, Create, Guard
+  Villagers) are reachable without maintaining two codebases.
