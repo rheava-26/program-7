@@ -5,6 +5,7 @@ import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.item.DatapadItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -40,6 +41,9 @@ public final class P7Items {
 			() -> new Item(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> MAGAZINE = ITEMS.register("magazine",
 			() -> new Item(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+
+	public static final RegistrySupplier<Item> DATAPAD = ITEMS.register("datapad",
+			() -> new DatapadItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
