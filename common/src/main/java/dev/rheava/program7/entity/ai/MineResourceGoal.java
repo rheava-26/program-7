@@ -9,6 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameRules;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -39,7 +40,7 @@ public class MineResourceGoal extends Goal {
 
 	@Override
 	public boolean canStart() {
-		if (this.hauler.isCargoFull()) {
+		if (this.hauler.isCargoFull() || !this.canModifyWorld()) {
 			return false;
 		}
 		if (this.searchCooldown > 0) {
@@ -67,8 +68,14 @@ public class MineResourceGoal extends Goal {
 	public boolean shouldContinue() {
 		return this.target != null
 				&& !this.hauler.isCargoFull()
+				&& this.canModifyWorld()
 				&& this.stuckTicks < STUCK_LIMIT
 				&& HarvestTargets.resourceFor(this.drone.getWorld().getBlockState(this.target)) != null;
+	}
+
+	/** Program excavation obeys the {@code mobGriefing} gamerule, same as any block-breaking mob. */
+	private boolean canModifyWorld() {
+		return this.drone.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
 	}
 
 	@Override

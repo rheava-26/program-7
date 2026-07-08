@@ -28,6 +28,24 @@ public class P7Config {
 	/** Program explosions break terrain (explosive weapons never respect
 	 * structure protection either way). */
 	public boolean terrainDestruction = true;
+	/**
+	 * How aggressively Program units dig and build around the player's own
+	 * work. {@link DiggingPolicy#PROTECT} keeps them off player-placed blocks
+	 * and out of a buffer around player builds; {@link DiggingPolicy#MINIMAL}
+	 * also has them prefer caves/exposed ore over fresh shafts near you;
+	 * {@link DiggingPolicy#AGGRESSIVE} lets them carve through anything. All
+	 * digging still respects the {@code mobGriefing} gamerule regardless. */
+	public DiggingPolicy diggingPolicy = DiggingPolicy.PROTECT;
+
+	/** Governs how much of the world (and whose builds) Program excavation may touch. */
+	public enum DiggingPolicy {
+		/** Never touch player-placed blocks; stay out of a buffer around player builds. */
+		PROTECT,
+		/** Prefer caves and exposed ore; avoid carving fresh shafts near player territory. */
+		MINIMAL,
+		/** Dig through anything, player structures included — the nightmare setting. */
+		AGGRESSIVE
+	}
 	/** Weakened Program may offer timed truces (after discovering villagers). */
 	public boolean ceasefireProtocol = true;
 	/** Re-insertion never stops; anti-orbital victory disabled. */
