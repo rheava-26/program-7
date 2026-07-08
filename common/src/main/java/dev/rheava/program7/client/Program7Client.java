@@ -4,7 +4,7 @@ import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
-import dev.architectury.registry.client.rendering.EntityModelLayerRegistry;
+import dev.architectury.registry.client.level.entity.EntityModelLayerRegistry;
 import dev.rheava.program7.client.render.AirUAVModel;
 import dev.rheava.program7.client.render.AirUAVRenderer;
 import dev.rheava.program7.client.render.AntiAirTurretModel;
