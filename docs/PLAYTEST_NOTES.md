@@ -40,3 +40,31 @@ Feedback, triaged:
 6. **Datapad = a screen, not chat.** The datapad should open a **map-like GUI
    screen**, not print to chat. Player will sketch/specify the layout. (This is
    the deferred Datapad v2 — hold the GUI build until the sketch lands.)
+
+## Round 2 — the DREAD pass
+
+Core note from the player: the drones **aren't pervasive or scary enough yet**.
+This is modelled on real drone warfare — the target feeling is *fear*: getting
+ambushed should spike your pulse. Everything below serves that one goal.
+
+- **D1. Drones are LOUD and freak out when they see you.** Spotting the player
+  should trigger an alarmed, frantic reaction (audio + motion), not a calm scan.
+- **D2. Explosions are loud, volumetric, and boomy.** Bigger particle volume,
+  heavier low-end sound, real concussion.
+- **D3. You can HIDE.** Line of sight is real — while they search, breaking LOS
+  and staying behind cover actually loses them. (Ties to #3 camera blocks and
+  the LOS-projection below.)
+- **D4. Little drones whir and roll/hover over surfaces** — they *elevate over*
+  terrain rather than hopping/jumping. Constant whir that rises as they close.
+- **D5. Turret = a BLOCK, not an entity.** ⏳ IN PROGRESS. Port AutogunTurret to
+  a block + block entity with its own targeting/fire tick.
+- **D6. Guns overheat / limited ammo.** Attacking head-on shouldn't let them
+  spam fire forever — they overheat (or burn an ammo belt) and must cool/reload,
+  giving the player a window.
+- **D7. Bigger, much faster drones + projected line of vision.** Scale models up,
+  raise speed, and **draw the vision cone/beam** so you *feel* the moment you're
+  spotted.
+- **D8. Kill the "you've been spotted" text.** Replace the `scan_complete`
+  action-bar line with: a loud stinger + a hard spike of psionic interference,
+  naturally followed by the sound of incoming drones. Show, don't tell.
+  (Anchor: `ScanPlayerGoal.completeScan()` line ~125.)

@@ -20,9 +20,21 @@ import net.minecraft.world.World;
  * with total immobility: break line of sight and it's helpless.
  */
 public class AutogunTurretEntity extends ProgramDroneEntity {
+	/** Matches the gun's own engagement range — see {@link #initGoals}. */
+	private static final double ALARM_DETECTION_RANGE = 20.0;
+
 	public AutogunTurretEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
 		this.experiencePoints = 8;
+	}
+
+	@Override
+	public void tickMovement() {
+		super.tickMovement();
+		// A player walking into range for the first time gets a contact
+		// klaxon — bolted-down defenses don't get the sneak-up-quiet
+		// treatment the mobile units do.
+		this.tickApproachAlarm(ALARM_DETECTION_RANGE, 10);
 	}
 
 	public static DefaultAttributeContainer.Builder createAutogunTurretAttributes() {
@@ -41,7 +53,9 @@ public class AutogunTurretEntity extends ProgramDroneEntity {
 
 	@Override
 	protected void initGoals() {
-		this.goalSelector.add(1, new GunAttackGoal(this, 0.0, 20.0, 12, 3.0f));
+		// fireInterval 12->6: a twin-barrel autogun should hose, not plink —
+		// this brings it to ~3.3 rounds/sec instead of ~1.7 (see #1).
+		this.goalSelector.add(1, new GunAttackGoal(this, 0.0, 20.0, 6, 3.0f));
 		this.goalSelector.add(7, new LookAroundGoal(this));
 
 		this.targetSelector.add(1, new RevengeGoal(this));

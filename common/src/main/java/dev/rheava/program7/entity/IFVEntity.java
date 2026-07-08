@@ -46,7 +46,9 @@ public class IFVEntity extends ProgramDroneEntity {
 
 	@Override
 	protected void initGoals() {
-		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 18.0, 15, 4.0f));
+		// fireInterval 15->7: brings the main gun to ~2.9 rounds/sec so a
+		// straight gunfight with it actually feels sustained (see #1).
+		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 18.0, 7, 4.0f));
 		this.goalSelector.add(2, new DeployDronesGoal(this));
 		this.goalSelector.add(3, new WanderAroundFarGoal(this, 0.7));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));

@@ -27,9 +27,21 @@ import net.minecraft.world.World;
  * elytra.
  */
 public class AntiAirTurretEntity extends ProgramDroneEntity {
+	/** Matches the flak mount's own engagement range — see {@link #initGoals}. */
+	private static final double ALARM_DETECTION_RANGE = 40.0;
+
 	public AntiAirTurretEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
 		this.experiencePoints = 12;
+	}
+
+	@Override
+	public void tickMovement() {
+		super.tickMovement();
+		// A player walking into range for the first time gets a contact
+		// klaxon — bolted-down defenses don't get the sneak-up-quiet
+		// treatment the mobile units do.
+		this.tickApproachAlarm(ALARM_DETECTION_RANGE, 10);
 	}
 
 	public static DefaultAttributeContainer.Builder createAntiAirTurretAttributes() {

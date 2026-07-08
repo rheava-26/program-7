@@ -17,6 +17,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.SpectralArrowEntity;
@@ -36,6 +37,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -65,12 +67,21 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	 */
 	private static final double ROTOR_HIT_SLICE_HEIGHT = 0.25;
 
+	/** Range within which a unit closing on its target starts audibly winding up — see #4. */
+	private static final double APPROACH_WHIR_RANGE = 24.0;
+
 	private int scrambledTicks = 0;
 	private int retreatTicks = 0;
 	@Nullable
 	private LivingEntity retreatFrom;
 	/** Set when a mace blow shatters this (unarmored) airframe; read by {@link #onDeath}. */
 	private boolean maceShattered = false;
+	/** Ticks left before the next approach-whir cue is allowed to play. */
+	private int approachWhirCooldown = 0;
+	/** Ticks left before the next {@link #tickApproachAlarm} scan actually runs. */
+	private int alarmTickThrottle = 0;
+	/** Latched so the alarm sounds once per approach, not once per tick a player is in range. */
+	private boolean alarmLatched = false;
 
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -284,6 +295,61 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 					this.retreatFrom = null;
 				}
 			}
+			this.tickApproachWhir();
+		}
+	}
+
+	/**
+	 * Grows noisier as a unit closes on its target: a periodic whir cue,
+	 * gated by an internal cooldown and scaled louder the nearer the target
+	 * gets, so something bearing down on a player doesn't sneak in silent.
+	 * Jittered so a swarm doesn't all whir on the same tick.
+	 */
+	private void tickApproachWhir() {
+		if (this.approachWhirCooldown > 0) {
+			this.approachWhirCooldown--;
+			return;
+		}
+		LivingEntity target = this.getTarget();
+		if (target == null) {
+			return;
+		}
+		double distance = this.distanceTo(target);
+		if (distance > APPROACH_WHIR_RANGE) {
+			return;
+		}
+		float proximity = (float) ((APPROACH_WHIR_RANGE - distance) / APPROACH_WHIR_RANGE);
+		float volume = 0.3f + proximity * 0.7f;
+		this.playSound(P7Sounds.DRONE_WHIR.get(), volume, 0.9f + this.random.nextFloat() * 0.2f);
+		// 15-25 ticks, jittered so multiple units don't chorus in lockstep.
+		this.approachWhirCooldown = 15 + this.random.nextInt(11);
+	}
+
+	/**
+	 * Fixed-emplacement contact alarm: raises {@link P7Sounds#UNIT_ALARM}
+	 * once when a hostile player first enters {@code detectionRange}, and
+	 * un-latches once no player remains in range so it can fire again on the
+	 * next approach. {@code throttleTicks} bounds how often the (relatively
+	 * cheap, but not free) nearest-player scan actually runs; callers can
+	 * safely invoke this every tick.
+	 */
+	protected void tickApproachAlarm(double detectionRange, int throttleTicks) {
+		if (this.getWorld().isClient) {
+			return;
+		}
+		if (this.alarmTickThrottle > 0) {
+			this.alarmTickThrottle--;
+			return;
+		}
+		this.alarmTickThrottle = throttleTicks;
+
+		PlayerEntity nearest = this.getWorld().getClosestPlayer(this, detectionRange);
+		boolean playerNear = nearest != null && !nearest.isSpectator() && !nearest.isCreative();
+		if (playerNear && !this.alarmLatched) {
+			this.alarmLatched = true;
+			this.playSound(P7Sounds.UNIT_ALARM.get(), 1.0f, 1.0f);
+		} else if (!playerNear) {
+			this.alarmLatched = false;
 		}
 	}
 
@@ -305,7 +371,20 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 					.add(LootContextParameters.DAMAGE_SOURCE, damageSource)
 					.build(LootContextTypes.ENTITY);
 			lootTable.generateLoot(params, salvage::add);
-			DroneWreckBlock.placeWreck(world, this.getBlockPos(), salvage);
+
+			// Fliers usually die mid-air; drop the wreck to the ground below
+			// instead of leaving it floating, and give the landing a real
+			// impact instead of just puffing into place.
+			BlockPos landingPos = findGroundBelow(world, this.getBlockPos());
+			DroneWreckBlock.placeWreck(world, landingPos, salvage);
+			world.spawnParticles(ParticleTypes.SMOKE,
+					landingPos.getX() + 0.5, landingPos.getY() + 0.3, landingPos.getZ() + 0.5,
+					4, 0.3, 0.05, 0.3, 0.02);
+			world.spawnParticles(ParticleTypes.CRIT,
+					landingPos.getX() + 0.5, landingPos.getY() + 0.3, landingPos.getZ() + 0.5,
+					4, 0.3, 0.1, 0.3, 0.05);
+			world.playSound(null, landingPos, P7Sounds.DRONE_IMPACT.get(), SoundCategory.HOSTILE,
+					0.9f, 0.9f + world.random.nextFloat() * 0.2f);
 
 			if (this.maceShattered) {
 				// A mace doesn't just kill a light airframe, it blows it apart —
@@ -327,6 +406,21 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 				P7Advancements.grant(killer, "fixed_wing_melee");
 			}
 		}
+	}
+
+	/**
+	 * Scans straight down from {@code start} to the first solid ground,
+	 * stopping at the world's bottom if it never finds one. If {@code start}
+	 * is already on the ground this returns it unchanged, so a ground unit's
+	 * wreck lands exactly where it always did.
+	 */
+	private static BlockPos findGroundBelow(ServerWorld world, BlockPos start) {
+		BlockPos.Mutable pos = start.mutableCopy();
+		int bottom = world.getBottomY();
+		while (pos.getY() > bottom && world.getBlockState(pos.down()).isReplaceable()) {
+			pos.move(0, -1, 0);
+		}
+		return pos.toImmutable();
 	}
 
 	@Override

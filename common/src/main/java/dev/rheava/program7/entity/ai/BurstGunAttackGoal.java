@@ -47,6 +47,7 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 
 	@Override
 	public void start() {
+		super.start();
 		this.cooldown = ACQUISITION_DELAY;
 		this.burstShotsLeft = 0;
 		this.intraBurstTimer = 0;
@@ -74,6 +75,10 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 
 		double distance = this.shooter.distanceTo(target);
 		boolean canSee = this.shooter.getVisibilityCache().canSee(target);
+		// Shared with the base goal: keeps the last-seen spot warm and, for a
+		// short window after losing sight, still counts as "on target" so a
+		// burst can keep hosing down cover instead of cutting off instantly.
+		boolean sighted = this.updateSight(target, canSee);
 		if (this.speed > 0) {
 			if (distance > this.range * 0.7 || !canSee) {
 				this.shooter.getNavigation().startMovingTo(target, this.speed);
@@ -86,8 +91,8 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 			// Mid-burst: cycle the intra-burst timer down and fire on zero.
 			if (this.intraBurstTimer > 0) {
 				this.intraBurstTimer--;
-			} else if (distance <= this.range && canSee) {
-				this.fire(target, distance);
+			} else if (distance <= this.range && sighted) {
+				this.fireBurstShot(target, distance, canSee);
 				this.burstShotsLeft--;
 				this.intraBurstTimer = BURST_SHOT_INTERVAL;
 				if (this.burstShotsLeft == 0) {
@@ -100,10 +105,19 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 
 		if (this.cooldown > 0) {
 			this.cooldown--;
-		} else if (distance <= this.range && canSee) {
+		} else if (distance <= this.range && sighted) {
 			// Cooldown's clear and the target's in the envelope: rack a new burst.
 			this.burstShotsLeft = this.burstSize;
 			this.intraBurstTimer = 0;
+		}
+	}
+
+	/** Fires one shot of the burst, aimed live if visible or blind (suppression) otherwise. */
+	private void fireBurstShot(LivingEntity target, double distance, boolean canSee) {
+		if (canSee) {
+			this.fire(target, distance);
+		} else {
+			this.fire(target, distance, this.getLastSeenPos(), SUPPRESSION_HIT_CHANCE_SCALE);
 		}
 	}
 }

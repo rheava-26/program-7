@@ -35,6 +35,18 @@
       { "name": "minecraft:entity.generic.explode", "type": "event" }
     ]
   },
+  "entity.surveyor_drone.impact": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.impact",
+    "sounds": [
+      { "name": "minecraft:block.anvil.land", "type": "event" }
+    ]
+  },
+  "entity.surveyor_drone.whir": {
+    "subtitle": "subtitles.program7.entity.surveyor_drone.whir",
+    "sounds": [
+      { "name": "minecraft:block.conduit.ambient", "type": "event" }
+    ]
+  },
   "entity.attack_drone.fuse": {
     "subtitle": "subtitles.program7.entity.attack_drone.fuse",
     "sounds": [
@@ -65,6 +77,12 @@
       { "name": "minecraft:item.crossbow.shoot", "type": "event" }
     ]
   },
+  "unit.gun_whistle": {
+    "subtitle": "subtitles.program7.unit.gun_whistle",
+    "sounds": [
+      { "name": "minecraft:entity.arrow.shoot", "type": "event" }
+    ]
+  },
   "unit.mortar_fire": {
     "subtitle": "subtitles.program7.unit.mortar_fire",
     "sounds": [
@@ -81,6 +99,12 @@
     "subtitle": "subtitles.program7.unit.mortar_impact",
     "sounds": [
       { "name": "minecraft:entity.generic.explode", "type": "event" }
+    ]
+  },
+  "unit.alarm": {
+    "subtitle": "subtitles.program7.unit.alarm",
+    "sounds": [
+      { "name": "minecraft:block.bell.use", "type": "event" }
     ]
   },
   "block.assembler.working": {

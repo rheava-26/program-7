@@ -39,7 +39,9 @@ public class MediumAttackDroneEntity extends ProgramDroneEntity {
 
 	@Override
 	protected void initGoals() {
-		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 16.0, 20, 3.0f));
+		// fireInterval 20->8: "keeps strafing and hosing" per the class doc
+		// should read as ~2.5 rounds/sec, not one shot a second (see #1).
+		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 16.0, 8, 3.0f));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));
 

@@ -52,7 +52,9 @@ public class GroundDroneEntity extends ProgramDroneEntity {
 
 	@Override
 	protected void initGoals() {
-		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 14.0, 25, 3.5f));
+		// fireInterval 25->10: perimeter pest control still needs to feel
+		// like real automatic fire, ~2 rounds/sec instead of 0.8 (see #1).
+		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 14.0, 10, 3.5f));
 		this.goalSelector.add(3, new PatrolPerimeterGoal(this, 0.8, 12));
 		this.goalSelector.add(4, new WanderAroundFarGoal(this, 0.7));
 		this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
