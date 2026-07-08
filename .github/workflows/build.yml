@@ -10,7 +10,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -43,3 +43,35 @@ jobs:
             fabric/build/libs/*.jar
             neoforge/build/libs/*.jar
           if-no-files-found: warn
+
+      # Stage just the two playable loader jars (drop the -sources and
+      # intermediate -dev-shadow jars) so the release page is uncluttered.
+      - name: Stage playable jars
+        if: success() && github.ref == 'refs/heads/claude/minecraft-fabric-mod-gb9ys2'
+        run: |
+          mkdir -p dist
+          cp fabric/build/libs/*.jar neoforge/build/libs/*.jar dist/ 2>/dev/null || true
+          rm -f dist/*-sources.jar dist/*-dev-shadow.jar dist/*-dev.jar
+          echo "Release contents:"; ls -la dist
+
+      # Publish/refresh a single rolling pre-release so there's always one
+      # stable download link for the latest playable dev build.
+      - name: Publish dev build release
+        if: success() && github.ref == 'refs/heads/claude/minecraft-fabric-mod-gb9ys2'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          name: Program 7 — latest dev build
+          prerelease: true
+          body: |
+            Automated dev build of Program 7 (Minecraft 1.21.1). Early and
+            incomplete — expect placeholder art and rough balance.
+
+            **To play (Fabric):** install Fabric Loader for 1.21.1, then drop
+            `program7-fabric-*.jar` **plus Fabric API and Architectury API**
+            into your mods folder.
+            **To play (NeoForge):** install NeoForge for 1.21.1, then drop
+            `program7-neoforge-*.jar` **plus Architectury API** into mods.
+
+            Built from ${{ github.sha }}.
+          files: dist/*.jar
