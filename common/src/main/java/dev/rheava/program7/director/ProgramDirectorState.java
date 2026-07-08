@@ -10,23 +10,29 @@ import java.util.UUID;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.LaunchCatapultBlock;
+import dev.rheava.program7.config.P7Config;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.entity.SniperDroneEntity;
 import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
+import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.advancement.AdvancementEntry;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.chunk.ChunkStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -93,6 +99,25 @@ public class ProgramDirectorState extends PersistentState {
 			Resources.IRON, 64, Resources.COPPER, 48, Resources.REDSTONE, 32,
 			Resources.COAL, 64, Resources.GUNPOWDER, 32);
 
+	/** Never more than this many outposts under construction at once. */
+	private static final int MAX_ACTIVE_SITES = 2;
+	/** How often the Program even considers founding a new outpost. */
+	private static final int SITE_FOUNDING_CHECK_INTERVAL = 200;
+	/** Minimum spacing between one outpost founding and the next. */
+	private static final long MIN_SITE_FOUNDING_INTERVAL = 12000L;
+	/** Same search band used for probe re-insertion, just centered on a core instead of a player. */
+	private static final int SITE_MIN_DISTANCE = 60;
+	private static final int SITE_MAX_DISTANCE = 140;
+	/** Upfront cost to break ground on a brand new outpost. */
+	private static final Map<String, Integer> SITE_FOUNDING_COST = Map.of(
+			Resources.IRON, 6, Resources.WOOD, 6);
+	/** How often queued progress advances, independent of whether anyone's watching. */
+	private static final int BUILD_INTERVAL = 40;
+	/** What one step of blueprint progress costs — deliberately cheap. */
+	private static final Map<String, Integer> BUILD_STEP_COST = Map.of(Resources.IRON, 1);
+	/** Visible placement catch-up rate once a site's chunk is loaded. */
+	private static final int MAX_PLACEMENTS_PER_TICK = 2;
+
 	private int globalThreat = 0;
 	private int scansCompleted = 0;
 	private long landingDeadline = -1L;
@@ -102,6 +127,10 @@ public class ProgramDirectorState extends PersistentState {
 	private BlockPos probeCorePos = null;
 	/** Every probe core site the Program has planted, live or since razed. */
 	private final List<BlockPos> coreSites = new ArrayList<>();
+	/** Outposts currently being built up incrementally — see {@link ConstructionSite}. */
+	private final List<ConstructionSite> constructionSites = new ArrayList<>();
+	/** Spacing gate so outposts don't all break ground back-to-back. */
+	private long lastSiteFoundedTime = 0L;
 	private long lastResupplyTime = 0L;
 	/** The last time the Program had actual hostile contact with a player. */
 	private long lastContactTime = 0L;
@@ -202,6 +231,178 @@ public class ProgramDirectorState extends PersistentState {
 				this.markDirty();
 			}
 		}
+
+		if (this.tier2Unlocked() && world.getTime() % SITE_FOUNDING_CHECK_INTERVAL == 0
+				&& this.constructionSites.size() < MAX_ACTIVE_SITES
+				&& world.getTime() - this.lastSiteFoundedTime >= MIN_SITE_FOUNDING_INTERVAL
+				&& !this.coreSites.isEmpty()) {
+			this.tryFoundConstructionSite(world);
+		}
+
+		if (!this.constructionSites.isEmpty()) {
+			this.tickConstructionSites(world);
+		}
+	}
+
+	/**
+	 * Break ground on a new outpost, anchored a fair distance from one of the
+	 * Program's existing core sites. Founding costs a modest upfront payment
+	 * — if the ledger can't cover it, this attempt is simply skipped and
+	 * retried at the next check.
+	 */
+	private void tryFoundConstructionSite(ServerWorld world) {
+		BlockPos core = this.coreSites.get(world.getRandom().nextInt(this.coreSites.size()));
+		BlockPos site = pickLandingSite(world, core, SITE_MIN_DISTANCE, SITE_MAX_DISTANCE);
+		if (site == null) {
+			return; // try again next check
+		}
+		if (!this.tryConsume(SITE_FOUNDING_COST)) {
+			return;
+		}
+		this.constructionSites.add(new ConstructionSite(site));
+		this.lastSiteFoundedTime = world.getTime();
+		this.markDirty();
+		Program7.LOGGER.info("[Program 7] New outpost construction founded at {}", site.toShortString());
+	}
+
+	/**
+	 * Advance every active outpost. Two clocks run independently:
+	 * <ul>
+	 *   <li>Time progress ({@code progress}) ticks up on a fixed cadence as
+	 *   long as the ledger can pay for it, whether or not anyone is anywhere
+	 *   near the site — this is what lets a player leave and come back to
+	 *   find the outpost further along.</li>
+	 *   <li>Visible placement ({@code placedIndex}) only advances while the
+	 *   site's chunk is actually loaded, catching up toward {@code progress}
+	 *   at up to {@link #MAX_PLACEMENTS_PER_TICK} blocks a tick — so a player
+	 *   who wanders back in sees it briefly catch up, then settle into
+	 *   building at pace.</li>
+	 * </ul>
+	 */
+	private void tickConstructionSites(ServerWorld world) {
+		List<BlockPlacement> blueprint = supplyDepotBlueprint();
+		Iterator<ConstructionSite> iterator = this.constructionSites.iterator();
+		boolean changed = false;
+		while (iterator.hasNext()) {
+			ConstructionSite site = iterator.next();
+
+			if (site.progress < blueprint.size()) {
+				if (site.buildCooldown > 0) {
+					site.buildCooldown--;
+				} else {
+					site.buildCooldown = BUILD_INTERVAL;
+					if (this.tryConsume(BUILD_STEP_COST)) {
+						site.progress++;
+						changed = true;
+					}
+				}
+			}
+
+			int chunkX = site.origin.getX() >> 4;
+			int chunkZ = site.origin.getZ() >> 4;
+			// getChunk(..., false) returns null instead of forcing a load, so this
+			// is a pure "is it actually loaded right now" check.
+			boolean chunkLoaded = world.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null;
+			if (site.placedIndex < site.progress && chunkLoaded) {
+				int placedThisTick = 0;
+				while (site.placedIndex < site.progress && placedThisTick < MAX_PLACEMENTS_PER_TICK) {
+					this.placeBlueprintBlock(world, site.origin, blueprint.get(site.placedIndex));
+					site.placedIndex++;
+					placedThisTick++;
+					changed = true;
+				}
+			}
+
+			if (site.progress >= blueprint.size() && site.placedIndex >= blueprint.size()) {
+				world.playSound(null, site.origin, P7Sounds.ASSEMBLER_COMPLETE.get(), SoundCategory.BLOCKS,
+						1.0f, 1.0f);
+				world.spawnParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+						site.origin.getX() + 0.5, site.origin.getY() + 2.0, site.origin.getZ() + 0.5,
+						12, 0.6, 0.6, 0.6, 0.02);
+				Program7.LOGGER.info("[Program 7] Outpost construction complete at {}", site.origin.toShortString());
+				iterator.remove();
+				changed = true;
+			}
+		}
+		if (changed) {
+			this.markDirty();
+		}
+	}
+
+	/**
+	 * Place a single blueprint block if — and only if — it's safe to. Never
+	 * overwrites a non-replaceable (solid/player-placed) block regardless of
+	 * {@link P7Config.DiggingPolicy}; under {@code PROTECT}/{@code MINIMAL}
+	 * this additionally leaves a gap rather than filling in a replaceable
+	 * block that isn't plain air (e.g. a player's water feature) — only
+	 * {@code AGGRESSIVE} will build straight through those too. A skipped
+	 * block just leaves a hole in the outpost; {@code placedIndex} still
+	 * advances so construction doesn't stall on one blocked spot forever.
+	 */
+	private void placeBlueprintBlock(ServerWorld world, BlockPos origin, BlockPlacement placement) {
+		BlockPos pos = origin.add(placement.offset());
+		BlockState current = world.getBlockState(pos);
+		if (!current.isReplaceable()) {
+			return; // never overwrite existing solid/player-placed blocks
+		}
+		if (Program7.CONFIG.diggingPolicy != P7Config.DiggingPolicy.AGGRESSIVE
+				&& !current.isAir() && !current.getFluidState().isEmpty()) {
+			return; // PROTECT/MINIMAL: leave water features etc. alone
+		}
+
+		world.setBlockState(pos, placement.state());
+		world.playSound(null, pos, P7Sounds.ASSEMBLER_WORKING.get(), SoundCategory.BLOCKS,
+				0.5f, 0.9f + world.getRandom().nextFloat() * 0.2f);
+		world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,
+				pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 6, 0.25, 0.25, 0.25, 0.03);
+	}
+
+	private static List<BlockPlacement> blueprintCache = null;
+
+	/**
+	 * The "supply depot" blueprint: a 5x5 scaffold floor with an open center
+	 * hatch, four 3-tall corner posts, and a partial roof frame connecting
+	 * their tops. 40 placements total, ordered bottom-up (floor, then posts,
+	 * then roof) so watching {@code placedIndex} climb reads as the
+	 * structure visibly rising out of the ground.
+	 */
+	private static List<BlockPlacement> supplyDepotBlueprint() {
+		if (blueprintCache != null) {
+			return blueprintCache;
+		}
+		List<BlockPlacement> blueprint = new ArrayList<>();
+		BlockState scaffold = P7Blocks.METAL_SCAFFOLD.get().getDefaultState();
+
+		// Layer 0: 5x5 floor, center left open as a hatch. 24 blocks.
+		for (int x = -2; x <= 2; x++) {
+			for (int z = -2; z <= 2; z++) {
+				if (x == 0 && z == 0) {
+					continue;
+				}
+				blueprint.add(new BlockPlacement(new BlockPos(x, 0, z), scaffold));
+			}
+		}
+
+		// Layers 1-3: four corner posts, 3 tall each. 12 blocks.
+		int[][] corners = {{-2, -2}, {2, -2}, {-2, 2}, {2, 2}};
+		for (int y = 1; y <= 3; y++) {
+			for (int[] corner : corners) {
+				blueprint.add(new BlockPlacement(new BlockPos(corner[0], y, corner[1]), scaffold));
+			}
+		}
+
+		// Layer 4: partial roof frame joining the post-tops at each edge midpoint. 4 blocks.
+		int[][] edgeMidpoints = {{0, -2}, {0, 2}, {-2, 0}, {2, 0}};
+		for (int[] mid : edgeMidpoints) {
+			blueprint.add(new BlockPlacement(new BlockPos(mid[0], 4, mid[1]), scaffold));
+		}
+
+		blueprintCache = List.copyOf(blueprint);
+		return blueprintCache;
+	}
+
+	/** One blueprint step: a relative offset from a {@link ConstructionSite}'s origin, and the state to set there. */
+	private record BlockPlacement(BlockPos offset, BlockState state) {
 	}
 
 	/**
@@ -594,6 +795,13 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		nbt.put("CoreSites", coreSitesList);
 
+		nbt.putLong("LastSiteFoundedTime", this.lastSiteFoundedTime);
+		NbtList constructionSitesList = new NbtList();
+		for (ConstructionSite site : this.constructionSites) {
+			constructionSitesList.add(site.toNbt());
+		}
+		nbt.put("ConstructionSites", constructionSitesList);
+
 		NbtList intelList = new NbtList();
 		this.intel.forEach((uuid, entry) -> {
 			NbtCompound tag = new NbtCompound();
@@ -647,6 +855,15 @@ public class ProgramDirectorState extends PersistentState {
 			}
 		}
 
+		state.lastSiteFoundedTime = nbt.contains("LastSiteFoundedTime") ? nbt.getLong("LastSiteFoundedTime") : 0L;
+		NbtList constructionSitesList = nbt.getList("ConstructionSites", NbtElement.COMPOUND_TYPE);
+		for (int i = 0; i < constructionSitesList.size(); i++) {
+			ConstructionSite site = ConstructionSite.fromNbt(constructionSitesList.getCompound(i));
+			if (site != null) {
+				state.constructionSites.add(site);
+			}
+		}
+
 		NbtList intelList = nbt.getList("Intel", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < intelList.size(); i++) {
 			NbtCompound tag = intelList.getCompound(i);
@@ -690,6 +907,51 @@ public class ProgramDirectorState extends PersistentState {
 			this.playerId = playerId;
 			this.count = count;
 			this.ticksLeft = ticksLeft;
+		}
+	}
+
+	/**
+	 * A single outpost under incremental construction. {@code progress} is
+	 * how far the blueprint has advanced on the Director's own clock —
+	 * ticking up whether or not the chunk is loaded — while {@code
+	 * placedIndex} is how many of those steps have actually been placed as
+	 * real blocks in the world; it can only catch up to {@code progress}
+	 * while the chunk is loaded. {@code buildCooldown} is the countdown to
+	 * the next progress step.
+	 */
+	static final class ConstructionSite {
+		BlockPos origin;
+		int progress;
+		int placedIndex;
+		int buildCooldown;
+
+		ConstructionSite(BlockPos origin) {
+			this.origin = origin;
+			this.progress = 0;
+			this.placedIndex = 0;
+			this.buildCooldown = 0;
+		}
+
+		NbtCompound toNbt() {
+			NbtCompound tag = new NbtCompound();
+			tag.putIntArray("Origin", new int[] {this.origin.getX(), this.origin.getY(), this.origin.getZ()});
+			tag.putInt("Progress", this.progress);
+			tag.putInt("PlacedIndex", this.placedIndex);
+			tag.putInt("BuildCooldown", this.buildCooldown);
+			return tag;
+		}
+
+		@Nullable
+		static ConstructionSite fromNbt(NbtCompound tag) {
+			int[] pos = tag.getIntArray("Origin");
+			if (pos.length != 3) {
+				return null;
+			}
+			ConstructionSite site = new ConstructionSite(new BlockPos(pos[0], pos[1], pos[2]));
+			site.progress = tag.getInt("Progress");
+			site.placedIndex = tag.getInt("PlacedIndex");
+			site.buildCooldown = tag.getInt("BuildCooldown");
+			return site;
 		}
 	}
 }

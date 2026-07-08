@@ -72,6 +72,19 @@ public final class P7Blocks {
 					.requiresTool()
 					.sounds(BlockSoundGroup.NETHERITE)));
 
+	/**
+	 * Cheap Program construction block. This is what an incrementally-built
+	 * outpost ({@code ConstructionSite} in {@link
+	 * dev.rheava.program7.director.ProgramDirectorState}) is built out of —
+	 * plain, no block entity, just structural filler.
+	 */
+	public static final RegistrySupplier<Block> METAL_SCAFFOLD = BLOCKS.register("metal_scaffold",
+			() -> new Block(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(4.0f, 30.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)));
+
 	public static void register() {
 		BLOCKS.register();
 	}
