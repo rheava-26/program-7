@@ -3,6 +3,14 @@
 Phases are ordered so every phase ships something playable, and the Director
 (the per-world brain) accretes capability instead of being rewritten.
 
+> **v1.0 scope:** ship the complete **Tier 1–3 probe invasion** — landing,
+> the mined economy, weapon-profile adaptation, the datapad, base assault, and
+> the first-base psionic payoff. **Tiers 4–5 and the anti-orbital finale are
+> designed but post-v1.0 "act 2" content**, gated behind the first base kill
+> rather than a calendar. This keeps v1.0 coherent and shippable without
+> cutting the long-term vision — Tier 1–3 is already a complete game with a
+> real win state (destroy a main base).
+
 ## Phase 0 — Foundation ✅
 
 - [x] Fabric project scaffold (MC 1.21.1, Loom, Java 21)
@@ -104,7 +112,8 @@ Phases are ordered so every phase ships something playable, and the Director
 - [x] First Tier 2 units: medium attack drone (strafing gun flyer),
       long-range sniper drone (fragile standoff, backs away if you close),
       basic mortar (fixed emplacement, arcing shells that whistle before
-      impact); waves start including Tier 2 hardware from day 14
+      impact). NOTE: current impl gates Tier 2 waves on day 14 — a temporary
+      stand-in; Phase 3 replaces it with capability/threat gating
 - [x] Autogun v3 remodel: taller open skeletal frame — light turrets don't
       hide their ammo feed; shrouds are for the heavier tiers
 - [x] Wreck blocks: destroyed drones leave a debris-pile block holding
@@ -144,6 +153,19 @@ Phases are ordered so every phase ships something playable, and the Director
 
 - [ ] Weapon-profile counters: ranged → explosive swarms; melee → ranged
       harassers; elytra → instant-reaction interception
+- [ ] Capability/threat escalation model: replace the day-14 Tier 2 timer —
+      the Program tiers up when its mined economy + threat pressure justify it,
+      and adapts to threats it faces beyond the player (mobs, other players,
+      modded enemies, a wither storm)
+- [ ] Typed-armor damage model: per-unit resistance by damage type (ballistic
+      / high-velocity impact / piercing / explosive / enchanted-psionic /
+      knockback-disruption) — the mod-compat balance backbone (see DESIGN.md).
+      Gun-mod players get an equivalent challenge, not a free pass or a wall
+- [ ] Datapad v1 (pulled forward from Phase 4 — it's the mod's identity and
+      the fix for "adaptation is invisible"): craft early from basic salvage;
+      proximity blare + base bearings, a live per-base **heat meter**, and a
+      per-group **doctrine/intent readout** so the Program's adaptation is
+      legible as it happens (see DESIGN.md "The Datapad")
 - [ ] Anomaly detection: player-placed blocks in wilderness trigger search
       patterns; visible view cones on sensor drones (hide by breaking LoS)
 - [ ] Gunship doctrine: known players get a delayed, deliberate sneak attack
@@ -177,13 +199,20 @@ Phases are ordered so every phase ships something playable, and the Director
 - [ ] Automatic MG turret, surface-to-surface missile rack, laser drill,
       thermal vision
 - [ ] Cold fusion engine drop from destroyed bases → player automation
+- [ ] First main-base kill payoff: sever the psionic relay → resource windfall
+      + player **psionic unlock** + degrade the fleet's heavy fabrication;
+      this is what opens Tier 4–5 for both sides (see DESIGN.md)
+- [ ] Charge laser + ender-pearl gun + AP crossbow bolts / heavy arrows: the
+      typed anti-armor answers so every build has a lane (see UNITS.md salvage)
 
 ## Phase 5 — World Integration
 
 - [ ] Villager trading, remote-controlled iron golems, anti-pillager ops
-- [ ] Ceasefire protocol: after discovering villagers, a weakened Program
-      (or one facing a repeatedly-dying player) may offer a timed truce
-      (config-gated)
+- [ ] Ceasefire protocol + heat model: heat is a two-way dial (aggression and
+      anomalies raise it; sustained non-engagement — or beating the fleet into
+      submission — lower it). Flooring heat by force earns an uneasy neutrality;
+      after discovering villagers a weakened Program may offer a timed truce
+      (config-gated). Heat surfaces on the datapad
 - [ ] Nether expansion via ruined portals
 - [ ] Minecraft-tech adoption: enchanting, sculk sensors, spawner farms,
       totems on heavies, trident interceptors, arrow-battery launchers
@@ -198,7 +227,9 @@ Phases are ordered so every phase ships something playable, and the Director
 - [ ] Data files loot from defeated main bases: scouted-area map + founders'
       logs (why the fleet is here)
 - [ ] Anti-orbital weapon (missile battery / railgun — design TBD): the
-      intended victory, kills the orbital station and ends the Program
+      *full-campaign* victory, kills the orbital station and ends the Program.
+      NOTE: v1.0's shippable win is destroying a main base (unlocks psionics +
+      Tier 4–5); this finale is post-v1.0 and not a v1.0 gate
 - [ ] Endless waves config: re-insertion never stops
 - [ ] CurseForge release packaging
 

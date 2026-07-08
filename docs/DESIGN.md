@@ -97,6 +97,12 @@ engaging, and hiding. But:
   and you're dark.
 - Surviving past **~7 in-game days** with the Program active earns an
   advancement.
+- **Heat is a two-way dial, not a ratchet.** Aggression, anomalies, and kills
+  raise the Program's heat toward you; sustained non-engagement — or *beating
+  its forces into submission* until it judges you too costly — brings heat back
+  down. Drive heat to the floor and the Program backs off into an uneasy
+  neutrality for a while (all of it visible on the datapad). The ceasefire
+  protocol is simply heat bottoming out by force rather than by hiding.
 
 ## Counter-Adaptation (weapon profiling)
 
@@ -108,6 +114,16 @@ The Program tracks how each player fights and fields counters:
 - **Elytra:** instant-reaction weapons — lasers / particle beams / small
   deployable missiles that hit you mid-escape. Trident interception drones
   stored in water blocks that slam into escaping players.
+
+Beyond weapon profiling, groups pick a **battlefield doctrine** and commit to
+it — and because the datapad exposes the doctrine token, the player can read it
+and counter. Examples the AI should be able to run: *flush to cover* (herd you
+into a forest, snipe from the treeline, flee whoever you chase); *bombard &
+suppress* (explosive harass on you and your fortifications from standoff);
+*interdict escape* (cut your retreat, water/elytra interceptors); *overwhelm*
+(mass suicide swarm). Reading "they're pushing me into the trees to potshot me"
+→ *bring the bow*; "they're bombarding my walls" → *charge in and knock them
+into orbit*. That read-and-counter loop is the strategy layer of the mod.
 
 ## The Economy: The Program Mines Like a Player
 
@@ -136,6 +152,23 @@ Small light drones → massive bore tunnelers → house-sized gunships → rocke
 launched back to orbit → ballistic missiles. They should never remain static,
 boring threats — the player develops, and the Program develops alongside.
 
+**Escalation is capability-driven, never calendar-driven.** The Program tiers
+up when it has *mined and learned enough* to build the next class — not on a
+day timer. It also adapts to what **it** considers threats (vanilla mobs,
+other players, modded enemies, a rampaging wither storm), not only to you; the
+invasion has its own life and would keep escalating on an empty-but-hostile
+world. Drones are not player-reliant — that is the point of the mod.
+
+**Fabricated, not unpacked (tone at scale).** The pod barely brings anything —
+everything heavier is *built on-planet from mined material, salvaged Minecraft
+blocks, and psionic cores.* So heavy units must never read as human military
+hardware. A "tank" is an up-armored ore hauler; a "gunship" is a heavy-lift
+cargo flier with weapons welded to its lift arms; a siege engine is a
+repurposed bore tunneler. You can always see the extraction machine under the
+armor. This is what keeps a house-sized war engine reading as *an industrial
+probe that entrenched for months* rather than an invading army — the rule that
+lets the late-game arsenal grow without breaking the probe fantasy.
+
 ### Minecraft item integrations
 
 Drones *discover* the world's materials and fold them into their arsenal
@@ -159,6 +192,17 @@ weapon and rocket fuel.
   enchanted-trident interceptors stored in water, dispenser-style mass arrow
   launchers. Old equipment (bullets) is expensive but powerful — used
   sparingly as they "drop down to your level".
+
+**Adaptation set pieces (the "it's *thinking*" moments).** The invasion should
+occasionally do something that reads as genuinely clever, not scripted:
+firing a cruise missile at a rampaging wither storm because it registers as a
+bigger threat than you; **bribing villagers to stop trading with you** (out-
+buying your economy) or fighting to protect "their" villagers; working out
+that piglins take gold and trading it for **ender pearls** to fuel teleport
+logistics — the same pearls it turns into an **ender-pearl gun** (blink
+rounds) you can later salvage. These are rare, expensive, and reactive — the
+payoff for the "advanced AI" pillar, surfaced to the player through the
+datapad's development tracker.
 
 ## Drone Combat Feel
 
@@ -188,8 +232,8 @@ weapon and rocket fuel.
   surface-to-surface missiles, automatic MG turrets.
 - **Electronics / intel gear:** tracking chips (mark items or targets),
   **glowstone illuminators** (tracking chips that apply the glowing effect to
-  mobs), tracking displays, and a **datapad** — a heartbeat-sensor-style
-  handheld that shows enemy drones.
+  mobs), tracking displays, and the **datapad** — the core intel artifact and
+  the mod's signature tool (its own section below).
 - The Program steals back: leave gear in the open and a drone may take it.
 - Bases are attackable with a real chance of success: controlled withers, a
   micro-drone fleet, gunships, missile volleys, iron golem armies, zombified
@@ -198,19 +242,90 @@ weapon and rocket fuel.
   Damage it with plain swings or by mining out specific storage blocks.
 - Killing a main base yields a **cold fusion engine** — the key to producing
   your own fully automated systems — and its **data files** (see Lore).
+- **The first main-base kill is the hinge of the whole game.** It *severs the
+  psionic relay* that chained the base's drones to orbital command, and that
+  break pays out three ways at once: a huge windfall of banked resources spills
+  out (you can finally build past light vehicles), you seize part of that
+  psionic power as your own **psionic unlock**, and the surviving fleet's heavy
+  fabrication degrades. This is the moment both sides "go total" — the door to
+  Tier 4–5 opens for the Program *and* for you.
 - Environment hurts them too: a wither tossed at a base can wipe it, an iron
   golem army is a legitimate mid-game strategy.
 
 ### Weapon balance philosophy
 
 - **Bows** stay relevant: far cheaper ammo, faster to fire than the more
-  advanced guns; firearms require quite a bit of build-up.
+  advanced guns; firearms require quite a bit of build-up. Bows are accurate
+  at range; Punch and Flame are already strong enough that they need no help.
 - **Autodrones are armored against firearms** — especially weak ones.
   **Enchanted weapons are great at bypassing drone armor.**
 - Early-game weapons salvaged from basic light attack drones sit around the
   level of a Power II–III bow, with better range.
 - **Guns are loud.** Gunfire attracts the drone network. Every shot is a
   trade.
+- **Cool tools are rewards, not crutches.** Every player gadget must *feel
+  good to use on its own terms* — a ground-penetrating scanner that actually
+  finds caves and ore, not a "so you don't die to the one thing we added."
+  The charge laser, datapad, tracking chips, and player drones all pull their
+  weight as tools you'd want even without the invasion.
+
+### Damage & armor is typed (the compatibility thesis)
+
+Program armor resists *by damage type*, so every player build has a lane and a
+wall — and a player running a realistic gun mod faces the same *shape* of
+challenge as a vanilla player, just with different texture. This is what makes
+the mod-compat pillar honest instead of "gun mod = easy/hard mode."
+
+- **Ballistic / kinetic** (bullets — gun mods, and the drones' own MGs): Tier
+  2+ hulls are sloped and plated *specifically* against this. Ball ammo chips
+  slowly at armor a vanilla arrow punches through. Gun players adapt with
+  armor-piercing rounds or by switching tools — never locked out, just can't
+  faceroll.
+- **High-velocity impact** (arrows, tridents — the "sticks that slam into
+  them"): hulls are NOT optimized for it; impact transfers stagger and
+  knockback, scrambles flight, cracks exposed rotors. Why the bow stays viable
+  against even heavy vehicles when raw bullets stall out.
+- **Piercing** (crossbow + Piercing / AP bolts): the dedicated anti-vehicle
+  line — punches the heavy plate bullets bounce off.
+- **Explosive** (TNT, warheads, salvaged missiles): area and fortification
+  breach — what you bring *to* a base, not to a dogfight.
+- **Enchanted / psionic** (Sharpness, the charge laser, post-base psionic
+  weapons): bypasses plating outright — the premium answer, expensive, the
+  reward for engaging the horde for parts.
+- **Knockback / Punch:** not damage but *disruption* — throws units off
+  course, crashes small frames outright.
+
+No single tool answers everything. Bows are cheap and always-relevant, guns a
+loud commitment, crossbow AP the anti-armor specialist, enchants and psionic
+weapons the premium bypass. Each unit lists its resistances in its spec.
+
+## The Datapad — Your Window Into the Program
+
+The single most important player tool and the mod's visual signature (its
+answer to Cracker's Wither Storm amulet). It is craftable **early** from basic
+salvaged electronics and **upgrades with more salvage** into a full
+intelligence suite. It is what makes you a *partisan reading a machine enemy*
+rather than prey hiding in a hole — and it is the in-fiction UI for everything
+the Program does that would otherwise be invisible:
+
+- **Proximity blare + bearing:** warns when drones close in; rough direction
+  and range to known bases and large unit movements.
+- **Heat meters (per base and global):** how much the Program cares about you
+  right now, rising and falling with your actions — so you see escalation
+  *before* it arrives at your door, and see neutrality when you earn it.
+- **Doctrine / intent readout:** hover a drone group to see the plan its AI has
+  actually committed to — "flush you into cover and snipe," "bombard your
+  fortifications," "cut off your retreat," "overwhelm" — plus composition and
+  stats. You read the intent and pick the counter: bow the flushers, charge
+  the bombardiers, knock the rammers out of the sky. This is where the
+  Program's adaptation becomes *legible* — you watch it choose.
+- **Development tracking:** as it upgrades, shows how their doctrine and tech
+  are progressing in real time, and their resource picture.
+- **Remote control:** pilot your own salvaged drones from the tablet.
+
+Design rule: escalation you can *see coming* is tense; escalation you can't is
+just unfair. The datapad is how the "smart, adapting invasion" fantasy reaches
+the player instead of staying buried in the Director's code.
 
 ### Death & theft
 
@@ -221,10 +336,19 @@ weapon and rocket fuel.
 
 ## Endgame & Victory
 
-The intended ending: the player constructs an **anti-orbital weapon** — a
-missile battery / railgun (specifics TBD) — and takes down the orbital
-station itself, ending the Program. For players who don't want it to end,
-a config option turns re-insertion into **endless waves**.
+Two clear win states, so the player always knows what they're fighting toward:
+
+- **v1.0 shippable victory — destroy a main base.** This is a complete,
+  satisfying arc on its own: land → survive → arm up → raid the base → sever
+  the psionic relay for the resource windfall and your psionic unlock. A
+  player who does this has *won the game we ship first.*
+- **Full-campaign victory (post-v1.0) — the anti-orbital weapon.** A missile
+  battery / railgun (specifics TBD) takes down the orbital station itself and
+  ends the Program for good. This is the long-term finale, unlocked after the
+  first base kill opens Tier 4–5; it is designed here but is not a v1.0 gate.
+
+For players who don't want it to end, a config option turns re-insertion into
+**endless waves**.
 
 ## Lore Delivery & The Program's "Voice"
 

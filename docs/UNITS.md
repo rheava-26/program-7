@@ -32,6 +32,9 @@ Units marked ✅ are implemented; the rest are specs for their phase.
 - **HARD CAP: the Program is locked to Tier 3 at maximum until the player
   destroys a main drone base for the first time.** Your first base kill is
   the door to Tiers 4–5 — for both of you.
+- **Capability-gated, not calendar-gated:** a tier (and a Tier 2 wave in an
+  early fight) appears when the Program has *mined and built enough* to field
+  it and when threats — you or otherwise — justify it. Never on a day timer.
 - Big bases receive **orbital resupply drops**: very loud, very bright
   streaks from the sky, felt as a psionic spike in the background even from
   far away. If you feel one land, you've located a major base.
@@ -66,6 +69,11 @@ Units marked ✅ are implemented; the rest are specs for their phase.
   forces (suicide-class units excepted).
 - **Environment applies:** hostile mobs damage drones; poison does nothing
   (machines), wither damage tears through plating.
+- **Typed armor:** hulls resist by damage type (full model in DESIGN.md).
+  Bullets bounce off the sloped Tier 2+ plate that arrows punch through;
+  crossbow AP and enchanted or psionic weapons bypass armor; Knockback/Punch
+  disrupts rather than damages. Every frame lists its resistances in its spec —
+  a gun-mod player and a bow player each get a real fight, just a different one.
 
 ---
 
@@ -120,7 +128,11 @@ unit time or self-sustain off their own power.*
 | **Repair/excavation mech** | Fixes structures and units, digs fortification lines | — |
 
 ## TIER 4 — DOMINION
-*Unlocked only after the Program loses (and replaces) a main base.*
+*Unlocked only after the Program loses (and replaces) a main base. Everything
+here is **fabricated on-planet from repurposed extraction gear + salvage +
+psionic cores** — you can see the mining machine under the armor. Never clean
+human military hardware (see DESIGN.md "Fabricated, not unpacked"): the "tank"
+is an up-armored ore hauler, the "gunship" a weaponised heavy-lift flier.*
 
 | Unit | Role |
 |---|---|
@@ -184,4 +196,13 @@ webs, spawner farms, totems on heavies, trident interceptors, enchanting.
 | Gun barrel | Gun-armed units | Firearms, turrets |
 | Explosive warhead | Suicide/missile units | Missiles, mining charges |
 | Magazine | Gun-armed units | Ammo crafting |
-| Cold fusion engine | Main base kill | Player automation endgame |
+| Cold fusion engine | Main base kill | Player automation endgame + psionic unlock |
+
+Early anti-armor answers the salvage tree should surface so no build is
+walled out: **armor-piercing crossbow bolts** and **reinforced/heavy arrows**
+(the high-velocity impact line vs. vehicles), an **ender-pearl gun** (blink
+rounds, reverse-engineered from drones that learned teleport logistics), and
+the **charge laser** — a mining-laser-derived energy rifle that must be
+charged, costs expensive amethyst/diamond parts, hits devastatingly hard, and
+so forces you to fight the horde for the materials to keep it fed. Bows stay
+the cheap always-on baseline; these are the commitments.
