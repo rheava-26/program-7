@@ -39,8 +39,8 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 	public static DefaultAttributeContainer.Builder createReconHelicopterAttributes() {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.35)
-				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.7)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.46)
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.92)
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0);
 	}
 

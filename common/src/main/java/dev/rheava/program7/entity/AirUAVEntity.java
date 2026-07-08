@@ -41,8 +41,8 @@ public class AirUAVEntity extends ProgramDroneEntity {
 	public static DefaultAttributeContainer.Builder createAirUAVAttributes() {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 10.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
-				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.6)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.8)
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0);
 	}
 

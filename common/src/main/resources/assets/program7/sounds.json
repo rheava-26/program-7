@@ -130,5 +130,17 @@
     "sounds": [
       { "name": "minecraft:entity.lightning_bolt.thunder", "type": "event" }
     ]
+  },
+  "event.scan_sting": {
+    "subtitle": "subtitles.program7.event.scan_sting",
+    "sounds": [
+      { "name": "minecraft:entity.elder_guardian.curse", "type": "event" }
+    ]
+  },
+  "event.drones_inbound": {
+    "subtitle": "subtitles.program7.event.drones_inbound",
+    "sounds": [
+      { "name": "minecraft:event.raid.horn", "type": "event" }
+    ]
   }
 }

@@ -38,7 +38,7 @@ public class GroundDroneEntity extends ProgramDroneEntity {
 	public static DefaultAttributeContainer.Builder createGroundDroneAttributes() {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 24.0)
 				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.0)
 				.add(EntityAttributes.GENERIC_ARMOR, 4.0)

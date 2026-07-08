@@ -32,7 +32,7 @@ public class IFVEntity extends ProgramDroneEntity {
 	public static DefaultAttributeContainer.Builder createIFVAttributes() {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 70.0)
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.28)
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.37)
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 40.0)
 				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.5)
 				.add(EntityAttributes.GENERIC_ARMOR, 14.0)

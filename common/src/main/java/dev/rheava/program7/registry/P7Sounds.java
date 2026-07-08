@@ -33,6 +33,10 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> DROP_POD_DESCENT = register("event.drop_pod.descent");
 	public static final RegistrySupplier<SoundEvent> DROP_POD_IMPACT = register("event.drop_pod.impact");
 	public static final RegistrySupplier<SoundEvent> ORBITAL_RESUPPLY = register("event.orbital_resupply");
+	/** Loud psychic-sting stinger the instant a scan completes — see horror-beat pass. */
+	public static final RegistrySupplier<SoundEvent> SCAN_STING = register("event.scan_sting");
+	/** Ominous swell right after a scan sting: drones are now inbound on the mark. */
+	public static final RegistrySupplier<SoundEvent> DRONES_INBOUND = register("event.drones_inbound");
 	public static final RegistrySupplier<SoundEvent> GUN_FIRE = register("unit.gun_fire");
 	public static final RegistrySupplier<SoundEvent> SNIPER_FIRE = register("unit.sniper_fire");
 	/** Near-miss air-crack played at the target's position on a graze — see #1. */

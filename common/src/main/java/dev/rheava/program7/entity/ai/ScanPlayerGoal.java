@@ -15,8 +15,6 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -119,11 +117,17 @@ public class ScanPlayerGoal extends Goal {
 
 			// Psionic interference: the drone burns its findings back up the
 			// link and the player's senses catch the edge of the transmission.
-			player.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 60, 0, false, false));
+			// Show, don't tell: no action-bar text, just a sensory spike — the
+			// player should FEEL that they've been made, not read it.
+			player.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 80, 0, false, false));
 			player.getServerWorld().playSound(null, player.getBlockPos(),
 					P7Sounds.DRONE_INTERFERENCE.get(), SoundCategory.HOSTILE, 1.0f, 1.0f);
-			player.sendMessage(Text.translatable("message.program7.scan_complete")
-					.formatted(Formatting.DARK_AQUA), true);
+			player.getServerWorld().playSound(null, player.getBlockPos(),
+					P7Sounds.SCAN_STING.get(), SoundCategory.HOSTILE, 1.4f, 1.0f);
+			// A beat later, in-fiction: the sound of drones now inbound on the
+			// player's marked position.
+			player.getServerWorld().playSound(null, player.getBlockPos(),
+					P7Sounds.DRONES_INBOUND.get(), SoundCategory.HOSTILE, 1.0f, 1.0f);
 		}
 		this.drone.setScanCooldown(SCAN_COOLDOWN);
 		this.drone.beginRetreat(this.target, 160);

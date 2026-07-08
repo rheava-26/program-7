@@ -86,6 +86,8 @@
   "subtitles.program7.entity.attack_drone.fuse": "Warhead arms",
   "subtitles.program7.event.drop_pod.descent": "Something roars in the sky",
   "subtitles.program7.event.drop_pod.impact": "Distant impact",
+  "subtitles.program7.event.scan_sting": "A psychic sting lances through your skull",
+  "subtitles.program7.event.drones_inbound": "A horn sounds — more are coming",
   "subtitles.program7.unit.gun_fire": "Autogun fires",
   "subtitles.program7.unit.sniper_fire": "Sniper shot cracks",
   "subtitles.program7.unit.gun_whistle": "Shot whistles past",

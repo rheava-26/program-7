@@ -82,6 +82,12 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	private int alarmTickThrottle = 0;
 	/** Latched so the alarm sounds once per approach, not once per tick a player is in range. */
 	private boolean alarmLatched = false;
+	/** Throttles {@link #tickVisionProjection} to every few ticks instead of every tick. */
+	private int visionProjectionCounter = 0;
+	/** Last tick's {@link #getTarget()}, used by {@link #tickAcquisitionAlert} to catch the
+	 *  no-target -&gt; has-target transition ("freak out on acquisition"). */
+	@Nullable
+	private LivingEntity lastTarget = null;
 
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -296,6 +302,73 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 				}
 			}
 			this.tickApproachWhir();
+			this.tickVisionProjection();
+			this.tickAcquisitionAlert();
+		}
+	}
+
+	/**
+	 * Provisional first-pass VFX: while actively hunting a live target, draws
+	 * a line of particles from this unit's eye out toward its target so the
+	 * player can see the drone's projected line of vision land on them (or
+	 * not) and can actually read whether they're hidden.
+	 *
+	 * TODO(manager): tune vision-beam particle/spacing/color.
+	 */
+	private void tickVisionProjection() {
+		LivingEntity target = this.getTarget();
+		if (target == null) {
+			return;
+		}
+		// Throttle to every 3rd tick to keep particle counts sane across a swarm.
+		this.visionProjectionCounter++;
+		if (this.visionProjectionCounter % 3 != 0) {
+			return;
+		}
+		if (!(this.getWorld() instanceof ServerWorld serverWorld)) {
+			return;
+		}
+
+		Vec3d eye = this.getEyePos();
+		Vec3d targetEye = target.getEyePos();
+		double distance = Math.min(this.distanceTo(target), 20.0);
+		if (distance < 1.0E-4) {
+			return;
+		}
+		Vec3d direction = targetEye.subtract(eye).normalize();
+
+		final int samples = 8;
+		for (int i = 1; i <= samples; i++) {
+			double t = distance * i / samples;
+			Vec3d point = eye.add(direction.multiply(t));
+			serverWorld.spawnParticles(ParticleTypes.END_ROD, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
+		}
+	}
+
+	/**
+	 * "Freak out on acquisition": the instant this unit locks a fresh target
+	 * (transitioning from no target to a live {@link PlayerEntity}), give the
+	 * player a sharp audible+visual tell instead of the drone silently
+	 * swinging its aim onto them.
+	 *
+	 * TODO(manager): a real move-control jolt / erratic-motion tell on
+	 * acquisition would sell this even harder — out of scope for this pass,
+	 * this is sound+particle only.
+	 */
+	private void tickAcquisitionAlert() {
+		LivingEntity currentTarget = this.getTarget();
+		if (currentTarget != this.lastTarget) {
+			if (this.lastTarget == null && currentTarget instanceof PlayerEntity) {
+				this.playSound(P7Sounds.DRONE_ALERT.get(), 1.2f, 1.0f);
+				if (this.getWorld() instanceof ServerWorld serverWorld) {
+					Box box = this.getBoundingBox();
+					double x = (box.minX + box.maxX) / 2.0;
+					double y = (box.minY + box.maxY) / 2.0;
+					double z = (box.minZ + box.maxZ) / 2.0;
+					serverWorld.spawnParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 10, 0.3, 0.3, 0.3, 0.05);
+				}
+			}
+			this.lastTarget = currentTarget;
 		}
 	}
 
