@@ -33,7 +33,9 @@ public class MediumAttackDroneEntity extends ProgramDroneEntity {
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 16.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
 				.add(EntityAttributes.GENERIC_FLYING_SPEED, 1.2)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 32.0)
+				// +50% acquisition range so this tier engages a bit sooner;
+				// gun range (below) stays tight — this is not a standoff unit.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
 				.add(EntityAttributes.GENERIC_ARMOR, 2.0);
 	}
 

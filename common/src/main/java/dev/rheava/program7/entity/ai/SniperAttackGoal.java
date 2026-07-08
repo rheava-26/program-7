@@ -3,6 +3,8 @@ package dev.rheava.program7.entity.ai;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -56,7 +58,15 @@ public class SniperAttackGoal extends GunAttackGoal {
 
 	@Override
 	protected void playFireSound() {
-		this.shooter.playSound(P7Sounds.SNIPER_FIRE.get(), 1.0f,
-				1.1f + this.shooter.getRandom().nextFloat() * 0.2f);
+		// Positional world.playSound at volume 5.0f (~volume x16 blocks of
+		// audible range, so roughly an 80-block radius crack) instead of the
+		// shooter's own playSound: this is the whole point of a sniper — the
+		// report should carry across several chunks so the player hears it
+		// coming from far outside gun range, not just a local crack.
+		float pitch = 1.1f + this.shooter.getRandom().nextFloat() * 0.2f;
+		if (this.shooter.getWorld() instanceof ServerWorld world) {
+			world.playSound(null, this.shooter.getBlockPos(), P7Sounds.SNIPER_FIRE.get(),
+					SoundCategory.HOSTILE, 5.0f, pitch);
+		}
 	}
 }

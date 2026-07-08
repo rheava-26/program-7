@@ -12,6 +12,7 @@ import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
+import dev.rheava.program7.entity.SniperDroneEntity;
 import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
 import net.minecraft.advancement.AdvancementEntry;
@@ -494,7 +495,13 @@ public class ProgramDirectorState extends PersistentState {
 			return;
 		}
 		double angle = world.getRandom().nextDouble() * Math.PI * 2.0;
-		double distance = 40.0 + world.getRandom().nextDouble() * 20.0;
+		// Snipers now hold range out to ~90 blocks (SniperDroneEntity /
+		// SniperAttackGoal), so drop them in farther out than the rest of the
+		// escort — otherwise they'd spawn well inside their own standoff
+		// distance and have to visibly retreat before they can even fire.
+		double distance = drone instanceof SniperDroneEntity
+				? 60.0 + world.getRandom().nextDouble() * 30.0
+				: 40.0 + world.getRandom().nextDouble() * 20.0;
 		int x = (int) (player.getX() + Math.cos(angle) * distance);
 		int z = (int) (player.getZ() + Math.sin(angle) * distance);
 		world.getChunk(new BlockPos(x, 64, z));

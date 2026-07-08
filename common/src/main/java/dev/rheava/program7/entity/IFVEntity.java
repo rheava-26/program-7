@@ -33,7 +33,9 @@ public class IFVEntity extends ProgramDroneEntity {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 70.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.37)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 40.0)
+				// +50% acquisition range so this tier engages a bit sooner;
+				// gun range (below) stays tight — this is not a standoff unit.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 60.0)
 				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.5)
 				.add(EntityAttributes.GENERIC_ARMOR, 14.0)
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);

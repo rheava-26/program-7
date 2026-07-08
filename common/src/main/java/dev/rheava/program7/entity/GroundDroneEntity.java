@@ -39,7 +39,9 @@ public class GroundDroneEntity extends ProgramDroneEntity {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 24.0)
+				// +50% acquisition range so this tier engages a bit sooner;
+				// gun range (below) stays tight — this is not a standoff unit.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 36.0)
 				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.0)
 				.add(EntityAttributes.GENERIC_ARMOR, 4.0)
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.6);

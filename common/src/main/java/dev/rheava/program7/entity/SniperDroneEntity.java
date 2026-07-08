@@ -37,13 +37,22 @@ public class SniperDroneEntity extends ProgramDroneEntity {
 				// does too — this is a recon-grade airframe, not a fighter.
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
 				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.6)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
+				// Long standoff acquisition range so the sniper can pick a
+				// target up well before it's in gun range and start closing
+				// on its firing position. Capped near 96 rather than pushed
+				// further: entities only tick in loaded chunks (~sim distance,
+				// often 8-12 chunks), so going much beyond this risks the
+				// sniper sitting in an unticked chunk and freezing in place.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 96.0)
 				.add(EntityAttributes.GENERIC_ARMOR, 0.0);
 	}
 
 	@Override
 	protected void initGoals() {
-		this.goalSelector.add(1, new SniperAttackGoal(this, 1.0, 32.0, 80, 9.0f));
+		// Engagement range widened to match GENERIC_FOLLOW_RANGE above (96.0)
+		// so acquiring a target at long range actually translates into fire,
+		// not just tracking — this is the standoff platform's whole point.
+		this.goalSelector.add(1, new SniperAttackGoal(this, 1.0, 90.0, 80, 9.0f));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
 		this.goalSelector.add(5, new LookAroundGoal(this));
