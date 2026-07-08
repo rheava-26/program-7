@@ -151,8 +151,10 @@ Phases are ordered so every phase ships something playable, and the Director
 
 ## Phase 3 — Adaptation & Counterplay
 
-- [ ] Weapon-profile counters: ranged → explosive swarms; melee → ranged
-      harassers; elytra → instant-reaction interception
+- [~] Weapon-profile counters: DONE for ranged → explosive-rusher swarms and
+      melee → standoff harassers (sniper + gun drone), branched in
+      executeDispatch off the scanned player's weaponProfile. TODO: elytra →
+      instant-reaction interception
 - [x] Capability/threat escalation model: replaced the day-14 Tier 2 timer
       with `tier2Unlocked()` gating on accumulated threat/scans (globalThreat
       ≥ 8 or scans ≥ 3). Mined-economy gating and non-player threat adaptation
