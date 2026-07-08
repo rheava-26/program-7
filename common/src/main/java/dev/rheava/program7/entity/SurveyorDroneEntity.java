@@ -5,6 +5,7 @@ import java.util.List;
 
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.RaidStorageGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.ScanPlayerGoal;
 import dev.rheava.program7.entity.ai.StealItemsGoal;
@@ -59,9 +60,10 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 		this.goalSelector.add(1, new RetreatGoal(this));
 		this.goalSelector.add(2, new ScanPlayerGoal(this));
 		this.goalSelector.add(3, new StealItemsGoal(this));
-		this.goalSelector.add(4, new HoverWanderGoal(this));
-		this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
-		this.goalSelector.add(6, new LookAroundGoal(this));
+		this.goalSelector.add(4, new RaidStorageGoal(this));
+		this.goalSelector.add(5, new HoverWanderGoal(this));
+		this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
+		this.goalSelector.add(7, new LookAroundGoal(this));
 	}
 
 	@Override
