@@ -4,6 +4,7 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.block.AssemblerBlockEntity;
+import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlockEntity;
 import dev.rheava.program7.block.LaunchCatapultBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -22,6 +23,11 @@ public final class P7BlockEntities {
 			BLOCK_ENTITIES.register("assembler",
 					() -> BlockEntityType.Builder.create(AssemblerBlockEntity::new,
 							P7Blocks.ASSEMBLER.get()).build(null));
+
+	public static final RegistrySupplier<BlockEntityType<AutogunTurretBlockEntity>> AUTOGUN_TURRET =
+			BLOCK_ENTITIES.register("autogun_turret",
+					() -> BlockEntityType.Builder.create(AutogunTurretBlockEntity::new,
+							P7Blocks.AUTOGUN_TURRET.get()).build(null));
 
 	public static final RegistrySupplier<BlockEntityType<LaunchCatapultBlockEntity>> LAUNCH_CATAPULT =
 			BLOCK_ENTITIES.register("launch_catapult",

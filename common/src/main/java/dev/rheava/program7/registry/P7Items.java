@@ -51,6 +51,8 @@ public final class P7Items {
 			() -> new BlockItem(P7Blocks.ASSEMBLER.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> LAUNCH_CATAPULT = ITEMS.register("launch_catapult",
 			() -> new BlockItem(P7Blocks.LAUNCH_CATAPULT.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> AUTOGUN_TURRET_BLOCK = ITEMS.register("autogun_turret",
+			() -> new BlockItem(P7Blocks.AUTOGUN_TURRET.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> SURVEYOR_DRONE_SPAWN_EGG = ITEMS.register("surveyor_drone_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.SURVEYOR_DRONE, 0x23272b, 0x27e2d3,
