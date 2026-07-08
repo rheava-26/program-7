@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
@@ -61,6 +62,10 @@ public class ProgramDirectorState extends PersistentState {
 	private static final int HEAT_DECAY_INTERVAL = 200;
 	/** Heat at or below this, once dormant, counts as fully neutral. */
 	private static final int NEUTRAL_THRESHOLD = 2;
+	/** Radius searched for gun units currently pointed at a player, for {@code sustained_fire}. */
+	private static final double SUSTAINED_FIRE_RANGE = 48.0;
+	/** How many Program gun units aimed at once earns {@code sustained_fire}. */
+	private static final int SUSTAINED_FIRE_COUNT = 10;
 
 	/** What one attack drone costs the Program to field. */
 	private static final Map<String, Integer> ATTACK_DRONE_COST = Map.of(
@@ -137,6 +142,26 @@ public class ProgramDirectorState extends PersistentState {
 			if (advancement != null) {
 				for (ServerPlayerEntity player : world.getPlayers()) {
 					player.getAdvancementTracker().grantCriterion(advancement, "survived");
+				}
+			}
+		}
+
+		// Low-frequency advancement checks: nothing here is time-critical, so
+		// this only needs to run a couple of times a second.
+		if (world.getTime() % 40 == 0) {
+			boolean neutral = this.isNeutral(world.getTime());
+			for (ServerPlayerEntity p : world.getPlayers()) {
+				if (neutral) {
+					// The Program has stood down entirely — it no longer reads
+					// this player as a threat worth escalating against.
+					P7Advancements.grant(p, "incredible_performance");
+				}
+
+				int gunsOnTarget = world.getEntitiesByClass(ProgramDroneEntity.class,
+						p.getBoundingBox().expand(SUSTAINED_FIRE_RANGE),
+						d -> d.getTarget() == p && d.isRangedAttacker()).size();
+				if (gunsOnTarget >= SUSTAINED_FIRE_COUNT) {
+					P7Advancements.grant(p, "sustained_fire");
 				}
 			}
 		}

@@ -3,6 +3,7 @@ package dev.rheava.program7.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.DroneWreckBlock;
 import dev.rheava.program7.entity.ArmorProfile.DamageClass;
 import dev.rheava.program7.registry.P7Sounds;
@@ -22,6 +23,7 @@ import net.minecraft.entity.projectile.SpectralArrowEntity;
 import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.MaceItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.context.LootContextParameterSet;
@@ -32,6 +34,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -66,6 +69,8 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	private int retreatTicks = 0;
 	@Nullable
 	private LivingEntity retreatFrom;
+	/** Set when a mace blow shatters this (unarmored) airframe; read by {@link #onDeath}. */
+	private boolean maceShattered = false;
 
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -74,6 +79,20 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	/** Fliers scramble and crash; ground units just get shoved around. */
 	protected boolean isFlier() {
 		return true;
+	}
+
+	/** Fixed-wing airframes (the Air UAV) — see {@code fixed_wing_melee} advancement. */
+	protected boolean isFixedWing() {
+		return false;
+	}
+
+	/**
+	 * Gun/missile units the Program can point at a player from range — see
+	 * {@code sustained_fire} advancement. Public: queried cross-package by
+	 * {@link dev.rheava.program7.director.ProgramDirectorState#tick}.
+	 */
+	public boolean isRangedAttacker() {
+		return false;
 	}
 
 	/** Extra stacks (stolen cargo etc.) added to this unit's wreck. */
@@ -119,11 +138,17 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 		if (!this.getWorld().isClient) {
 			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
 			ItemStack weapon = attacker != null ? attacker.getMainHandStack() : ItemStack.EMPTY;
+			boolean mace = weapon.getItem() instanceof MaceItem;
 			if (attacker != null) {
 				if (this.isFlier()
 						&& (weapon.getItem() instanceof SwordItem || weapon.getItem() instanceof AxeItem)) {
 					// Blades shred airframes: small drones usually die in one hit.
 					amount *= 2.5f;
+				}
+				if (mace && this.isFlier()) {
+					// Heavy airframe impact: a mace's smashing weight is even
+					// worse for a fragile flier than a blade's edge.
+					amount *= 1.5f;
 				}
 				int scramblePower = this.getEnchantLevel(weapon, Enchantments.KNOCKBACK)
 						+ this.getEnchantLevel(weapon, Enchantments.PUNCH);
@@ -147,6 +172,13 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			// everything above, so armored units get a real, differently
 			// textured fight depending on what's actually hitting them.
 			amount *= this.armorProfile().multiplierFor(this.classify(source, weapon));
+
+			if (mace && this.armorProfile() == ArmorProfile.UNARMORED) {
+				this.maceShattered = true;
+				if (amount >= 40.0f && source.getAttacker() instanceof ServerPlayerEntity sp) {
+					P7Advancements.grant(sp, "overkill_much");
+				}
+			}
 		}
 		return super.damage(source, amount);
 	}
@@ -274,6 +306,26 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 					.build(LootContextTypes.ENTITY);
 			lootTable.generateLoot(params, salvage::add);
 			DroneWreckBlock.placeWreck(world, this.getBlockPos(), salvage);
+
+			if (this.maceShattered) {
+				// A mace doesn't just kill a light airframe, it blows it apart —
+				// a bigger, more violent burst than a normal rotor-hit or death.
+				Box box = this.getBoundingBox();
+				double x = (box.minX + box.maxX) / 2.0;
+				double y = (box.minY + box.maxY) / 2.0;
+				double z = (box.minZ + box.maxZ) / 2.0;
+				world.spawnParticles(ParticleTypes.CRIT, x, y, z, 24, 0.4, 0.3, 0.4, 0.1);
+				world.spawnParticles(ParticleTypes.SMOKE, x, y, z, 12, 0.4, 0.3, 0.4, 0.1);
+				world.spawnParticles(ParticleTypes.CLOUD, x, y, z, 8, 0.4, 0.3, 0.4, 0.1);
+				this.playSound(P7Sounds.DRONE_DEATH.get(), 1.0f, 1.4f);
+			}
+
+			if (this.isFixedWing() && damageSource.getAttacker() instanceof ServerPlayerEntity killer
+					&& !damageSource.isIn(DamageTypeTags.IS_PROJECTILE) && !killer.isFallFlying()) {
+				// A fixed-wing airframe is meant to be unreachable in melee
+				// without an elytra/wind-charge assist — this is the "how???" case.
+				P7Advancements.grant(killer, "fixed_wing_melee");
+			}
 		}
 	}
 

@@ -73,4 +73,9 @@ public class AutogunTurretEntity extends ProgramDroneEntity {
 	protected ArmorProfile armorProfile() {
 		return ArmorProfile.ARMORED_VEHICLE;
 	}
+
+	@Override
+	public boolean isRangedAttacker() {
+		return true;
+	}
 }

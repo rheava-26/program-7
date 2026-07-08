@@ -65,4 +65,9 @@ public class MediumAttackDroneEntity extends ProgramDroneEntity {
 	protected ArmorProfile armorProfile() {
 		return ArmorProfile.LIGHT;
 	}
+
+	@Override
+	public boolean isRangedAttacker() {
+		return true;
+	}
 }

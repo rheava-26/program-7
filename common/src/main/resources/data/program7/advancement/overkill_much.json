@@ -1,0 +1,14 @@
+{
+  "parent": "program7:arrival",
+  "display": {
+    "icon": { "id": "minecraft:mace" },
+    "title": { "translate": "advancements.program7.overkill_much.title" },
+    "description": { "translate": "advancements.program7.overkill_much.description" },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": { "unlocked": { "trigger": "minecraft:impossible" } },
+  "requirements": [ ["unlocked"] ]
+}

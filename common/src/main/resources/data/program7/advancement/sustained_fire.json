@@ -1,0 +1,14 @@
+{
+  "parent": "program7:arrival",
+  "display": {
+    "icon": { "id": "program7:magazine" },
+    "title": { "translate": "advancements.program7.sustained_fire.title" },
+    "description": { "translate": "advancements.program7.sustained_fire.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": { "unlocked": { "trigger": "minecraft:impossible" } },
+  "requirements": [ ["unlocked"] ]
+}

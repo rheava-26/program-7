@@ -91,6 +91,11 @@ public class AirUAVEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	protected boolean isFixedWing() {
+		return true;
+	}
+
+	@Override
 	public int getMinAmbientSoundDelay() {
 		return 140;
 	}
