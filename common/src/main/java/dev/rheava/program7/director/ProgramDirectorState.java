@@ -51,6 +51,16 @@ public class ProgramDirectorState extends PersistentState {
 	private static final long SEVEN_DAYS = 7L * 24000L;
 	/** Every active probe core gets resupplied from orbit this often. */
 	private static final long RESUPPLY_INTERVAL = 3L * 24000L;
+	/**
+	 * How long the Program will tolerate silence before it starts standing
+	 * down: 2 in-game days with no hostile contact before heat begins to
+	 * fall. This is what lets a player who stops engaging get left alone.
+	 */
+	private static final long HEAT_DECAY_COOLDOWN = 2L * 24000L;
+	/** Once decaying, drop 1 heat per this many ticks. */
+	private static final int HEAT_DECAY_INTERVAL = 200;
+	/** Heat at or below this, once dormant, counts as fully neutral. */
+	private static final int NEUTRAL_THRESHOLD = 2;
 
 	/** What one attack drone costs the Program to field. */
 	private static final Map<String, Integer> ATTACK_DRONE_COST = Map.of(
@@ -87,6 +97,8 @@ public class ProgramDirectorState extends PersistentState {
 	/** Every probe core site the Program has planted, live or since razed. */
 	private final List<BlockPos> coreSites = new ArrayList<>();
 	private long lastResupplyTime = 0L;
+	/** The last time the Program had actual hostile contact with a player. */
+	private long lastContactTime = 0L;
 	private final Map<UUID, PlayerIntel> intel = new HashMap<>();
 	private final List<PendingDispatch> dispatches = new ArrayList<>();
 	/**
@@ -138,6 +150,14 @@ public class ProgramDirectorState extends PersistentState {
 				this.lastResupplyTime = world.getTime();
 				this.markDirty();
 			}
+		}
+
+		// Heat is a two-way dial: if the Program hasn't had hostile contact in
+		// a while, it stands down rather than staying wound up forever.
+		if (world.getTime() - this.lastContactTime > HEAT_DECAY_COOLDOWN
+				&& world.getTime() % HEAT_DECAY_INTERVAL == 0 && this.globalThreat > 0) {
+			this.globalThreat--;
+			this.markDirty();
 		}
 
 		if (!this.dispatches.isEmpty()) {
@@ -317,6 +337,7 @@ public class ProgramDirectorState extends PersistentState {
 		entry.elytra = record.elytra();
 		entry.deaths = record.deaths();
 		entry.lastScanTime = player.getServerWorld().getTime();
+		this.lastContactTime = entry.lastScanTime;
 
 		this.scansCompleted++;
 		// Each confirmed contact raises the Program's overall alert posture,
@@ -360,6 +381,7 @@ public class ProgramDirectorState extends PersistentState {
 		if (player == null || player.getServerWorld() != world || player.isDead()) {
 			return;
 		}
+		this.lastContactTime = world.getTime();
 		for (int i = 0; i < dispatch.count; i++) {
 			this.spawnEscort(world, player, P7Entities.ATTACK_DRONE.get().create(world));
 		}
@@ -408,6 +430,38 @@ public class ProgramDirectorState extends PersistentState {
 		this.markDirty();
 	}
 
+	/** Alias for {@link #getGlobalThreat()} — the Program's current "heat". */
+	public int getHeat() {
+		return this.globalThreat;
+	}
+
+	/** Whether it's been long enough since the last hostile contact that heat has started (or could start) falling. */
+	public boolean isDormant(long worldTime) {
+		return worldTime - this.lastContactTime > HEAT_DECAY_COOLDOWN;
+	}
+
+	/** Whether the Program has fully stood down: dormant and effectively cooled off. */
+	public boolean isNeutral(long worldTime) {
+		return this.globalThreat <= NEUTRAL_THRESHOLD && this.isDormant(worldTime);
+	}
+
+	/** A short label for the Program's current posture toward the player, for display purposes. */
+	public String posture(long worldTime) {
+		if (this.globalThreat >= 60) {
+			return "HUNTING";
+		}
+		if (this.globalThreat >= 25) {
+			return "ACTIVE";
+		}
+		if (this.isNeutral(worldTime)) {
+			return "NEUTRAL";
+		}
+		if (this.isDormant(worldTime)) {
+			return "DORMANT";
+		}
+		return "WATCHFUL";
+	}
+
 	public int getScansCompleted() {
 		return this.scansCompleted;
 	}
@@ -437,6 +491,7 @@ public class ProgramDirectorState extends PersistentState {
 					this.probeCorePos.getX(), this.probeCorePos.getY(), this.probeCorePos.getZ()});
 		}
 		nbt.putLong("LastResupplyTime", this.lastResupplyTime);
+		nbt.putLong("LastContactTime", this.lastContactTime);
 
 		NbtList coreSitesList = new NbtList();
 		for (BlockPos site : this.coreSites) {
@@ -489,6 +544,7 @@ public class ProgramDirectorState extends PersistentState {
 			}
 		}
 		state.lastResupplyTime = nbt.contains("LastResupplyTime") ? nbt.getLong("LastResupplyTime") : 0L;
+		state.lastContactTime = nbt.contains("LastContactTime") ? nbt.getLong("LastContactTime") : 0L;
 
 		NbtList coreSitesList = nbt.getList("CoreSites", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < coreSitesList.size(); i++) {

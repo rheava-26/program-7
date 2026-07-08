@@ -49,8 +49,8 @@ public class DatapadItem extends Item {
 				user.getBoundingBox().expand(SCAN_RANGE), e -> true);
 
 		user.sendMessage(Text.literal("▚ PROGRAM DATAPAD ▚").formatted(Formatting.AQUA, Formatting.BOLD), false);
-		user.sendMessage(Text.literal("Global threat reading: " + state.getGlobalThreat() + "/"
-				+ ProgramDirectorState.MAX_THREAT).formatted(Formatting.GRAY), false);
+		user.sendMessage(Text.literal("Program posture: " + state.posture(serverWorld.getTime()) + "  (heat "
+				+ state.getHeat() + "/" + ProgramDirectorState.MAX_THREAT + ")").formatted(Formatting.GRAY), false);
 
 		if (nearby.isEmpty()) {
 			user.sendMessage(Text.literal("No hostile signatures within " + (int) SCAN_RANGE + "m.")

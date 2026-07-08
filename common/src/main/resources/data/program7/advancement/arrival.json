@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": { "id": "program7:power_bank" },
+    "title": { "translate": "advancements.program7.arrival.title" },
+    "description": { "translate": "advancements.program7.arrival.description" },
+    "frame": "task",
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "recovered_salvage": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          { "items": ["program7:drone_core", "program7:power_bank", "program7:transmitter", "program7:gun_barrel", "program7:explosive_warhead", "program7:magazine"] }
+        ]
+      }
+    }
+  },
+  "requirements": [ ["recovered_salvage"] ]
+}

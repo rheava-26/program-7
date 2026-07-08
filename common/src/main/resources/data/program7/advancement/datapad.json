@@ -1,0 +1,23 @@
+{
+  "parent": "program7:arrival",
+  "display": {
+    "icon": { "id": "program7:datapad" },
+    "title": { "translate": "advancements.program7.datapad.title" },
+    "description": { "translate": "advancements.program7.datapad.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_datapad": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          { "items": ["program7:datapad"] }
+        ]
+      }
+    }
+  },
+  "requirements": [ ["has_datapad"] ]
+}

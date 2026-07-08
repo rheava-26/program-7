@@ -61,6 +61,10 @@
 
   "advancements.program7.seven_days.title": "Still Here",
   "advancements.program7.seven_days.description": "Survive seven days after the Program makes landfall",
+  "advancements.program7.arrival.title": "Uninvited Guests",
+  "advancements.program7.arrival.description": "Recover salvage from the Program's downed hardware.",
+  "advancements.program7.datapad.title": "Know Your Enemy",
+  "advancements.program7.datapad.description": "Carry a datapad and start reading the Program's movements.",
 
   "subtitles.program7.entity.surveyor_drone.ambient": "Drone whirs",
   "subtitles.program7.entity.surveyor_drone.alert": "Drone alarm blares",
