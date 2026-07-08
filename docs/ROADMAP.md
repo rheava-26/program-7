@@ -153,19 +153,26 @@ Phases are ordered so every phase ships something playable, and the Director
 
 - [ ] Weapon-profile counters: ranged → explosive swarms; melee → ranged
       harassers; elytra → instant-reaction interception
-- [ ] Capability/threat escalation model: replace the day-14 Tier 2 timer —
-      the Program tiers up when its mined economy + threat pressure justify it,
-      and adapts to threats it faces beyond the player (mobs, other players,
-      modded enemies, a wither storm)
-- [ ] Typed-armor damage model: per-unit resistance by damage type (ballistic
-      / high-velocity impact / piercing / explosive / enchanted-psionic /
-      knockback-disruption) — the mod-compat balance backbone (see DESIGN.md).
-      Gun-mod players get an equivalent challenge, not a free pass or a wall
-- [ ] Datapad v1 (pulled forward from Phase 4 — it's the mod's identity and
-      the fix for "adaptation is invisible"): craft early from basic salvage;
-      proximity blare + base bearings, a live per-base **heat meter**, and a
-      per-group **doctrine/intent readout** so the Program's adaptation is
-      legible as it happens (see DESIGN.md "The Datapad")
+- [x] Capability/threat escalation model: replaced the day-14 Tier 2 timer
+      with `tier2Unlocked()` gating on accumulated threat/scans (globalThreat
+      ≥ 8 or scans ≥ 3). Mined-economy gating and non-player threat adaptation
+      (mobs, wither storm) are still future refinements
+- [x] Typed-armor damage model: per-unit `ArmorProfile` resistance by damage
+      type (ballistic / high-velocity impact / piercing / explosive /
+      enchanted / melee / generic) — the mod-compat backbone (see DESIGN.md).
+      Armored vehicles resist bullets, take extra from arrows/enchants; gunboat
+      hull toughest; Tier-1 fliers unarmored
+- [x] Heat is a two-way dial: threat decays after ~2 days of no contact into a
+      DORMANT/NEUTRAL posture (stop engaging / beat them down → they stand
+      down); posture surfaces on the Datapad (see DESIGN.md heat model)
+- [~] Datapad v1 (pulled forward from Phase 4 — the mod's identity and the fix
+      for "adaptation is invisible"): DONE — right-click chat readout of
+      posture/heat, nearby unit count + nearest bearing, nearest base bearing.
+      TODO v2: HUD overlay, proximity blare, per-group doctrine/intent readout,
+      remote control (see DESIGN.md "The Datapad")
+- [x] Onboarding advancements: "Uninvited Guests" (first salvage) and "Know
+      Your Enemy" (carry a datapad) — addresses the no-onboarding review gap
+      (needs an in-game check; advancement JSON isn't compile-verifiable)
 - [ ] Anomaly detection: player-placed blocks in wilderness trigger search
       patterns; visible view cones on sensor drones (hide by breaking LoS)
 - [ ] Gunship doctrine: known players get a delayed, deliberate sneak attack
