@@ -382,23 +382,84 @@ public class ProgramDirectorState extends PersistentState {
 			return;
 		}
 		this.lastContactTime = world.getTime();
-		for (int i = 0; i < dispatch.count; i++) {
+
+		PlayerIntel intel = this.getIntel(dispatch.playerId);
+		String profile = intel != null ? intel.weaponProfile : ScanRecord.PROFILE_NONE;
+
+		this.dispatchRushers(world, player, dispatch, profile);
+		this.dispatchEscalation(world, player, profile);
+	}
+
+	/**
+	 * Field the base wave of attack drones ("rushers"), sized to counter how
+	 * this player fights.
+	 *
+	 * <p>{@code dispatch.count} rushers were already paid for back in {@link
+	 * #recordScan}, so they're spawned here unpaid — only deviations from
+	 * that base count need their own ledger entries. A ranged/bow player is
+	 * punished for standing off by getting one extra rusher (paid for on the
+	 * spot) thrown at them, since a suicide drone closing distance is exactly
+	 * what an archer struggles to answer. A melee/sword player, who shreds
+	 * anything that gets within arm's reach, gets fewer rushers instead —
+	 * feeding them cannon fodder is a losing trade.
+	 */
+	private void dispatchRushers(ServerWorld world, ServerPlayerEntity player, PendingDispatch dispatch, String profile) {
+		int baseCount = dispatch.count;
+		if (ScanRecord.PROFILE_MELEE.equals(profile)) {
+			baseCount = Math.max(1, dispatch.count - 1);
+		}
+		for (int i = 0; i < baseCount; i++) {
 			this.spawnEscort(world, player, P7Entities.ATTACK_DRONE.get().create(world));
 		}
 
-		// Capability/threat gated: waves start folding Tier 2 hardware in
-		// alongside the attack drones once the Program has learned enough
-		// about the threat to justify fielding it. No hard cap on this yet —
-		// that arrives with the base-attackability phase, which properly
-		// gates Tier 3 escalation.
-		if (this.tier2Unlocked()) {
+		if (ScanRecord.PROFILE_RANGED.equals(profile) && this.tryConsume(ATTACK_DRONE_COST)) {
+			// Swarm-the-archer response: one more suicide rusher, freshly paid
+			// for, to close distance on a player who wants to stay stationary.
+			this.spawnEscort(world, player, P7Entities.ATTACK_DRONE.get().create(world));
+		}
+	}
+
+	/**
+	 * Field Tier 2 hardware once the Program has earned the right to
+	 * ({@link #tier2Unlocked()}), adapted to the player's weapon profile.
+	 *
+	 * <p>Ranged/bow players already out-range a sniper drone, so snipers are
+	 * skipped entirely for them — only a medium attack drone is added to
+	 * pressure them. Melee/sword players are the opposite case: standoff
+	 * harassers (a sniper drone plus a medium attack drone) keep the fight at
+	 * range where their sword can't reach. Unknown/no profile keeps the
+	 * original balanced behavior — a medium attack drone plus a chance-based
+	 * sniper drone.
+	 */
+	private void dispatchEscalation(ServerWorld world, ServerPlayerEntity player, String profile) {
+		if (!this.tier2Unlocked()) {
+			return;
+		}
+
+		if (ScanRecord.PROFILE_MELEE.equals(profile)) {
+			if (this.tryConsume(SNIPER_DRONE_COST)) {
+				this.spawnEscort(world, player, P7Entities.SNIPER_DRONE.get().create(world));
+			}
 			if (this.tryConsume(MEDIUM_ATTACK_DRONE_COST)) {
 				this.spawnEscort(world, player, P7Entities.MEDIUM_ATTACK_DRONE.get().create(world));
 			}
-			if (world.getRandom().nextDouble() < SNIPER_DRONE_CHANCE
-					&& this.tryConsume(SNIPER_DRONE_COST)) {
-				this.spawnEscort(world, player, P7Entities.SNIPER_DRONE.get().create(world));
+			return;
+		}
+
+		if (ScanRecord.PROFILE_RANGED.equals(profile)) {
+			if (this.tryConsume(MEDIUM_ATTACK_DRONE_COST)) {
+				this.spawnEscort(world, player, P7Entities.MEDIUM_ATTACK_DRONE.get().create(world));
 			}
+			return;
+		}
+
+		// Unknown/no profile: the original balanced response.
+		if (this.tryConsume(MEDIUM_ATTACK_DRONE_COST)) {
+			this.spawnEscort(world, player, P7Entities.MEDIUM_ATTACK_DRONE.get().create(world));
+		}
+		if (world.getRandom().nextDouble() < SNIPER_DRONE_CHANCE
+				&& this.tryConsume(SNIPER_DRONE_COST)) {
+			this.spawnEscort(world, player, P7Entities.SNIPER_DRONE.get().create(world));
 		}
 	}
 
