@@ -103,6 +103,11 @@ engaging, and hiding. But:
   down. Drive heat to the floor and the Program backs off into an uneasy
   neutrality for a while (all of it visible on the datapad). The ceasefire
   protocol is simply heat bottoming out by force rather than by hiding.
+- **Curiosity pause (the tender flip-side).** At neutral/low heat, a drone that
+  sees the player crouch repeatedly nearby will *stop and pause to watch* — a
+  brief, non-hostile "what are you doing?" beat. It only happens when the fleet
+  isn't hunting you, and it's the hook for the "Friends?" advancement: a rare
+  soft moment inside the horror.
 
 ## Counter-Adaptation (weapon profiling)
 
@@ -208,6 +213,11 @@ datapad's development tracker.
 
 - **Small drones are one-hit kills** to a sword or axe — the horror is
   numbers and initiative, never HP sponges.
+- **Maces shatter drones.** A mace hits a drone — especially a light one —
+  hard enough to make it *violently shatter*: an emphatic death with a big
+  debris/spark burst, not a quiet pop. A mace dropped from ~20 blocks onto a
+  Tier-1 drone is the signature "Overkill much?" moment. (Fits the typed-armor
+  model as a heavy melee-impact class.)
 - **Knockback/Punch enchantments throw drones off course**, scramble their
   flight, and can crash them outright.
 - Drones **physically angle toward the player and lead their aim** during
@@ -415,6 +425,7 @@ explosion particles and smoke.
 | Interference directionality | off | HUD warning biased toward threat direction. |
 | Ceasefire protocol | on | Only after the Program discovers villagers. |
 | Endless waves | off | Re-insertion never stops; anti-orbital victory disabled. |
+| Psionics | on | Player psionic powers (from the first base kill). Off disables the "…" unlock entirely. |
 
 ## Small Things That Matter
 
