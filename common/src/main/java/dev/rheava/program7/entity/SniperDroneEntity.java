@@ -65,4 +65,9 @@ public class SniperDroneEntity extends ProgramDroneEntity {
 	public int getMinAmbientSoundDelay() {
 		return 80;
 	}
+
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.LIGHT;
+	}
 }

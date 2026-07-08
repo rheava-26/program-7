@@ -76,4 +76,9 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 	protected float getSoundVolume() {
 		return 0.6f;
 	}
+
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.LIGHT;
+	}
 }

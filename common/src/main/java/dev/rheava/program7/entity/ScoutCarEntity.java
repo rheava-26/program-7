@@ -64,4 +64,9 @@ public class ScoutCarEntity extends ProgramDroneEntity {
 		}
 		return hurt;
 	}
+
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.LIGHT;
+	}
 }

@@ -66,4 +66,9 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 	public int getMinAmbientSoundDelay() {
 		return 60;
 	}
+
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.ARMORED_VEHICLE;
+	}
 }

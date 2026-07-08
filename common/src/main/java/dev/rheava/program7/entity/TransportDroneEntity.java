@@ -111,6 +111,11 @@ public class TransportDroneEntity extends ProgramDroneEntity implements CourierU
 	}
 
 	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.LIGHT;
+	}
+
+	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		if (this.destination != null) {

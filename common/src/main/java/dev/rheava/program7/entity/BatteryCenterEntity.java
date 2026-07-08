@@ -97,6 +97,11 @@ public class BatteryCenterEntity extends ProgramDroneEntity {
 		return 0.7f;
 	}
 
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.ARMORED_VEHICLE;
+	}
+
 	/**
 	 * Keeps the battery center from getting left behind: whenever some other
 	 * Program unit (not another battery center) has wandered off past

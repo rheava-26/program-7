@@ -68,4 +68,9 @@ public class AutogunTurretEntity extends ProgramDroneEntity {
 	protected float getSoundVolume() {
 		return 0.4f;
 	}
+
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.ARMORED_VEHICLE;
+	}
 }

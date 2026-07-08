@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.rheava.program7.block.DroneWreckBlock;
+import dev.rheava.program7.entity.ArmorProfile.DamageClass;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantment;
@@ -15,6 +16,10 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.SpectralArrowEntity;
+import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
@@ -76,6 +81,15 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 		return List.of();
 	}
 
+	/**
+	 * Per-damage-type resistance profile. Unarmored by default; armored
+	 * units override this to give different weapon types a genuinely
+	 * different fight against them instead of one flat reduction.
+	 */
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.UNARMORED;
+	}
+
 	public boolean isScrambled() {
 		return this.scrambledTicks > 0;
 	}
@@ -104,8 +118,8 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	public boolean damage(DamageSource source, float amount) {
 		if (!this.getWorld().isClient) {
 			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
+			ItemStack weapon = attacker != null ? attacker.getMainHandStack() : ItemStack.EMPTY;
 			if (attacker != null) {
-				ItemStack weapon = attacker.getMainHandStack();
 				if (this.isFlier()
 						&& (weapon.getItem() instanceof SwordItem || weapon.getItem() instanceof AxeItem)) {
 					// Blades shred airframes: small drones usually die in one hit.
@@ -128,8 +142,43 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 				}
 				this.spawnRotorHitEffects();
 			}
+
+			// Typed armor: layer the per-damage-class multiplier on top of
+			// everything above, so armored units get a real, differently
+			// textured fight depending on what's actually hitting them.
+			amount *= this.armorProfile().multiplierFor(this.classify(source, weapon));
 		}
 		return super.damage(source, amount);
+	}
+
+	/**
+	 * Buckets incoming damage into a {@link DamageClass} so
+	 * {@link #armorProfile()} can apply a type-specific multiplier.
+	 */
+	private DamageClass classify(DamageSource source, ItemStack weapon) {
+		if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
+			return DamageClass.EXPLOSIVE;
+		}
+		if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
+			if (source.getSource() instanceof TridentEntity) {
+				return DamageClass.PIERCING;
+			}
+			if (source.getSource() instanceof ArrowEntity || source.getSource() instanceof SpectralArrowEntity
+					|| source.getSource() instanceof PersistentProjectileEntity) {
+				return DamageClass.HIGH_VELOCITY_IMPACT;
+			}
+			// Anything else riding the projectile tag — most gun-mod bullets
+			// included — reads as conventional ballistic fire.
+			return DamageClass.BALLISTIC;
+		}
+		if (source.getAttacker() instanceof LivingEntity) {
+			int enchantedPower = this.getEnchantLevel(weapon, Enchantments.SHARPNESS)
+					+ this.getEnchantLevel(weapon, Enchantments.SMITE)
+					+ this.getEnchantLevel(weapon, Enchantments.BANE_OF_ARTHROPODS)
+					+ this.getEnchantLevel(weapon, Enchantments.IMPALING);
+			return enchantedPower > 0 ? DamageClass.ENCHANTED : DamageClass.MELEE;
+		}
+		return DamageClass.GENERIC;
 	}
 
 	/**

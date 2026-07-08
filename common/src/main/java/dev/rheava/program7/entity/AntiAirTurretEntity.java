@@ -68,4 +68,9 @@ public class AntiAirTurretEntity extends ProgramDroneEntity {
 	public void takeKnockback(double strength, double x, double z) {
 		// Bolted down: knockback rattles it, nothing more.
 	}
+
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.ARMORED_VEHICLE;
+	}
 }

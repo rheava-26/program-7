@@ -62,11 +62,15 @@ public class ProgramDirectorState extends PersistentState {
 	private static final Map<String, Integer> SNIPER_DRONE_COST = Map.of(
 			Resources.IRON, 5, Resources.COPPER, 3, Resources.REDSTONE, 4);
 	/**
-	 * Day 14+: waves start folding in Tier 2 hardware alongside the attack
-	 * drones. There is no hard ceiling on this escalation yet — that lands
-	 * with the base-attackability phase, which caps Tier 3 properly.
+	 * Waves start folding in Tier 2 hardware alongside the attack drones once
+	 * the Program's global threat reading crosses this line, or enough
+	 * separate scans have been filed to prove the contact isn't a fluke.
+	 * There is no hard ceiling on this escalation yet — that lands with the
+	 * base-attackability phase, which caps Tier 3 properly.
 	 */
-	private static final long TIER_2_ESCALATION_DAY = 14L * 24000L;
+	private static final int TIER_2_THREAT = 8;
+	/** Minimum filed scans before Tier 2 can unlock, even at low threat. */
+	private static final int TIER_2_MIN_SCANS = 3;
 	private static final double SNIPER_DRONE_CHANCE = 0.25;
 	/** The starter stockpile every pod brings down with it. */
 	private static final Map<String, Integer> POD_STOCKPILE = Map.of(
@@ -338,6 +342,19 @@ public class ProgramDirectorState extends PersistentState {
 		this.markDirty();
 	}
 
+	/**
+	 * Whether the Program has earned the right to field Tier 2 hardware.
+	 *
+	 * <p>This is deliberately capability/threat-driven, not calendar-driven:
+	 * the Program escalates once it has had enough hostile contact — a high
+	 * enough global threat reading, or enough filed scans — to justify
+	 * fielding heavier hardware, never simply because a fixed number of
+	 * in-game days have passed.
+	 */
+	private boolean tier2Unlocked() {
+		return this.globalThreat >= TIER_2_THREAT || this.scansCompleted >= TIER_2_MIN_SCANS;
+	}
+
 	private void executeDispatch(ServerWorld world, PendingDispatch dispatch) {
 		ServerPlayerEntity player = world.getServer().getPlayerManager().getPlayer(dispatch.playerId);
 		if (player == null || player.getServerWorld() != world || player.isDead()) {
@@ -347,10 +364,12 @@ public class ProgramDirectorState extends PersistentState {
 			this.spawnEscort(world, player, P7Entities.ATTACK_DRONE.get().create(world));
 		}
 
-		// Day 14+: waves start folding Tier 2 hardware in alongside the
-		// attack drones. No hard cap on this yet — that arrives with the
-		// base-attackability phase, which properly gates Tier 3 escalation.
-		if (world.getTime() >= TIER_2_ESCALATION_DAY) {
+		// Capability/threat gated: waves start folding Tier 2 hardware in
+		// alongside the attack drones once the Program has learned enough
+		// about the threat to justify fielding it. No hard cap on this yet —
+		// that arrives with the base-attackability phase, which properly
+		// gates Tier 3 escalation.
+		if (this.tier2Unlocked()) {
 			if (this.tryConsume(MEDIUM_ATTACK_DRONE_COST)) {
 				this.spawnEscort(world, player, P7Entities.MEDIUM_ATTACK_DRONE.get().create(world));
 			}

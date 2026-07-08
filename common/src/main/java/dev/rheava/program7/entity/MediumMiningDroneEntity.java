@@ -104,6 +104,11 @@ public class MediumMiningDroneEntity extends ProgramDroneEntity implements Cargo
 	}
 
 	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.LIGHT;
+	}
+
+	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		NbtCompound cargoTag = new NbtCompound();

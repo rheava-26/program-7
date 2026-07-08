@@ -120,6 +120,11 @@ public class GunboatEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.HEAVY_HULL;
+	}
+
+	@Override
 	protected int getNextAirUnderwater(int air) {
 		// Machines don't breathe. canBreatheInWater() is final in 1.21.1 and
 		// keyed off a data-driven entity type tag this class has no business

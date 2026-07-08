@@ -82,6 +82,11 @@ public class GroundDroneEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.ARMORED_VEHICLE;
+	}
+
+	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		if (this.homePos != null) {
