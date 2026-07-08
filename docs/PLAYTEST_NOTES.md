@@ -68,3 +68,27 @@ ambushed should spike your pulse. Everything below serves that one goal.
   action-bar line with: a loud stinger + a hard spike of psionic interference,
   naturally followed by the sound of incoming drones. Show, don't tell.
   (Anchor: `ScanPlayerGoal.completeScan()` line ~125.)
+
+## Round 3 — presence & emergence
+
+Theme: the fleet should feel like an ever-present occupying force, not a set of
+encounters. Reach out, be loud, and *do things in the world on their own.*
+
+- **R1. Longer engagement ranges.** ✅ DONE. Snipers acquire at 96 / fire to 90
+  and crack loud (vol 5, ~80-block radius); Director sets them up at 60-90
+  blocks; other tiers' acquisition +50%.
+- **R2. Louder / more present.** Partial (sniper crack, whir, alarm). Ongoing:
+  more ambient menace, distant fire audible, engine noise density.
+- **R3. Emergent base behaviors** (the big next wave — needs building):
+  - **Dig underground.** Mining/tunnelling units that carve into terrain
+    (hardest: block-breaking pathfinding). There are already MEDIUM_MINING and
+    HARVESTER drones registered — likely the hook.
+  - **Steal resources.** Drones raid dropped items / unattended storage and
+    haul it back to base (gear-theft is already a config toggle + partially
+    designed; logistics/hauler units are the vehicle). High "threatening"
+    value, most tractable — likely first.
+  - **Build drones on the spot.** Field fabrication: a unit/beacon that spawns
+    new drones away from the main base, so the threat regenerates in the field.
+- **R4. Inventory drone parts → 3D.** ⏳ Preview sent for approval (voxel models
+  for drone_core / power_bank / transmitter / gun_barrel / explosive_warhead /
+  magazine). On approval: generate real MC `elements` models + face textures.
