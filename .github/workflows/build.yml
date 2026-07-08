@@ -1,0 +1,45 @@
+name: build
+
+# Builds the mod on GitHub's servers (which have full internet access, unlike
+# the dev sandbox) so we can verify it actually compiles on both loaders.
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build
+        run: ./gradlew build --stacktrace --no-daemon
+
+      - name: Upload mod jars
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: program7-jars
+          path: |
+            fabric/build/libs/*.jar
+            neoforge/build/libs/*.jar
+          if-no-files-found: warn
