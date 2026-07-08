@@ -3,6 +3,7 @@ package dev.rheava.program7.block;
 import dev.rheava.program7.registry.P7BlockEntities;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -124,8 +125,10 @@ public class AutogunTurretBlockEntity extends BlockEntity {
 	}
 
 	private static boolean hasLineOfSight(World world, Vec3d from, Vec3d to) {
+		// ShapeContext.absent() rather than a null entity — a bare null is
+		// ambiguous between the Entity and ShapeContext raycast overloads.
 		BlockHitResult hit = world.raycast(new RaycastContext(from, to,
-				RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, null));
+				RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, ShapeContext.absent()));
 		return hit.getType() == HitResult.Type.MISS;
 	}
 
