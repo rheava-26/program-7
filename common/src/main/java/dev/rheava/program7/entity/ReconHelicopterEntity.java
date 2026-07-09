@@ -4,6 +4,7 @@ import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.OrbitTargetGoal;
 import dev.rheava.program7.entity.ai.SearchlightSpotGoal;
+import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
@@ -13,6 +14,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
 
 /**
@@ -32,7 +34,8 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 
 	public ReconHelicopterEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.moveControl = new InertialFlightMoveControl(this, 20, true, 1.5f);
+		// Mass 3.0: heavier hull, slower spool-up and turn than the tier-2 fliers.
+		this.moveControl = new InertialFlightMoveControl(this, 20, true, 3.0f);
 		this.experiencePoints = 15;
 	}
 
@@ -41,7 +44,8 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.46)
 				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.92)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0);
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
+				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
 	}
 
 	@Override
@@ -68,13 +72,18 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	protected SoundEvent getAmbientSound() {
+		return P7Sounds.HELI_ROTOR_LOOP.get();
+	}
+
+	@Override
 	public int getMinAmbientSoundDelay() {
-		return 80;
+		return 45;
 	}
 
 	@Override
 	protected float getSoundVolume() {
-		return 0.6f;
+		return 1.1f;
 	}
 
 	@Override

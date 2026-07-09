@@ -16,6 +16,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -117,6 +118,21 @@ public class GunboatEntity extends ProgramDroneEntity {
 			// something puts it back in the water.
 			this.getNavigation().stop();
 		}
+	}
+
+	@Override
+	protected SoundEvent getAmbientSound() {
+		return P7Sounds.BOAT_ENGINE_LOOP.get();
+	}
+
+	@Override
+	public int getMinAmbientSoundDelay() {
+		return 45;
+	}
+
+	@Override
+	protected float getSoundVolume() {
+		return 1.2f;
 	}
 
 	@Override

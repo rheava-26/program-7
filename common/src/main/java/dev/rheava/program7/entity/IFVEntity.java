@@ -2,6 +2,7 @@ package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.DeployDronesGoal;
 import dev.rheava.program7.entity.ai.GunAttackGoal;
+import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -14,6 +15,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
 
 /**
@@ -64,13 +66,18 @@ public class IFVEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	protected SoundEvent getAmbientSound() {
+		return P7Sounds.TANK_TRACKS_LOOP.get();
+	}
+
+	@Override
 	public int getMinAmbientSoundDelay() {
-		return 100;
+		return 45;
 	}
 
 	@Override
 	protected float getSoundVolume() {
-		return 0.6f;
+		return 1.0f;
 	}
 
 	@Override

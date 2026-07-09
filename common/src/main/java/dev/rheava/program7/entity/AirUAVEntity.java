@@ -1,8 +1,9 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.CircleLoiterGoal;
-import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.FixedWingMoveControl;
 import dev.rheava.program7.entity.ai.UAVSpotGoal;
+import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
@@ -12,8 +13,8 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,16 +26,12 @@ import org.jetbrains.annotations.Nullable;
  * blind until the catapult can afford to sling another one up.
  */
 public class AirUAVEntity extends ProgramDroneEntity {
-	/** Below this horizontal speed the airframe would stall rather than glide. */
-	private static final double MIN_FORWARD_SPEED = 0.15;
-	private static final double STALL_THRUST = 0.15;
-
 	@Nullable
 	private BlockPos homePos = null;
 
 	public AirUAVEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
-		this.moveControl = new InertialFlightMoveControl(this, 10, true, 2.0f);
+		this.moveControl = new FixedWingMoveControl(this, 10, true);
 		this.experiencePoints = 6;
 	}
 
@@ -42,8 +39,10 @@ public class AirUAVEntity extends ProgramDroneEntity {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 10.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
-				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.8)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0);
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 1.1)
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
+				// A plane shouldn't get shoved off course by a stray hit.
+				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.8);
 	}
 
 	@Override
@@ -77,17 +76,8 @@ public class AirUAVEntity extends ProgramDroneEntity {
 	@Override
 	public void tickMovement() {
 		super.tickMovement();
-		// Fixed wings stall rather than hover: while under control (not mid-scramble
-		// tumble) and airborne, keep a minimum forward airspeed instead of stopping dead.
-		if (!this.getWorld().isClient && !this.isScrambled() && !this.isOnGround()) {
-			Vec3d velocity = this.getVelocity();
-			if (velocity.horizontalLength() < MIN_FORWARD_SPEED) {
-				double yawRad = Math.toRadians(this.getYaw());
-				double addX = -Math.sin(yawRad) * STALL_THRUST;
-				double addZ = Math.cos(yawRad) * STALL_THRUST;
-				this.setVelocity(velocity.add(addX, 0.0, addZ));
-			}
-		}
+		// Airspeed floor is now owned by FixedWingMoveControl itself; nothing
+		// left to do here beyond the base drone bookkeeping above.
 	}
 
 	@Override
@@ -96,13 +86,18 @@ public class AirUAVEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	protected SoundEvent getAmbientSound() {
+		return P7Sounds.PLANE_ENGINE_LOOP.get();
+	}
+
+	@Override
 	public int getMinAmbientSoundDelay() {
-		return 140;
+		return 50;
 	}
 
 	@Override
 	protected float getSoundVolume() {
-		return 0.5f;
+		return 1.0f;
 	}
 
 	@Override

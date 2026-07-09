@@ -29,12 +29,14 @@ import net.minecraft.util.math.Vec3d;
  */
 public class NavalMoveControl extends MoveControl {
 	// A supertanker's turning circle: even committed to a heading, the bow
-	// only comes around a few degrees a tick.
-	private static final float MAX_YAW_STEP = 3.0F;
+	// only comes around a few degrees a tick. Tuned down further for the
+	// tier-3 hull's bigger dimensions — a wider, more ponderous turn circle.
+	private static final float MAX_YAW_STEP = 2.2F;
 	// Fraction of the gap between current and desired horizontal velocity
 	// closed per tick; low enough that spooling up to speed (or coasting to
-	// a stop) reads as the hull's own momentum, not a light vehicle.
-	private static final double ACCEL_FRACTION = 0.08;
+	// a stop) reads as the hull's own momentum, not a light vehicle. Lower
+	// than before so the bigger hull carries more momentum through a turn.
+	private static final double ACCEL_FRACTION = 0.05;
 
 	public NavalMoveControl(MobEntity entity) {
 		super(entity);

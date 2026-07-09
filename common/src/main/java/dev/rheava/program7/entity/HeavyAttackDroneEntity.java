@@ -3,6 +3,7 @@ package dev.rheava.program7.entity;
 import dev.rheava.program7.entity.ai.BurstGunAttackGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -14,6 +15,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
 
 /**
@@ -42,7 +44,7 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 				// gun range (below) stays tight — this is not a standoff unit.
 				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 72.0)
 				.add(EntityAttributes.GENERIC_ARMOR, 10.0)
-				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.8);
+				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
 	}
 
 	@Override
@@ -65,8 +67,18 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	protected SoundEvent getAmbientSound() {
+		return P7Sounds.HELI_ROTOR_LOOP.get();
+	}
+
+	@Override
 	public int getMinAmbientSoundDelay() {
-		return 60;
+		return 45;
+	}
+
+	@Override
+	protected float getSoundVolume() {
+		return 1.1f;
 	}
 
 	@Override
