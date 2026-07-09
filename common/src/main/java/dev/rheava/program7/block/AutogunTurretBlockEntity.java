@@ -1,5 +1,6 @@
 package dev.rheava.program7.block;
 
+import dev.rheava.program7.entity.ai.HitscanImpact;
 import dev.rheava.program7.registry.P7BlockEntities;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.block.BlockState;
@@ -174,6 +175,11 @@ public class AutogunTurretBlockEntity extends BlockEntity {
 			// so this uses a generic damage source rather than GunAttackGoal's mobAttack().
 			target.damage(world.getDamageSources().generic(), DAMAGE);
 		}
+
+		// Wherever the round actually lands — chews up whatever block or
+		// fluid caught it, hit or miss. No Entity to attribute a break to,
+		// same reasoning as the damage source above.
+		HitscanImpact.resolve(world, muzzle, aim, RANGE, null);
 
 		this.heat += HEAT_PER_SHOT;
 	}

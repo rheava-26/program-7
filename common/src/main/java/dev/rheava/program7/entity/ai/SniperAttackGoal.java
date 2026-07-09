@@ -50,6 +50,27 @@ public class SniperAttackGoal extends GunAttackGoal {
 	}
 
 	@Override
+	protected int engage(LivingEntity target, double distance, boolean canSee) {
+		// The sniper never sprays: unlike the base class it doesn't switch to
+		// wide-spread suppressive fire at long range or against a lost
+		// target — every round that goes out is an aimed shot at the
+		// floored hitChance() below, same as before this mount's block-
+		// chewing/particle wiring was added via the shared fire() path. It
+		// still respects the base suppression *window* (staying "sighted"
+		// on a target for a few beats after losing sight) via updateSight(),
+		// just without the accuracy/spread penalty that implies elsewhere.
+		if (distance > this.range) {
+			return 0;
+		}
+		Vec3d aimPos = canSee ? target.getBoundingBox().getCenter() : this.getLastSeenPos();
+		if (aimPos == null) {
+			return 0;
+		}
+		this.fire(target, distance, aimPos, canSee ? 1.0 : SUPPRESSION_HIT_CHANCE_SCALE);
+		return this.fireInterval;
+	}
+
+	@Override
 	protected double hitChance(double distance) {
 		// Floored version of the base falloff: the whole point of this mount
 		// is that range doesn't save you from it.

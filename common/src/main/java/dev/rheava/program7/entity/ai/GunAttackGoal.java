@@ -29,18 +29,39 @@ public class GunAttackGoal extends Goal {
 	protected static final int SUPPRESSION_WINDOW_TICKS = 50;
 	/** Accuracy multiplier applied while firing blind during a suppression window. */
 	protected static final double SUPPRESSION_HIT_CHANCE_SCALE = 0.15;
-	/** Miss offsets shorter than this (out of a max of ~1.9) read as a close graze. */
+	/** Miss offsets shorter than this (out of a max of ~1.9, before spread scaling) read as a close graze. */
 	private static final double NEAR_MISS_THRESHOLD = 1.0;
 	/** Minimum gap between whistle cues so a string of misses doesn't spam it. */
 	private static final int WHISTLE_COOLDOWN_TICKS = 30;
+	/**
+	 * Beyond this fraction of a mount's normal range, even a visible target
+	 * stops getting aimed shots and starts getting suppressive fire instead —
+	 * the whole point of long range is pressure, not precision.
+	 */
+	private static final double LONG_RANGE_SUPPRESSION_FRACTION = 0.6;
+	/**
+	 * How far out, relative to the mount's normal range, the suppression
+	 * envelope reaches — both for chasing a lost target's last-seen spot and
+	 * for engaging a visible-but-distant one. Suppressive rounds are cheap
+	 * and inaccurate, so it's fine for them to reach further than an aimed
+	 * shot would.
+	 */
+	private static final double SUPPRESSION_RANGE_MULTIPLIER = 1.6;
+	/** Miss-offset spread multiplier applied to suppressive fire — wide on purpose. */
+	private static final double SUPPRESSIVE_SPREAD_SCALE = 1.8;
+	/** Downward bias folded into a suppressive miss so rounds tend to walk into the ground/cover near a target's feet rather than sail overhead. */
+	private static final double SUPPRESSIVE_GROUND_BIAS = 0.6;
+	/** Cadence multiplier while suppressing: rounds go out faster, not more accurately. */
+	private static final double SUPPRESSIVE_FIRE_INTERVAL_SCALE = 0.5;
 
-	// shooter/range/damage are protected: subclasses (the sniper's standoff
-	// variant) build their own movement and accuracy rules on top of them.
+	// shooter/range/damage/fireInterval are protected: subclasses (the
+	// sniper's standoff variant) build their own movement, accuracy, and
+	// engagement rules on top of them.
 	protected final ProgramDroneEntity shooter;
 	/** Movement speed while closing in; 0 for stationary mounts. */
 	private final double speed;
 	protected final double range;
-	private final int fireInterval;
+	protected final int fireInterval;
 	protected final float damage;
 	private int cooldown;
 
@@ -115,15 +136,43 @@ public class GunAttackGoal extends Goal {
 
 		if (this.cooldown > 0) {
 			this.cooldown--;
-		} else if (distance <= this.range && sighted) {
-			if (canSee) {
-				this.fire(target, distance);
-			} else {
-				// Suppression window: still hosing the last-seen spot, blind.
-				this.fire(target, distance, this.lastSeenPos, SUPPRESSION_HIT_CHANCE_SCALE);
+		} else if (sighted) {
+			int nextCooldown = this.engage(target, distance, canSee);
+			if (nextCooldown > 0) {
+				this.cooldown = nextCooldown;
 			}
-			this.cooldown = this.fireInterval;
 		}
+	}
+
+	/**
+	 * Decides how (and whether) to shoot this tick, and returns the cooldown
+	 * to apply if a round went out (0 if nothing fired, leaving the caller's
+	 * cooldown alone so it retries next tick). Split out from {@link #tick()}
+	 * so a mount with different engagement rules — the sniper wants to stay
+	 * precise no matter the range — can override just this decision.
+	 *
+	 * <p>Close/medium range with eyes on target gets an aimed, accurate shot.
+	 * Everything else — a visible target out past {@link
+	 * #LONG_RANGE_SUPPRESSION_FRACTION} of normal range, or a lost target
+	 * still within the extended {@link #SUPPRESSION_RANGE_MULTIPLIER}
+	 * envelope — gets loud, fast, wide-spread suppressive fire walked toward
+	 * the target's current or last-known position instead: pressure, not
+	 * precision.
+	 */
+	protected int engage(LivingEntity target, double distance, boolean canSee) {
+		boolean longRange = distance > this.range * LONG_RANGE_SUPPRESSION_FRACTION;
+		if (canSee && !longRange) {
+			this.fire(target, distance);
+			return this.fireInterval;
+		}
+		if (distance <= this.range * SUPPRESSION_RANGE_MULTIPLIER) {
+			Vec3d aimPos = canSee ? target.getBoundingBox().getCenter() : this.lastSeenPos;
+			if (aimPos != null) {
+				this.fire(target, distance, aimPos, SUPPRESSION_HIT_CHANCE_SCALE, true);
+				return Math.max(1, (int) (this.fireInterval * SUPPRESSIVE_FIRE_INTERVAL_SCALE));
+			}
+		}
+		return 0;
 	}
 
 	/**
@@ -166,8 +215,24 @@ public class GunAttackGoal extends Goal {
 	 * target's live position — during suppression fire that's the
 	 * last-seen spot instead, scaled down by {@code hitChanceScale} so blind
 	 * fire mostly just keeps a target's head down instead of landing hits.
+	 * Precise, non-suppressive shot; see the {@code suppressive} overload
+	 * below for the wide-spread variant.
 	 */
 	protected void fire(LivingEntity target, double distance, Vec3d aimCenter, double hitChanceScale) {
+		this.fire(target, distance, aimCenter, hitChanceScale, false);
+	}
+
+	/**
+	 * The actual shot. When {@code suppressive} is true this is deliberately
+	 * a bad shot: wider spread (scaled by {@link #SUPPRESSIVE_SPREAD_SCALE})
+	 * biased downward (see {@link #SUPPRESSIVE_GROUND_BIAS}) so rounds tend
+	 * to walk into the ground/cover around a target's feet instead of
+	 * sailing past overhead — loud pressure, not a kill shot. Either way, the
+	 * round lands somewhere: {@link HitscanImpact} chews up whatever block or
+	 * fluid actually catches it.
+	 */
+	protected void fire(LivingEntity target, double distance, Vec3d aimCenter, double hitChanceScale,
+			boolean suppressive) {
 		if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
 			return;
 		}
@@ -176,11 +241,16 @@ public class GunAttackGoal extends Goal {
 
 		// Accuracy degrades with range; a miss still draws a tracer past you.
 		boolean hit = this.shooter.getRandom().nextDouble() < this.hitChance(distance) * hitChanceScale;
+		double spreadScale = suppressive ? SUPPRESSIVE_SPREAD_SCALE : 1.0;
 		Vec3d missOffset = Vec3d.ZERO;
 		if (!hit) {
-			missOffset = new Vec3d((this.shooter.getRandom().nextDouble() - 0.5) * 2.4,
-					(this.shooter.getRandom().nextDouble() - 0.5) * 1.6,
-					(this.shooter.getRandom().nextDouble() - 0.5) * 2.4);
+			double dx = (this.shooter.getRandom().nextDouble() - 0.5) * 2.4 * spreadScale;
+			double dy = (this.shooter.getRandom().nextDouble() - 0.5) * 1.6 * spreadScale;
+			double dz = (this.shooter.getRandom().nextDouble() - 0.5) * 2.4 * spreadScale;
+			if (suppressive) {
+				dy -= SUPPRESSIVE_GROUND_BIAS;
+			}
+			missOffset = new Vec3d(dx, dy, dz);
 			aim = aim.add(missOffset);
 		}
 
@@ -198,12 +268,19 @@ public class GunAttackGoal extends Goal {
 		this.playFireSound();
 		if (hit) {
 			target.damage(this.shooter.getDamageSources().mobAttack(this.shooter), this.damage);
-		} else if (this.whistleCooldown <= 0 && missOffset.length() < NEAR_MISS_THRESHOLD) {
+		} else if (this.whistleCooldown <= 0 && missOffset.length() < NEAR_MISS_THRESHOLD * spreadScale) {
 			// Close graze: a whistle/crack right past the target's ears.
+			// Suppressive fire scales the threshold up along with the wider
+			// spread (so it doesn't just go quiet) and halves the cooldown —
+			// the whole point is to keep this cue landing often.
 			target.playSound(P7Sounds.GUN_WHISTLE.get(), 0.4f,
 					0.9f + this.shooter.getRandom().nextFloat() * 0.2f);
-			this.whistleCooldown = WHISTLE_COOLDOWN_TICKS;
+			this.whistleCooldown = suppressive ? WHISTLE_COOLDOWN_TICKS / 2 : WHISTLE_COOLDOWN_TICKS;
 		}
+
+		// Wherever the round actually lands — chews up whatever block or
+		// fluid caught it, hit or miss.
+		HitscanImpact.resolve(world, muzzle, aim, this.range, this.shooter);
 	}
 
 	/** Chance of a hit at the given distance. Falls off linearly with range. */
