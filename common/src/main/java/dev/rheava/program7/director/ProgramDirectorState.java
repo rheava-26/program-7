@@ -137,6 +137,13 @@ public class ProgramDirectorState extends PersistentState {
 	private final Map<UUID, PlayerIntel> intel = new HashMap<>();
 	private final List<PendingDispatch> dispatches = new ArrayList<>();
 	/**
+	 * The registry of drones currently swapped out for lightweight tokens
+	 * because no player is nearby. See {@link VirtualFleet} for the
+	 * materialize/dematerialize round-trip — v1 carries no off-screen
+	 * behaviour, it's purely registry + persistence.
+	 */
+	private final VirtualFleet virtualFleet = new VirtualFleet();
+	/**
 	 * The resource ledger. The Program spends this to field units and (in
 	 * later phases) refills it by actually mining. An empty ledger means no
 	 * reinforcements — starving the base is a real strategy.
@@ -241,6 +248,10 @@ public class ProgramDirectorState extends PersistentState {
 
 		if (!this.constructionSites.isEmpty()) {
 			this.tickConstructionSites(world);
+		}
+
+		if (this.virtualFleet.tick(world)) {
+			this.markDirty();
 		}
 	}
 
@@ -773,6 +784,10 @@ public class ProgramDirectorState extends PersistentState {
 		return this.intel.get(playerId);
 	}
 
+	public VirtualFleet getVirtualFleet() {
+		return this.virtualFleet;
+	}
+
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		nbt.putInt("GlobalThreat", this.globalThreat);
@@ -828,6 +843,8 @@ public class ProgramDirectorState extends PersistentState {
 		NbtCompound resourceTag = new NbtCompound();
 		this.resources.forEach(resourceTag::putInt);
 		nbt.put("Resources", resourceTag);
+
+		nbt.put("VirtualFleet", this.virtualFleet.toNbt(registryLookup));
 		return nbt;
 	}
 
@@ -886,6 +903,10 @@ public class ProgramDirectorState extends PersistentState {
 		NbtCompound resourceTag = nbt.getCompound("Resources");
 		for (String key : resourceTag.getKeys()) {
 			state.resources.put(key, resourceTag.getInt(key));
+		}
+
+		if (nbt.contains("VirtualFleet")) {
+			state.virtualFleet.readNbt(nbt.getCompound("VirtualFleet"), registryLookup);
 		}
 		return state;
 	}

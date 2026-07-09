@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
+import dev.rheava.program7.director.DroneToken;
 import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.director.RiskAssessment;
 import dev.rheava.program7.director.ScanRecord;
@@ -21,6 +22,7 @@ import net.minecraft.text.Text;
  * /program7 assess        — run a live risk assessment on yourself
  * /program7 threat &lt;0-100&gt; — force the global threat level
  * /program7 land [distance] — force the drop pod down now (testing)
+ * /program7 fleet          — list virtualized drone tokens (read-only, debug)
  * </pre>
  */
 public final class Program7Command {
@@ -37,7 +39,21 @@ public final class Program7Command {
 								.executes(context -> land(context, 120))
 								.then(CommandManager.argument("distance", IntegerArgumentType.integer(32, 2000))
 										.executes(context -> land(context,
-												IntegerArgumentType.getInteger(context, "distance")))))));
+												IntegerArgumentType.getInteger(context, "distance")))))
+						.then(CommandManager.literal("fleet").executes(Program7Command::fleet))));
+	}
+
+	private static int fleet(CommandContext<ServerCommandSource> context) {
+		ServerCommandSource source = context.getSource();
+		ProgramDirectorState state = ProgramDirectorState.get(source.getWorld());
+		java.util.List<DroneToken> tokens = state.getVirtualFleet().getTokens();
+		source.sendFeedback(() -> Text.literal("[Program 7] Virtual fleet — " + tokens.size() + " token(s)"), false);
+		for (DroneToken token : tokens) {
+			source.sendFeedback(() -> Text.literal("[Program 7]  - " + token.getEntityTypeId()
+					+ " @ (" + Math.round(token.getX()) + ", " + Math.round(token.getY())
+					+ ", " + Math.round(token.getZ()) + ")"), false);
+		}
+		return tokens.size();
 	}
 
 	private static int land(CommandContext<ServerCommandSource> context, int distance) throws CommandSyntaxException {
