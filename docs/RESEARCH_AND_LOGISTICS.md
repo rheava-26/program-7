@@ -123,6 +123,45 @@ and flee** when it can't win. Keep engage-or-flee logic keyed on a threat
 abstraction, so mod compatibility is a data addition, not a rewrite. Explicitly
 deferred until the core game is done.
 
+## Tier → supply escalation (the logistics burden climbs with power)
+The core balancing pillar: **a unit's tier dictates how much standing supply it
+needs to exist and keep fighting.** Cheap units are nearly free-standing; apex
+units are logistical monsters you can choke. Kept **grounded — Tier 4 is the
+peak everyday threat**; Tier 5 is an exceptional, situational spectacle.
+
+- **Tier 1 — self-sufficient.** No supply lines beyond raw resources + the basic
+  assembler + ammo. Batteries recharge straight off the **void engine** (the
+  probe core / psionic power source). Cheap, disposable, swarming.
+- **Tier 2 — light dependency.** Needs a few **special produced blocks** to
+  fabricate; drops noticeably more loot when killed.
+- **Tier 3 — maintained.** Up to **two degrees of supply**; **special
+  maintenance** — occasional repairs costing iron ingots, or building engines.
+  Introduces **less-traditional ores** into its bill of materials.
+- **Tier 4 — logistical monster (the most dangerous, harassing tier).** Hard to
+  maintain, very powerful. Needs **dedicated supply lines and expensive ammo
+  systems** — autocannons and tank shells require their own production lines and
+  transport to keep fed. The gunship lives here. This is the practical ceiling
+  for normal play.
+- **Tier 5 — exceptional spectacle.** Only appears when the player fields
+  **absurdly strong gear**, or something crazy (super-powerful modded enemies)
+  **forces** the fleet to escalate. Supply lines so durable they can sink
+  **3000 iron ingots, a netherite ingot as a power bank, and massive copper
+  superconductors to dump heat** into a single giant warship/airship.
+
+**Governing principles**
+- **Supply lines dictate everything.** Sever them and the dependent units starve
+  and degrade (ties to the graded-degrade support-loss rule).
+- **Time-gated, not just resource-gated above Tier 3.** A jet doesn't cost as
+  much *raw material* as 500 drones, but takes far **longer** to build and is
+  **harder** to make — so the player always gets time to see it coming and react.
+- **Kill value scales with power:** the more powerful a unit, the **more
+  resources it drops** when destroyed. Killing a Tier-4/5 asset is a raid-worthy
+  windfall.
+- **Industry scale spikes** as better transports/vehicles unlock — the fleet's
+  throughput visibly ramps once it has efficient logistics.
+- **All of it is visible on the datapad in real time:** supply lines, outposts,
+  and depots as live infrastructure you can read and cut.
+
 ## Grounding — what already exists to build on
 - **Couriers** + the `AssemblerBlockEntity` "Director pays → courier moves →
   structure acts" loop = the seed of part/fuel/ammo delivery and supply lines.
