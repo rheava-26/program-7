@@ -96,6 +96,33 @@ helicopter tail rotor and belly autocannon.
 
 ---
 
+## Spatial intel — knowing your area & guarding it
+Currently `PlayerIntel` is spatially blind (risk tier / weapon profile / elytra
+/ deaths only); the only position memory is a transient `lastSeenPos` inside the
+gun goals that dies with the firefight. Add a **strategic spatial layer**:
+- **Known area on `PlayerIntel`:** a last-known position + a **decaying "haunts"
+  heatmap** of where the player has been seen operating. This is the *same data*
+  as the datapad's "it knows you're here" red-chunk tint — one memory, two uses.
+- **Contact reporting:** when a recon/combat unit reaches TRACKING/ENGAGING on
+  the alert ramp, it reports the contact **up to the Director**, which banks it
+  as known-area intel that fades over time (knowledge decays if not refreshed).
+- **Guarding / picketing:** once haunts are known, the Director can **lock down
+  chokepoints** — park units on a cave mouth the player keeps using, watch the
+  base approach, sit on the last-seen point. Turns hunting into route denial.
+- Surfaces on the datapad **threat-priority** readout: "knows your general area
+  — cave mouth, NE." Bridges the tactical perception layer to the datapad map.
+
+*Sequencing: hooks directly onto the perception pass (the alert ramp is the
+trigger for reporting a contact up), so it lands right after.*
+
+## Future — non-player threats & mod compat (much later)
+The threat/target model should be **extensible to any dangerous entity, not just
+players** — so the autofleet can, one day, engage a modded boss (e.g. a Wither
+Storm) with missiles/aircraft/warships from extreme range and **break contact
+and flee** when it can't win. Keep engage-or-flee logic keyed on a threat
+abstraction, so mod compatibility is a data addition, not a rewrite. Explicitly
+deferred until the core game is done.
+
 ## Grounding — what already exists to build on
 - **Couriers** + the `AssemblerBlockEntity` "Director pays → courier moves →
   structure acts" loop = the seed of part/fuel/ammo delivery and supply lines.
