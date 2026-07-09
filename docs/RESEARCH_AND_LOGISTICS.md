@@ -26,6 +26,18 @@ Replaces the current raw `tier2Unlocked()`-style threshold gate with a real,
 legible, disruptable progression. This is the "capability-gated, never
 calendar-gated" design pillar finally made concrete and **player-facing**.
 
+**The research structure (locked).** Research is embodied in a **psionic
+research building at the main base**, powered by the same **psionic connection**
+that gives the Program its power. It carries a **current focus node** and a
+**visible progression meter** — no hard countdown — that advances as large drones
+physically feed it materials. You can literally watch them stack iron onto it (or
+watch a helipad rise), and read each one's completion % and status on the
+datapad. Because it draws on the psionic link, it is a **single strategic choke
+point**: cripple it — or, one day, sever the psionic connection itself — and the
+whole tree stalls. Research is **directed**: the Program focuses the branch that
+best counters how you play, and *you can bait that focus away* by changing your
+behaviour.
+
 ### 2. Infrastructure & logistics — *what lets them build it and keep it alive*
 Units are not free-floating spawns; they depend on standing structures.
 - **Production:** specialised plants make sub-components (aircraft parts, large
@@ -97,20 +109,30 @@ helicopter tail rotor and belly autocannon.
 
 ---
 
-## Open decisions (need the owner)
-1. **Research shape:** authored tree with **adaptive focus** (recommended —
-   buildable + legible + still reactive), fully **emergent/procedural**, or
-   simple **linear tiers**?
-2. **Disruption vectors** (likely several): destroy the block/unit they're
-   *studying* · kill a **research/"cortex" structure** · **starve** the
-   materials/supply · **beat a timer**. Which are must-haves?
-3. **Support-loss severity:** **graded degrade** (recommended — can't
-   repair/rearm, runs down), **hard** (support dies → unit falls), or **soft**
-   (only blocks new production)?
-4. **Fuel:** confirm blaze-powder-primary + food-biofuel as the model.
-5. **Enchanting:** scope and player counterplay.
-6. **Roads/rail:** real placed blocks (physical, block-able) vs. abstract routes
-   drawn on the datapad?
+## Locked decisions (2026-07-09)
+1. **Research shape:** authored tree with **adaptive focus** — the Program rushes
+   the branch that best counters how the player plays.
+2. **Support-loss severity:** **graded degrade** — cut support and units can't
+   repair/rearm, run down, and are eventually grounded/passive.
+3. **Research is embodied** in the psionic research building (see layer 1):
+   progression is a **meter**, fed physically by drones, **no hard timer**.
+4. **Disruption vectors — all in:**
+   - **Starve the supply** (blockade/intercept material, fuel, ammo convoys).
+   - **Destroy what they're studying** (the block / unit / wreck being analysed).
+   - **Destroy the research building or research units**, or make prototypes
+     **too expensive to replace** (economic denial).
+   - **Shift their focus** by changing how you play (bait the adaptive research
+     off the branch you fear).
+   - No countdown to "beat" — instead a visible **progression meter** you race.
+
+## Still open
+- **Fuel:** confirm blaze-powder-primary + food-biofuel as the model.
+- **Enchanting:** scope + counterplay (fits as a research branch that draws on
+  the psionic building).
+- **Roads/rail:** real placed blocks (physical, block-able) vs. abstract routes
+  drawn on the datapad.
+- **Psionic connection:** is severing it a distinct late-game objective, or is
+  the research building itself the only handle on it?
 
 ---
 
