@@ -11,6 +11,12 @@ Phases are ordered so every phase ships something playable, and the Director
 > cutting the long-term vision — Tier 1–3 is already a complete game with a
 > real win state (destroy a main base).
 
+> **Living design docs (2026-07 session):** the mod's next act is captured in
+> `RESEARCH_AND_LOGISTICS.md` (research tree + infrastructure/logistics +
+> counter-logistics + the psionic research building), `EXPANSION_PLAN.md`
+> (datapad v2, virtualization/LOD, acoustic intelligence, material tree), and
+> the gunship silhouette in `UNITS.md`. These reshape Phases 2–4 below.
+
 ## Phase 0 — Foundation ✅
 
 - [x] Fabric project scaffold (MC 1.21.1, Loom, Java 21)
@@ -135,6 +141,12 @@ Phases are ordered so every phase ships something playable, and the Director
       its production later), recon helicopter (hunts you and pins a
       searchlight on you), mobile battery center (repair aura; brownout
       debuffs nearby units when killed)
+- [x] Tier 3 rescale & differentiated movement: every Tier 3 hitbox enlarged
+      (gunboat now a giant 4.5×3.0 hull), heavies knockback-immune; fixed-wings
+      fly like planes (wide banking turns, minimum airspeed, no hover),
+      helicopters pivot deliberately on heavier mass, tanks/boats carry
+      momentum; models scaled to match and aircraft bank into their turns; loud
+      constant engine/rotor ambience on every vehicle
 - [x] Air UAV v2 remodel: modern military drone silhouette — long slim
       fuselage, satcom nose, high-aspect wing, V-tail, rear pusher prop
 - [ ] Tier system enforcement in the Director (Tier 3 hard cap until first
@@ -170,13 +182,27 @@ Phases are ordered so every phase ships something playable, and the Director
 - [~] Datapad v1 (pulled forward from Phase 4 — the mod's identity and the fix
       for "adaptation is invisible"): DONE — right-click chat readout of
       posture/heat, nearby unit count + nearest bearing, nearest base bearing.
-      TODO v2: HUD overlay, proximity blare, per-group doctrine/intent readout,
-      remote control (see DESIGN.md "The Datapad")
+      TODO v2: full GUI screen designed this session — chunk-grid radar,
+      coverage-limited fog, alert-ramp tooltip states, two-sense acoustic intel,
+      research-progress + fleet/heat panels (see EXPANSION_PLAN C7 +
+      RESEARCH_AND_LOGISTICS). The AlertState ramp backend now ships; the GUI,
+      virtualization data source, and acoustic layer are the remaining build
 - [x] Onboarding advancements: "Uninvited Guests" (first salvage) and "Know
       Your Enemy" (carry a datapad) — addresses the no-onboarding review gap
       (needs an in-game check; advancement JSON isn't compile-verifiable)
-- [ ] Anomaly detection: player-placed blocks in wilderness trigger search
-      patterns; visible view cones on sensor drones (hide by breaking LoS)
+- [~] Anomaly detection & recon perception: DONE — recon spotters carry an
+      AlertState ramp (UNAWARE→SUSPICIOUS→SEARCHING→TRACKING→ENGAGING),
+      LOS-gated detection to ~160 blocks (break line-of-sight to hide), and an
+      InvestigateDisturbanceGoal that catches *movement* (yours or a passing
+      mob's), swells psionic interference into a spotted crack, darts over to
+      look, and can mistake a mob for you before peeling off — all soundborne,
+      no text. TODO: player-placed-block anomaly triggers in wilderness; full
+      persistent view-cone render
+- [x] Suppressive fire + world-chewing rounds: hitscan firearms break softer
+      cover after a few hits (blast-resistance scaled, mobGriefing-gated) and
+      kick up dirt/stone/water on impact; past 60% of range, or at a lost
+      target's last-seen spot, mounts switch to loud, wide, pressuring
+      suppressive fire — snipers stay precise
 - [ ] Gunship doctrine: known players get a delayed, deliberate sneak attack
       once a gunship is available
 - [x] "Still Here" advancement for surviving seven days after landfall
