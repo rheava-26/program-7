@@ -21,6 +21,8 @@ public class P7Config {
 	public boolean interferenceDirectionality = false;
 	/** Master switch for the psionic interference HUD overlay. */
 	public boolean interferenceOverlay = true;
+	/** During psionic interference, vanilla music ducks out so the Program's sounds carry. */
+	public boolean interferenceMusicDuck = true;
 	/** Drones haul off unattended gear / death drops. */
 	public boolean itemStealing = true;
 	/** Drones may modify player-built structures outside active conflict. */

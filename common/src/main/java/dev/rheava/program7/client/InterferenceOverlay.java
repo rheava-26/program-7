@@ -31,6 +31,13 @@ public final class InterferenceOverlay {
 	private static float threatYaw = Float.NaN;
 	private static long lastPacketMs = 0L;
 
+	// Audio focus: once the interference presses in past this, vanilla music
+	// drops out so the whir of nearby drones and the crack of distant gunfire
+	// push to the front of the mix — the Program's sound *becomes* the score.
+	private static final float MUSIC_DUCK_THRESHOLD = 0.10f;
+	private static boolean musicDucked = false;
+	private static int musicReStopTicks = 0;
+
 	public static void onPacket(float intensity, float yaw) {
 		target = MathHelper.clamp(intensity, 0.0f, 1.0f);
 		threatYaw = yaw;
@@ -45,6 +52,20 @@ public final class InterferenceOverlay {
 		current += (target - current) * 0.08f;
 		if (current < 0.003f) {
 			current = 0.0f;
+		}
+
+		// Music duck: while the interference presses in, silence vanilla music so
+		// the Program's own sound — drone whir, distant gunfire — carries the
+		// scene. Re-issued every ~30 ticks rather than every tick so a track that
+		// tries to start back up is caught without stuttering the audio.
+		if (Program7.CONFIG.interferenceMusicDuck && current > MUSIC_DUCK_THRESHOLD && client.player != null) {
+			if (!musicDucked || --musicReStopTicks <= 0) {
+				client.getMusicTracker().stop();
+				musicReStopTicks = 30;
+			}
+			musicDucked = true;
+		} else {
+			musicDucked = false;
 		}
 
 		// The audio half of the warning: bursts of static, denser as it gets worse.
