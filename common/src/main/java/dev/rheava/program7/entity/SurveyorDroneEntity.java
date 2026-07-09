@@ -5,6 +5,7 @@ import java.util.List;
 
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal;
 import dev.rheava.program7.entity.ai.RaidStorageGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.ScanPlayerGoal;
@@ -52,18 +53,24 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 12.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
 				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.6)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0);
+				// Raised for symmetric "if you can see it, it can see you"
+				// LOS-gated perception (InvestigateDisturbanceGoal). 160 is the
+				// practical ceiling for this attribute; true whole-region
+				// (~600 block) symmetry needs entity simulation distance / a
+				// future virtualization layer — a known limit, not fixed here.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 160.0);
 	}
 
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new RetreatGoal(this));
 		this.goalSelector.add(2, new ScanPlayerGoal(this));
-		this.goalSelector.add(3, new StealItemsGoal(this));
-		this.goalSelector.add(4, new RaidStorageGoal(this));
-		this.goalSelector.add(5, new HoverWanderGoal(this));
-		this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
-		this.goalSelector.add(7, new LookAroundGoal(this));
+		this.goalSelector.add(3, new InvestigateDisturbanceGoal(this));
+		this.goalSelector.add(4, new StealItemsGoal(this));
+		this.goalSelector.add(5, new RaidStorageGoal(this));
+		this.goalSelector.add(6, new HoverWanderGoal(this));
+		this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
+		this.goalSelector.add(8, new LookAroundGoal(this));
 	}
 
 	@Override

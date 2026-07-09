@@ -2,6 +2,7 @@ package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.CircleLoiterGoal;
 import dev.rheava.program7.entity.ai.FixedWingMoveControl;
+import dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal;
 import dev.rheava.program7.entity.ai.UAVSpotGoal;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
@@ -40,7 +41,12 @@ public class AirUAVEntity extends ProgramDroneEntity {
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 10.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
 				.add(EntityAttributes.GENERIC_FLYING_SPEED, 1.1)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
+				// Raised for symmetric "if you can see it, it can see you"
+				// LOS-gated perception (InvestigateDisturbanceGoal). 160 is the
+				// practical ceiling for this attribute; true whole-region
+				// (~600 block) symmetry needs entity simulation distance / a
+				// future virtualization layer — a known limit, not fixed here.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 160.0)
 				// A plane shouldn't get shoved off course by a stray hit.
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.8);
 	}
@@ -48,8 +54,9 @@ public class AirUAVEntity extends ProgramDroneEntity {
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new UAVSpotGoal(this));
-		this.goalSelector.add(2, new CircleLoiterGoal(this, 28.0, 20.0, 1.0));
-		this.goalSelector.add(3, new LookAroundGoal(this));
+		this.goalSelector.add(2, new InvestigateDisturbanceGoal(this));
+		this.goalSelector.add(3, new CircleLoiterGoal(this, 28.0, 20.0, 1.0));
+		this.goalSelector.add(4, new LookAroundGoal(this));
 
 		// No target selectors: unarmed spotter. UAVSpotGoal hands contacts off
 		// to whatever armed hardware is already in range.

@@ -30,6 +30,7 @@ import net.minecraft.loot.LootTable;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextTypes;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -62,6 +63,27 @@ import org.jetbrains.annotations.Nullable;
  */
 public abstract class ProgramDroneEntity extends PathAwareEntity {
 	/**
+	 * Shared perception/behaviour ramp, lowest to highest alert. Any Program
+	 * unit can carry one of these; it's read by {@link #getAlertState()} and
+	 * meant to eventually surface on the {@link dev.rheava.program7.item.DatapadItem}
+	 * readout so a player can tell how "made" they are, not just whether a
+	 * unit currently has a target.
+	 *
+	 * <ul>
+	 *   <li>{@link #UNAWARE} — default; nothing has caught the unit's attention.</li>
+	 *   <li>{@link #SUSPICIOUS} — noticed a disturbance, hasn't investigated yet.</li>
+	 *   <li>{@link #SEARCHING} — actively moving to look at a disturbance.</li>
+	 *   <li>{@link #TRACKING} — confirmed a player and is holding contact
+	 *       (used by unarmed spotters/scouts, who report rather than fight).</li>
+	 *   <li>{@link #ENGAGING} — confirmed a player and is a ranged attacker,
+	 *       i.e. weapons are hot.</li>
+	 * </ul>
+	 */
+	public enum AlertState {
+		UNAWARE, SUSPICIOUS, SEARCHING, TRACKING, ENGAGING
+	}
+
+	/**
 	 * Aim high to clip the rotors: a hit landing in this top slice of the
 	 * hitbox is treated as a disabling shot to the rotor plane, not a graze.
 	 */
@@ -88,6 +110,8 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	 *  no-target -&gt; has-target transition ("freak out on acquisition"). */
 	@Nullable
 	private LivingEntity lastTarget = null;
+	/** See {@link AlertState}; persisted so a reload doesn't silently reset a unit's posture. */
+	private AlertState alertState = AlertState.UNAWARE;
 
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -128,6 +152,15 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 
 	public boolean isScrambled() {
 		return this.scrambledTicks > 0;
+	}
+
+	/** Current position on the {@link AlertState} ramp. */
+	public AlertState getAlertState() {
+		return this.alertState;
+	}
+
+	public void setAlertState(AlertState alertState) {
+		this.alertState = alertState;
 	}
 
 	/**
@@ -349,7 +382,12 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	 * "Freak out on acquisition": the instant this unit locks a fresh target
 	 * (transitioning from no target to a live {@link PlayerEntity}), give the
 	 * player a sharp audible+visual tell instead of the drone silently
-	 * swinging its aim onto them.
+	 * swinging its aim onto them. This is also the top of the {@link
+	 * AlertState} ramp: confirmed contact pushes the unit to {@link
+	 * AlertState#ENGAGING} (ranged attackers) or {@link AlertState#TRACKING}
+	 * (unarmed spotters/scouts, which report rather than fight) — see {@link
+	 * dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal} for the goal
+	 * that usually feeds a target in here.
 	 *
 	 * TODO(manager): a real move-control jolt / erratic-motion tell on
 	 * acquisition would sell this even harder — out of scope for this pass,
@@ -367,6 +405,13 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 					double z = (box.minZ + box.maxZ) / 2.0;
 					serverWorld.spawnParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 10, 0.3, 0.3, 0.3, 0.05);
 				}
+				this.alertState = this.isRangedAttacker() ? AlertState.ENGAGING : AlertState.TRACKING;
+			} else if (currentTarget == null
+					&& (this.alertState == AlertState.TRACKING || this.alertState == AlertState.ENGAGING)) {
+				// Lost the target: step back down one rung instead of
+				// snapping straight to unaware, so a fresh disturbance can
+				// still pick the thread back up.
+				this.alertState = AlertState.SUSPICIOUS;
 			}
 			this.lastTarget = currentTarget;
 		}
@@ -423,6 +468,24 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			this.playSound(P7Sounds.UNIT_ALARM.get(), 1.0f, 1.0f);
 		} else if (!playerNear) {
 			this.alarmLatched = false;
+		}
+	}
+
+	@Override
+	public void writeCustomDataToNbt(NbtCompound nbt) {
+		super.writeCustomDataToNbt(nbt);
+		nbt.putString("AlertState", this.alertState.name());
+	}
+
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt) {
+		super.readCustomDataFromNbt(nbt);
+		if (nbt.contains("AlertState")) {
+			try {
+				this.alertState = AlertState.valueOf(nbt.getString("AlertState"));
+			} catch (IllegalArgumentException e) {
+				this.alertState = AlertState.UNAWARE;
+			}
 		}
 	}
 

@@ -1,5 +1,6 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.SpotTargetGoal;
 import net.minecraft.entity.EntityType;
@@ -34,7 +35,12 @@ public class ScoutCarEntity extends ProgramDroneEntity {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 12.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.45)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
+				// Raised for symmetric "if you can see it, it can see you"
+				// LOS-gated perception (InvestigateDisturbanceGoal). 160 is the
+				// practical ceiling for this attribute; true whole-region
+				// (~600 block) symmetry needs entity simulation distance / a
+				// future virtualization layer — a known limit, not fixed here.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 160.0)
 				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.0);
 	}
 
@@ -47,9 +53,10 @@ public class ScoutCarEntity extends ProgramDroneEntity {
 	protected void initGoals() {
 		this.goalSelector.add(1, new SpotTargetGoal(this));
 		this.goalSelector.add(2, new RetreatGoal(this));
-		this.goalSelector.add(3, new WanderAroundFarGoal(this, 0.9));
-		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 12.0f));
-		this.goalSelector.add(5, new LookAroundGoal(this));
+		this.goalSelector.add(3, new InvestigateDisturbanceGoal(this));
+		this.goalSelector.add(4, new WanderAroundFarGoal(this, 0.9));
+		this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 12.0f));
+		this.goalSelector.add(6, new LookAroundGoal(this));
 
 		// No target selectors: the scout never fights. SpotTargetGoal finds
 		// players on its own and hands the fight off to nearby armed drones.

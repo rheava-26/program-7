@@ -2,6 +2,7 @@ package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal;
 import dev.rheava.program7.entity.ai.OrbitTargetGoal;
 import dev.rheava.program7.entity.ai.SearchlightSpotGoal;
 import dev.rheava.program7.registry.P7Sounds;
@@ -44,16 +45,22 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.46)
 				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.92)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
+				// Raised for symmetric "if you can see it, it can see you"
+				// LOS-gated perception (InvestigateDisturbanceGoal). 160 is the
+				// practical ceiling for this attribute; true whole-region
+				// (~600 block) symmetry needs entity simulation distance / a
+				// future virtualization layer — a known limit, not fixed here.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 160.0)
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
 	}
 
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new SearchlightSpotGoal(this));
-		this.goalSelector.add(2, new OrbitTargetGoal(this, 16.0, 1.0));
-		this.goalSelector.add(3, new HoverWanderGoal(this));
-		this.goalSelector.add(4, new LookAroundGoal(this));
+		this.goalSelector.add(2, new InvestigateDisturbanceGoal(this));
+		this.goalSelector.add(3, new OrbitTargetGoal(this, 16.0, 1.0));
+		this.goalSelector.add(4, new HoverWanderGoal(this));
+		this.goalSelector.add(5, new LookAroundGoal(this));
 
 		// Unarmed: the only target-selector entry is revenge, so shooting the
 		// helicopter locks its searchlight (and every gun it calls in) onto
