@@ -146,6 +146,47 @@ escalation on **threat AND materials-banked** (finally the "capability-gated,
 never calendar-gated" pillar in code). Surface progress on the datapad
 ("they're stockpiling amethyst…"). Optional: stolen player items feed the tree.
 
+### C7. Acoustic intelligence & abstract off-screen combat — **L (rides on C4)**
+**The datapad is a two-sense instrument.** Vision/radar is *precise but short*
+(coverage-gated, C4). **Hearing is vague but long.** Gunfire, rotors, tracks,
+and especially explosions carry *far past* their own chunk, arriving
+progressively quieter with distance; the datapad interprets the signature into
+a fuzzy guess — **sound type → probable unit(s) → probable activity → rough
+direction/distance**. Kept deliberately uncertain ("probably", "maybe") — the
+ambiguity is the fun. The **Nether echoes and amplifies** (enclosed space);
+**explosions ring out deepest** and give the most confident long-range reads.
+
+**What the player can read from sound:**
+- sparse fire just after dawn → a combat UAV cleaning up a stray creeper
+- sustained rhythmic night fire in one spot → **base defence vs. mob spawns** →
+  the datapad estimates a base there (time-of-day logic: at night the drones
+  burn ammo holding the line)
+- swelling fire → fighting off a raid, or storming a woodland mansion for totems
+- distant rotor-thump / track-grind → "armored/air unit type over there," no fix
+- deep booms → explosives/artillery, longest range, flagged prominently
+
+**Abstract off-screen combat (the C4 virtualization behaviour — don't render it
+all).** Per region, on a slow tick:
+1. Check **hostile-mob spawn conditions** (light, Y, biome, time).
+2. Estimate **how many** would spawn in a distance band at that level — purely
+   statistical, no entities.
+3. Check **drone tokens** in the area. If combat-capable drones are present,
+   resolve the engagement **statistically**: spend **ammo** from the local/base
+   ledger (ties the ammo economy in — starve ammo and the night defence fails),
+   emit a **gunfire acoustic event** scaled to intensity and distance-to-player,
+   deposit **mob loot** from a pool, and update token state.
+All math + one sound + a bookkeeping entry. It is how you *hear* the fleet before
+you see it.
+
+**Loot materialisation (recommended):** bank off-screen loot to the Program
+ledger / a logistics token by default; only spawn **real ground drops when a
+player is near enough to witness** the fight — avoids item entities piling up in
+unloaded chunks and the attendant dupe/econ/lag problems.
+
+**Depends on:** C4 virtualization (tokens acting in unloaded chunks) + the
+datapad backend. *Gotchas:* never scan unloaded chunks synchronously; budget the
+region tick; the acoustic model is a second sensory channel, not a second radar.
+
 ---
 
 ## D. Dependency-ordered build sequence
