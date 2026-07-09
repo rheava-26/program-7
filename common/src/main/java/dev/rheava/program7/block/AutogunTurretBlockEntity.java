@@ -1,5 +1,6 @@
 package dev.rheava.program7.block;
 
+import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.entity.ai.HitscanImpact;
 import dev.rheava.program7.registry.P7BlockEntities;
 import dev.rheava.program7.registry.P7Sounds;
@@ -167,7 +168,7 @@ public class AutogunTurretBlockEntity extends BlockEntity {
 			world.spawnParticles(ParticleTypes.CRIT, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
 		}
 
-		world.playSound(null, pos, P7Sounds.GUN_FIRE.get(), SoundCategory.BLOCKS, 1.0f,
+		ProgramAcoustics.emit(world, muzzle, P7Sounds.GUN_FIRE.get(), SoundCategory.HOSTILE, 1.0f,
 				1.1f + world.random.nextFloat() * 0.2f);
 
 		if (hit) {

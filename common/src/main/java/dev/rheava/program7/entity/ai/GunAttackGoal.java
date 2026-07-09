@@ -2,12 +2,14 @@ package dev.rheava.program7.entity.ai;
 
 import java.util.EnumSet;
 
+import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -290,7 +292,9 @@ public class GunAttackGoal extends Goal {
 
 	/** The report itself; broken out so mounts with a different gun can swap it. */
 	protected void playFireSound() {
-		this.shooter.playSound(P7Sounds.GUN_FIRE.get(), 1.0f,
-				1.1f + this.shooter.getRandom().nextFloat() * 0.2f);
+		if (this.shooter.getWorld() instanceof ServerWorld world) {
+			ProgramAcoustics.emit(world, this.shooter.getEyePos(), P7Sounds.GUN_FIRE.get(),
+					SoundCategory.HOSTILE, 1.0f, 1.1f + this.shooter.getRandom().nextFloat() * 0.2f);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.registry.P7Entities;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
@@ -8,6 +9,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.projectile.thrown.ThrownEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 
@@ -59,7 +61,8 @@ public class MortarShellEntity extends ThrownEntity {
 	@Override
 	protected void onCollision(HitResult hitResult) {
 		if (this.getWorld() instanceof ServerWorld world) {
-			this.playSound(P7Sounds.MORTAR_IMPACT.get(), 1.0f, 1.0f);
+			ProgramAcoustics.emit(world, this.getPos(), P7Sounds.MORTAR_IMPACT.get(),
+					SoundCategory.HOSTILE, 1.0f, 1.0f);
 			world.createExplosion(this, this.getX(), this.getY(), this.getZ(),
 					EXPLOSION_POWER, World.ExplosionSourceType.NONE);
 			this.discard();

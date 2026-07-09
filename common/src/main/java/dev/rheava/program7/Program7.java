@@ -1,6 +1,7 @@
 package dev.rheava.program7;
 
 import dev.architectury.event.events.common.TickEvent;
+import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.command.Program7Command;
 import dev.rheava.program7.config.P7Config;
 import dev.rheava.program7.director.ProgramDirectorState;
@@ -50,6 +51,9 @@ public final class Program7 {
 			if (world.getRegistryKey() == World.OVERWORLD) {
 				ProgramDirectorState.get(world).tick(world);
 			}
+			// Acoustics queue ticks for every dimension — weapons fire in the
+			// Nether too, not just the overworld the Director cares about.
+			ProgramAcoustics.tick(world);
 		});
 
 		LOGGER.info("[Program 7] Probe telemetry online. Awaiting insertion window.");
