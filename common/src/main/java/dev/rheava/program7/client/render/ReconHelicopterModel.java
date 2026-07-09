@@ -10,6 +10,7 @@ import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.util.math.MathHelper;
 
 /**
  * The Recon Helicopter: a slim fuselage riding on a pair of skid struts, a
@@ -19,6 +20,14 @@ import net.minecraft.client.render.entity.model.SinglePartEntityModel;
  */
 public class ReconHelicopterModel extends SinglePartEntityModel<ReconHelicopterEntity> {
 	public static final EntityModelLayer LAYER = new EntityModelLayer(Program7.id("recon_helicopter"), "main");
+
+	// Banking: roll the whole airframe proportional to its per-tick turn rate,
+	// clamped so a snap-turn doesn't flip it past a sane bank angle.
+	private static final float BANK_GAIN = 1.2f;
+	private static final float MAX_BANK_DEGREES = 30.0f;
+	// Pitch: nose down while descending, nose up while climbing.
+	private static final float CLIMB_PITCH_GAIN = 40.0f;
+	private static final float MAX_CLIMB_PITCH_DEGREES = 15.0f;
 
 	private final ModelPart root;
 	private final ModelPart body;
@@ -71,7 +80,19 @@ public class ReconHelicopterModel extends SinglePartEntityModel<ReconHelicopterE
 			float animationProgress, float headYaw, float headPitch) {
 		this.rotor.yaw = animationProgress * 3.0f;
 		this.tailRotor.pitch = animationProgress * 3.0f;
-		this.body.pitch = headPitch * (float) (Math.PI / 180.0) * 0.3f;
+
+		// Body yaw already tracks the move control's heading (see
+		// ReconHelicopterRenderer - it doesn't touch body yaw at all, so the
+		// airframe visibly turns to face where it's actually flying). Here we
+		// only add the "heavy machine" banking/pitch on top of that.
+		float turnRate = MathHelper.wrapDegrees(entity.getYaw() - entity.prevYaw);
+		float bankDegrees = MathHelper.clamp(turnRate * BANK_GAIN, -MAX_BANK_DEGREES, MAX_BANK_DEGREES);
+		float climbDegrees = MathHelper.clamp((float) -entity.getVelocity().y * CLIMB_PITCH_GAIN,
+				-MAX_CLIMB_PITCH_DEGREES, MAX_CLIMB_PITCH_DEGREES);
+
+		this.body.pitch = headPitch * (float) (Math.PI / 180.0) * 0.3f
+				+ climbDegrees * (float) (Math.PI / 180.0);
+		this.body.roll = bankDegrees * (float) (Math.PI / 180.0);
 	}
 
 	@Override

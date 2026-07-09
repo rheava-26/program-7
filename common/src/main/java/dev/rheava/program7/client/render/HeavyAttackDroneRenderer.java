@@ -4,10 +4,13 @@ import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.HeavyAttackDroneEntity;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 public class HeavyAttackDroneRenderer extends MobEntityRenderer<HeavyAttackDroneEntity, HeavyAttackDroneModel> {
 	private static final Identifier TEXTURE = Program7.id("textures/entity/heavy_attack_drone.png");
+	// Tier 3 size bump to the ~2.6 x 2.2 hitbox.
+	private static final float MODEL_SCALE = 1.33f;
 
 	public HeavyAttackDroneRenderer(EntityRendererFactory.Context context) {
 		super(context, new HeavyAttackDroneModel(context.getPart(HeavyAttackDroneModel.LAYER)), 0.9f);
@@ -16,5 +19,11 @@ public class HeavyAttackDroneRenderer extends MobEntityRenderer<HeavyAttackDrone
 	@Override
 	public Identifier getTexture(HeavyAttackDroneEntity entity) {
 		return TEXTURE;
+	}
+
+	@Override
+	protected void scale(HeavyAttackDroneEntity entity, MatrixStack matrices, float amount) {
+		super.scale(entity, matrices, amount);
+		matrices.scale(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
 	}
 }

@@ -10,6 +10,7 @@ import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.util.math.MathHelper;
 
 /**
  * The Tier 3 flagship of the attack drone line: a car-sized armored quad
@@ -22,14 +23,23 @@ public class HeavyAttackDroneModel extends SinglePartEntityModel<HeavyAttackDron
 
 	private static final String[] ARM_NAMES = {"arm_fl", "arm_fr", "arm_bl", "arm_br"};
 
+	// This airframe is heavy (mass 4.0 in InertialFlightMoveControl, capped at
+	// ~10 deg/tick turn rate), so it gets a higher bank gain than the nimbler
+	// fliers to still read as visibly banking despite its slow, telegraphed turns.
+	private static final float BANK_GAIN = 2.0f;
+	private static final float MAX_BANK_DEGREES = 25.0f;
+	private static final float CLIMB_PITCH_GAIN = 40.0f;
+	private static final float MAX_CLIMB_PITCH_DEGREES = 15.0f;
+
 	private final ModelPart root;
+	private final ModelPart body;
 	private final ModelPart[] rotors = new ModelPart[4];
 
 	public HeavyAttackDroneModel(ModelPart root) {
 		this.root = root;
-		ModelPart body = root.getChild("body");
+		this.body = root.getChild("body");
 		for (int i = 0; i < ARM_NAMES.length; i++) {
-			this.rotors[i] = body.getChild(ARM_NAMES[i]).getChild("rotor");
+			this.rotors[i] = this.body.getChild(ARM_NAMES[i]).getChild("rotor");
 		}
 	}
 
@@ -82,6 +92,14 @@ public class HeavyAttackDroneModel extends SinglePartEntityModel<HeavyAttackDron
 		for (int i = 0; i < this.rotors.length; i++) {
 			this.rotors[i].yaw = (i % 2 == 0) ? spin : -spin;
 		}
+
+		float turnRate = MathHelper.wrapDegrees(entity.getYaw() - entity.prevYaw);
+		float bankDegrees = MathHelper.clamp(turnRate * BANK_GAIN, -MAX_BANK_DEGREES, MAX_BANK_DEGREES);
+		float climbDegrees = MathHelper.clamp((float) -entity.getVelocity().y * CLIMB_PITCH_GAIN,
+				-MAX_CLIMB_PITCH_DEGREES, MAX_CLIMB_PITCH_DEGREES);
+
+		this.body.roll = bankDegrees * (float) (Math.PI / 180.0);
+		this.body.pitch = climbDegrees * (float) (Math.PI / 180.0);
 	}
 
 	@Override
