@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -66,10 +67,14 @@ public final class VirtualFleet {
 		if (this.tokens.isEmpty()) {
 			return false;
 		}
+		String dimensionId = world.getRegistryKey().getValue().toString();
 		boolean changed = false;
 		Iterator<DroneToken> iterator = this.tokens.iterator();
 		while (iterator.hasNext()) {
 			DroneToken token = iterator.next();
+			if (!token.getDimensionId().equals(dimensionId)) {
+				continue; // captured in a different dimension — never spawn it here
+			}
 			if (world.getClosestPlayer(token.getX(), token.getY(), token.getZ(), MATERIALIZE_RANGE, false) == null) {
 				continue;
 			}
@@ -80,6 +85,14 @@ public final class VirtualFleet {
 			}
 			Entity entity = token.materialize(world);
 			if (entity != null) {
+				iterator.remove();
+				changed = true;
+			} else {
+				// A player is right here and the chunk is loaded, but the entity
+				// type no longer resolves (a mod/datapack removed or renamed it).
+				// Drop the token rather than retrying it forever.
+				Program7.LOGGER.warn("[Program 7] Dropping unrecoverable virtual drone token: {}",
+						token.getEntityTypeId());
 				iterator.remove();
 				changed = true;
 			}
@@ -135,7 +148,13 @@ public final class VirtualFleet {
 		}
 		NbtList list = tag.getList("Tokens", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < list.size(); i++) {
-			this.tokens.add(DroneToken.fromNbt(list.getCompound(i)));
+			try {
+				this.tokens.add(DroneToken.fromNbt(list.getCompound(i)));
+			} catch (RuntimeException e) {
+				// One malformed token must never abort loading the rest of the
+				// fleet — let alone the whole Director state. Skip it and move on.
+				Program7.LOGGER.warn("[Program 7] Skipping malformed virtual drone token on load", e);
+			}
 		}
 	}
 

@@ -22,14 +22,17 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class DroneToken {
 	private final Identifier entityTypeId;
+	private final String dimensionId;
 	private final double x;
 	private final double y;
 	private final double z;
 	private final float yaw;
 	private final NbtCompound data;
 
-	private DroneToken(Identifier entityTypeId, double x, double y, double z, float yaw, NbtCompound data) {
+	private DroneToken(Identifier entityTypeId, String dimensionId,
+			double x, double y, double z, float yaw, NbtCompound data) {
 		this.entityTypeId = entityTypeId;
+		this.dimensionId = dimensionId;
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -49,7 +52,9 @@ public final class DroneToken {
 			return null;
 		}
 		Identifier entityTypeId = EntityType.getId(drone.getType());
-		return new DroneToken(entityTypeId, drone.getX(), drone.getY(), drone.getZ(), drone.getYaw(), data);
+		String dimensionId = drone.getWorld().getRegistryKey().getValue().toString();
+		return new DroneToken(entityTypeId, dimensionId,
+				drone.getX(), drone.getY(), drone.getZ(), drone.getYaw(), data);
 	}
 
 	public double getX() {
@@ -68,9 +73,15 @@ public final class DroneToken {
 		return this.entityTypeId;
 	}
 
+	/** The dimension this drone was captured in — a token only ever re-materializes in its own world. */
+	public String getDimensionId() {
+		return this.dimensionId;
+	}
+
 	public NbtCompound toNbt() {
 		NbtCompound tag = new NbtCompound();
 		tag.putString("EntityType", this.entityTypeId.toString());
+		tag.putString("Dimension", this.dimensionId);
 		tag.putDouble("X", this.x);
 		tag.putDouble("Y", this.y);
 		tag.putDouble("Z", this.z);
@@ -79,14 +90,21 @@ public final class DroneToken {
 		return tag;
 	}
 
+	/**
+	 * Rebuild a token from NBT. Throws if the tag is malformed (missing/blank
+	 * entity id) — {@link VirtualFleet#readNbt} calls this per entry inside a
+	 * try/catch so one bad token can never abort loading the whole fleet (let
+	 * alone the rest of the Director state).
+	 */
 	public static DroneToken fromNbt(NbtCompound tag) {
 		Identifier entityTypeId = Identifier.of(tag.getString("EntityType"));
+		String dimensionId = tag.contains("Dimension") ? tag.getString("Dimension") : "minecraft:overworld";
 		double x = tag.getDouble("X");
 		double y = tag.getDouble("Y");
 		double z = tag.getDouble("Z");
 		float yaw = tag.getFloat("Yaw");
 		NbtCompound data = tag.getCompound("Data");
-		return new DroneToken(entityTypeId, x, y, z, yaw, data);
+		return new DroneToken(entityTypeId, dimensionId, x, y, z, yaw, data);
 	}
 
 	/**
