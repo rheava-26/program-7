@@ -136,7 +136,7 @@ is an up-armored ore hauler, the "gunship" a weaponised heavy-lift flier.*
 
 | Unit | Role |
 |---|---|
-| **Gunship** | House-sized rotor craft: autoguns + rockets + searchlight; the sneak-attack doctrine weapon |
+| **Gunship** | The apex terror asset. A house-sized airship on **twin pivoting rotors**, hung with a **giant autocannon that tracks and traverses very fluidly**, plus rockets + searchlight. You are *supposed* to be scared of it: seen and heard from far off, it is the sneak-attack doctrine weapon and the reason to fear the sky. Movement and gun must feel weighty and smooth, never twitchy. |
 | **APC** | Armored drone-carrier; deploys squads at contact |
 | **Tank** | Direct-fire armor; breaches walls |
 | **Attack helicopter** | Fast rotary gun/rocket platform |

@@ -99,5 +99,10 @@
   "subtitles.program7.block.assembler.working": "Assembler machining",
   "subtitles.program7.block.assembler.complete": "Assembler finishes a unit",
   "subtitles.program7.block.catapult.launch": "Catapult flings a UAV",
-  "subtitles.program7.event.orbital_resupply": "Something falls from orbit"
+  "subtitles.program7.event.orbital_resupply": "Something falls from orbit",
+
+  "subtitles.program7.entity.recon_helicopter.rotor_loop": "Rotors thump overhead",
+  "subtitles.program7.entity.air_uav.engine_loop": "Engine drones past",
+  "subtitles.program7.unit.tank_tracks_loop": "Tracks grind closer",
+  "subtitles.program7.entity.gunboat.engine_loop": "Engine throbs"
 }

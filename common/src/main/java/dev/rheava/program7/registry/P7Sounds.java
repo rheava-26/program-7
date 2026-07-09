@@ -49,6 +49,14 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_WORKING = register("block.assembler.working");
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_COMPLETE = register("block.assembler.complete");
 	public static final RegistrySupplier<SoundEvent> CATAPULT_LAUNCH = register("block.catapult.launch");
+	/** Rhythmic heavy rotor thump loop for helicopter entities. */
+	public static final RegistrySupplier<SoundEvent> HELI_ROTOR_LOOP = register("entity.recon_helicopter.rotor_loop");
+	/** Droning engine loop for fixed-wing aircraft entities. */
+	public static final RegistrySupplier<SoundEvent> PLANE_ENGINE_LOOP = register("entity.air_uav.engine_loop");
+	/** Grinding heavy track loop for ground vehicle entities. */
+	public static final RegistrySupplier<SoundEvent> TANK_TRACKS_LOOP = register("unit.tank_tracks_loop");
+	/** Deep throbbing engine loop for aquatic vehicle entities. */
+	public static final RegistrySupplier<SoundEvent> BOAT_ENGINE_LOOP = register("entity.gunboat.engine_loop");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

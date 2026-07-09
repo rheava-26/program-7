@@ -142,5 +142,29 @@
     "sounds": [
       { "name": "minecraft:event.raid.horn", "type": "event" }
     ]
+  },
+  "entity.recon_helicopter.rotor_loop": {
+    "subtitle": "subtitles.program7.entity.recon_helicopter.rotor_loop",
+    "sounds": [
+      { "name": "minecraft:entity.ravager.step", "type": "event" }
+    ]
+  },
+  "entity.air_uav.engine_loop": {
+    "subtitle": "subtitles.program7.entity.air_uav.engine_loop",
+    "sounds": [
+      { "name": "minecraft:entity.blaze.burn", "type": "event" }
+    ]
+  },
+  "unit.tank_tracks_loop": {
+    "subtitle": "subtitles.program7.unit.tank_tracks_loop",
+    "sounds": [
+      { "name": "minecraft:entity.ravager.step", "type": "event" }
+    ]
+  },
+  "entity.gunboat.engine_loop": {
+    "subtitle": "subtitles.program7.entity.gunboat.engine_loop",
+    "sounds": [
+      { "name": "minecraft:entity.guardian.ambient", "type": "event" }
+    ]
   }
 }
