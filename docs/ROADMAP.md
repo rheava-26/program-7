@@ -87,8 +87,14 @@ Phases are ordered so every phase ships something playable, and the Director
       autoturrets, mortars
 - [ ] Wheeled logistics drone + crates (gold-striped priority cargo, escorts)
 - [ ] Lockdown mode: 20/20/60 production split, high-ground fortification
-- [ ] Base is attackable: storage blocks mineable/stealable, base HP model,
-      threat-proportional defense commitment
+- [x] Base is attackable: storage blocks mineable/stealable (the Storage Deck
+      — planted at every base, seeded with the pod's stores, mine or right-click
+      to loot; drones skip their own storage), base HP model (probe core is a
+      block entity with HP + an under-attack signal, cracking it reports a
+      destruction consequence to the Director), threat-proportional defense
+      commitment (a core reading as under attack rallies fresh defenders from
+      the ledger onto the nearest attacker — starve the ledger to throttle it).
+      Re-insertion after a razing is the remaining piece
 - [ ] Re-insertion after main outpost destruction: long wait, then far/more
       resources (player dominant), near network relink (player weak), or
       better scouted ground — always within a few thousand blocks
@@ -149,8 +155,12 @@ Phases are ordered so every phase ships something playable, and the Director
       constant engine/rotor ambience on every vehicle
 - [x] Air UAV v2 remodel: modern military drone silhouette — long slim
       fuselage, satcom nose, high-aspect wing, V-tail, rear pusher prop
-- [ ] Tier system enforcement in the Director (Tier 3 hard cap until first
-      main-base kill)
+- [x] Tier system enforcement in the Director: waves fold in a Tier 3 heavy
+      once Tier 2 is open and global threat crosses 30 — a recon helicopter to
+      hunt a player on elytra, a heavy attack drone otherwise (both airborne so
+      the aerial escort drop suits them). Tier 3 is the v1.0 ceiling; Tier 4+
+      stays locked behind the first main-base kill, and heavy fabrication
+      carries a steep post-relay skip once a base has fallen
 - [x] Orbital resupply event: every 3 in-game days each surviving probe
       core calls down a capsule — thunder-loud, a glowing column visible
       from far off, a psionic interference spike pointing at the base, and
@@ -163,10 +173,11 @@ Phases are ordered so every phase ships something playable, and the Director
 
 ## Phase 3 — Adaptation & Counterplay
 
-- [~] Weapon-profile counters: DONE for ranged → explosive-rusher swarms and
-      melee → standoff harassers (sniper + gun drone), branched in
-      executeDispatch off the scanned player's weaponProfile. TODO: elytra →
-      instant-reaction interception
+- [x] Weapon-profile counters: ranged → explosive-rusher swarms, melee →
+      standoff harassers (sniper + gun drone), and elytra → instant-reaction
+      interception (a fast medium-attack drone the moment Tier 2 is live, plus
+      a recon-helicopter hunter at Tier 3) — all branched in executeDispatch
+      off the scanned player's weaponProfile / elytra flag
 - [x] Capability/threat escalation model: replaced the day-14 Tier 2 timer
       with `tier2Unlocked()` gating on accumulated threat/scans (globalThreat
       ≥ 8 or scans ≥ 3). Mined-economy gating and non-player threat adaptation
@@ -185,8 +196,14 @@ Phases are ordered so every phase ships something playable, and the Director
       TODO v2: full GUI screen designed this session — chunk-grid radar,
       coverage-limited fog, alert-ramp tooltip states, two-sense acoustic intel,
       research-progress + fleet/heat panels (see EXPANSION_PLAN C7 +
-      RESEARCH_AND_LOGISTICS). The AlertState ramp backend now ships; the GUI,
-      virtualization data source, and acoustic layer are the remaining build
+      RESEARCH_AND_LOGISTICS). SHIPPED: the v2 radar screen — reading the
+      datapad pushes a server snapshot to a client Screen with a status rail
+      (posture, heat bar, off-grid fleet estimate vs in-range count, escalation
+      tier, nearest-base bearing) beside a north-up chunk-grid radar; contacts
+      are blips coloured by their AlertState toward you, a slow sweep + ~1.5s
+      beep rakes the grid, and hovering gives a per-contact read. TODO: live
+      refresh (currently a frozen snapshot), acoustic deception/bluffing, and
+      research-progress panel
 - [x] Onboarding advancements: "Uninvited Guests" (first salvage) and "Know
       Your Enemy" (carry a datapad) — addresses the no-onboarding review gap
       (needs an in-game check; advancement JSON isn't compile-verifiable)
@@ -196,8 +213,11 @@ Phases are ordered so every phase ships something playable, and the Director
       InvestigateDisturbanceGoal that catches *movement* (yours or a passing
       mob's), swells psionic interference into a spotted crack, darts over to
       look, and can mistake a mob for you before peeling off — all soundborne,
-      no text. TODO: player-placed-block anomaly triggers in wilderness; full
-      persistent view-cone render
+      no text. Sound-attraction now ships too: breaking a hard block (stone and
+      up) registers a loudness-scaled noise, and combat drones within earshot
+      hold a psionic-buildup beat then drift over to investigate the source
+      ("something heard me"). TODO: player-placed-block anomaly triggers in
+      wilderness; full persistent view-cone render
 - [x] Suppressive fire + world-chewing rounds: hitscan firearms break softer
       cover after a few hits (blast-resistance scaled, mobGriefing-gated) and
       kick up dirt/stone/water on impact; past 60% of range, or at a lost
