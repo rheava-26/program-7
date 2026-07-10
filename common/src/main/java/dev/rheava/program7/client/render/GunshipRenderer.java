@@ -8,13 +8,14 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 /**
- * Renders the Tier 4 apex gunship. Reuses the heavy attack drone's texture
- * as a placeholder — per the manager's brief, a real sculpted texture is a
- * later art pass; this pass only needs the airframe on screen and readable
- * at scale, not painted correctly.
+ * Renders the Tier 4 apex gunship with its own custom texture (gunmetal
+ * plating, Program-cyan nose + flank glow, dark ducted-rotor rings). NOTE:
+ * the model's first-pass UV layout is cramped — a few housing/rotor faces
+ * overlap in the atlas — so a full sculpted model + clean UV unwrap is still
+ * owed; the texture is painted to work around the current layout.
  */
 public class GunshipRenderer extends MobEntityRenderer<GunshipEntity, GunshipModel> {
-	private static final Identifier TEXTURE = Program7.id("textures/entity/heavy_attack_drone.png");
+	private static final Identifier TEXTURE = Program7.id("textures/entity/gunship.png");
 	// Tier 4 apex: bigger than the Tier 3 heavy drone (1.33) to sell "house-
 	// sized", but pulled back from an earlier 1.9 so the airframe's visual
 	// footprint stays inside the 4.6-wide hitbox — otherwise the rotor ducts

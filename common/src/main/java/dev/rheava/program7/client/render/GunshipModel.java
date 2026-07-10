@@ -34,8 +34,17 @@ public class GunshipModel extends SinglePartEntityModel<GunshipEntity> {
 	private static final float CLIMB_PITCH_GAIN = 30.0f;
 	private static final float MAX_CLIMB_PITCH_DEGREES = 10.0f;
 
+	// Tiltrotor: the ducted pylons swing from vertical-lift (hover) toward
+	// forward-thrust as the airframe builds horizontal speed — the V-22
+	// transition. Full tilt by roughly cruise speed; capped short of flat so it
+	// reads as "leaning into forward flight", not a fixed-wing.
+	private static final double FULL_TILT_SPEED = 0.28;
+	private static final float MAX_TILT_DEGREES = 72.0f;
+
 	private final ModelPart root;
 	private final ModelPart body;
+	private final ModelPart leftPylon;
+	private final ModelPart rightPylon;
 	private final ModelPart leftRotor;
 	private final ModelPart rightRotor;
 	private final ModelPart tailRotor;
@@ -43,8 +52,10 @@ public class GunshipModel extends SinglePartEntityModel<GunshipEntity> {
 	public GunshipModel(ModelPart root) {
 		this.root = root;
 		this.body = root.getChild("body");
-		this.leftRotor = this.body.getChild("left_pylon").getChild("left_housing").getChild("left_rotor");
-		this.rightRotor = this.body.getChild("right_pylon").getChild("right_housing").getChild("right_rotor");
+		this.leftPylon = this.body.getChild("left_pylon");
+		this.rightPylon = this.body.getChild("right_pylon");
+		this.leftRotor = this.leftPylon.getChild("left_housing").getChild("left_rotor");
+		this.rightRotor = this.rightPylon.getChild("right_housing").getChild("right_rotor");
 		this.tailRotor = this.body.getChild("tail_boom").getChild("tail_housing").getChild("tail_rotor");
 	}
 
@@ -121,6 +132,17 @@ public class GunshipModel extends SinglePartEntityModel<GunshipEntity> {
 		this.leftRotor.yaw = spin;
 		this.rightRotor.yaw = -spin;
 		this.tailRotor.yaw = spin * 1.6f;
+
+		// Tiltrotor transition: the ducted pylons swing from vertical-lift (hover)
+		// toward forward-thrust as horizontal airspeed builds — the V-22 pivot.
+		// (Sign is in-game-tunable: flip to -tilt if the ducts lean the wrong way.)
+		double vx = entity.getVelocity().x;
+		double vz = entity.getVelocity().z;
+		double horizSpeed = Math.sqrt(vx * vx + vz * vz);
+		float tilt = MathHelper.clamp((float) (horizSpeed / FULL_TILT_SPEED), 0.0f, 1.0f)
+				* MAX_TILT_DEGREES * (float) (Math.PI / 180.0);
+		this.leftPylon.pitch = tilt;
+		this.rightPylon.pitch = tilt;
 
 		float turnRate = MathHelper.wrapDegrees(entity.getYaw() - entity.prevYaw);
 		float bankDegrees = MathHelper.clamp(turnRate * BANK_GAIN, -MAX_BANK_DEGREES, MAX_BANK_DEGREES);

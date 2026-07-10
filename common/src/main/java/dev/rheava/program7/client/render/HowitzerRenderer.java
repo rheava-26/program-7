@@ -8,12 +8,12 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 /**
- * Placeholder texture reuses the IFV's armored-hull texture — a real
- * M109-style heavy-vehicle texture is a later art pass, same "blockout
- * first" discipline as every other unit's initial rollout.
+ * Renders the M109-style self-propelled howitzer with its own custom texture
+ * (olive-drab / gunmetal armour, tread-patterned tracks, Program-cyan turret
+ * optics), painted to the model's box-UV layout.
  */
 public class HowitzerRenderer extends MobEntityRenderer<HowitzerEntity, HowitzerModel> {
-	private static final Identifier TEXTURE = Program7.id("textures/entity/ifv.png");
+	private static final Identifier TEXTURE = Program7.id("textures/entity/howitzer.png");
 	// Big ground vehicle, bigger than the IFV's own scale bump — tuned to
 	// roughly fill (not overflow) the 2.9 x 2.6 hitbox.
 	private static final float MODEL_SCALE = 1.6f;
