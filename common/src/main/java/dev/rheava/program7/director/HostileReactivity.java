@@ -48,10 +48,9 @@ public final class HostileReactivity {
 			Box searchBox = player.getBoundingBox().expand(PLAYER_SEARCH_RANGE);
 			List<HostileEntity> hostiles = world.getEntitiesByClass(HostileEntity.class, searchBox, h -> true);
 			for (HostileEntity mob : hostiles) {
-				if (mob instanceof ProgramDroneEntity) {
-					// Program ground units can themselves be hostile-adjacent; never sic hostiles on their own kind.
-					continue;
-				}
+				// Program units aren't HostileEntity (they extend PathAwareEntity),
+				// so they're never in this list — no need (and, being unrelated
+				// sibling types, no way) to guard against re-targeting our own kind.
 				ProgramDroneEntity nearestDrone = findNearestDrone(world, mob);
 				if (nearestDrone != null && mob.getTarget() != nearestDrone) {
 					// A drone in range is always the priority threat — override
