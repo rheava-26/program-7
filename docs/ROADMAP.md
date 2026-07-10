@@ -46,8 +46,11 @@ Phases are ordered so every phase ships something playable, and the Director
 - [x] `/program7 land [distance]` test command
 - [ ] Long-range visibility trickery for the descent (fake far-render /
       skybox streak so the landing reads from 300+ blocks)
-- [ ] Pod descent simulation when no player is near the sky column
-      (currently resolves instantly instead)
+- [x] Pod descent simulation when no player is near the sky column: an
+      unwitnessed pod no longer blinks a base into existence — it broadcasts
+      the sky roar, takes a few seconds to descend, then booms on impact and
+      forms the base (persisted across a restart so nothing gets stranded
+      mid-flight)
 - [ ] Custom sound recordings replace vanilla placeholders
 - [x] Psionic interference HUD overlay: ambient hue/shift vignette whenever
       drones are within ~3 chunks, intensity scaled by the danger of nearby
@@ -95,9 +98,13 @@ Phases are ordered so every phase ships something playable, and the Director
       commitment (a core reading as under attack rallies fresh defenders from
       the ledger onto the nearest attacker — starve the ledger to throttle it).
       Re-insertion after a razing is the remaining piece
-- [ ] Re-insertion after main outpost destruction: long wait, then far/more
-      resources (player dominant), near network relink (player weak), or
-      better scouted ground — always within a few thousand blocks
+- [~] Re-insertion after main outpost destruction: DONE — razing the last
+      core site schedules a fresh pod a few in-game days out, landing near a
+      player like the opening drop (the relay stays severed and the first-kill
+      payoff is one-time, so it's renewed pressure, not a reset; a re-inserted
+      base razed again schedules the next). TODO: strength-scaled landing
+      distance/resources (far when player dominant, near network-relink when
+      weak) and better-scouted ground
 
 ## Phase 2.5 — Assembly & Tier 1 Roster (next)
 

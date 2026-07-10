@@ -66,6 +66,10 @@ public class ProgramDirectorState extends PersistentState {
 	private static final int REINSERTION_DELAY_DRIFT = 2 * 24000;
 	/** A pod only descends "live" if someone is close enough to watch it. */
 	private static final double SIMULATED_DESCENT_RANGE = 160.0;
+	/** How long an unwitnessed pod takes to descend before it impacts and the base forms. */
+	private static final long UNWITNESSED_DESCENT_TIME = 60L;
+	/** Broadcast volume for the unwitnessed descent roar / impact boom, so distant players still get the cue. */
+	private static final float DESCENT_BROADCAST_VOLUME = 16.0f;
 
 	/** Survive this long after landfall (7 in-game days) for the advancement. */
 	private static final long SEVEN_DAYS = 7L * 24000L;
@@ -178,6 +182,11 @@ public class ProgramDirectorState extends PersistentState {
 	private boolean podDeployed = false;
 	@Nullable
 	private BlockPos probeCorePos = null;
+	/** An unwitnessed pod mid-descent: its target site, or null when none is falling. */
+	@Nullable
+	private BlockPos pendingLandingSite = null;
+	/** The tick the in-flight unwitnessed pod impacts and forms its base. */
+	private long pendingLandingImpact = -1L;
 	/** Every probe core site the Program has planted, live or since razed. */
 	private final List<BlockPos> coreSites = new ArrayList<>();
 	/**
@@ -231,6 +240,10 @@ public class ProgramDirectorState extends PersistentState {
 						.get(world.getRandom().nextInt(world.getPlayers().size()));
 				this.deployPod(world, anchor, 300, 600);
 			}
+		}
+
+		if (this.pendingLandingSite != null && world.getTime() >= this.pendingLandingImpact) {
+			this.resolvePendingLanding(world);
 		}
 
 		if (this.landedAt >= 0 && world.getTime() % 200 == 0
@@ -512,8 +525,39 @@ public class ProgramDirectorState extends PersistentState {
 				return;
 			}
 		}
+		// Unwitnessed: don't blink a base into existence. Simulate the descent —
+		// broadcast the sky roar now, form the base on impact a few seconds
+		// later (resolved in tick()) — so even a far-off insertion reads as an
+		// event, not an instant. The high broadcast volume carries the cue out
+		// to distant players.
+		this.pendingLandingSite = site;
+		this.pendingLandingImpact = world.getTime() + UNWITNESSED_DESCENT_TIME;
+		world.playSound(null, site.getX() + 0.5, site.getY() + 120, site.getZ() + 0.5,
+				P7Sounds.DROP_POD_DESCENT.get(), SoundCategory.HOSTILE, DESCENT_BROADCAST_VOLUME, 0.8f);
+		this.markDirty();
+		Program7.LOGGER.info("[Program 7] Probe descending (unwitnessed) toward {}", site.toShortString());
+	}
+
+	/**
+	 * Land an unwitnessed pod that has finished its simulated descent: the
+	 * impact boom, then the base forms. Scheduled by {@link #deployPod}'s
+	 * unwitnessed branch and fired from {@link #tick} once the impact tick
+	 * arrives; persisted across a restart so a base never gets stranded
+	 * mid-flight.
+	 */
+	private void resolvePendingLanding(ServerWorld world) {
+		BlockPos site = this.pendingLandingSite;
+		this.pendingLandingSite = null;
+		this.pendingLandingImpact = -1L;
+		this.markDirty();
+		if (site == null) {
+			return;
+		}
+		world.getChunk(site);
+		world.playSound(null, site.getX() + 0.5, site.getY() + 0.5, site.getZ() + 0.5,
+				P7Sounds.DROP_POD_IMPACT.get(), SoundCategory.HOSTILE, DESCENT_BROADCAST_VOLUME, 1.0f);
 		deployProbeAt(world, site);
-		Program7.LOGGER.info("[Program 7] Probe inserted at {} (unwitnessed)", site.toShortString());
+		Program7.LOGGER.info("[Program 7] Probe impact (unwitnessed) at {}", site.toShortString());
 	}
 
 	/**
@@ -1057,6 +1101,11 @@ public class ProgramDirectorState extends PersistentState {
 			nbt.putIntArray("ProbeCorePos", new int[] {
 					this.probeCorePos.getX(), this.probeCorePos.getY(), this.probeCorePos.getZ()});
 		}
+		if (this.pendingLandingSite != null) {
+			nbt.putIntArray("PendingLandingSite", new int[] {
+					this.pendingLandingSite.getX(), this.pendingLandingSite.getY(), this.pendingLandingSite.getZ()});
+			nbt.putLong("PendingLandingImpact", this.pendingLandingImpact);
+		}
 		nbt.putLong("LastResupplyTime", this.lastResupplyTime);
 		nbt.putLong("LastContactTime", this.lastContactTime);
 		nbt.putBoolean("FirstBaseKilled", this.firstBaseKilled);
@@ -1119,6 +1168,13 @@ public class ProgramDirectorState extends PersistentState {
 			int[] pos = nbt.getIntArray("ProbeCorePos");
 			if (pos.length == 3) {
 				state.probeCorePos = new BlockPos(pos[0], pos[1], pos[2]);
+			}
+		}
+		if (nbt.contains("PendingLandingSite")) {
+			int[] pos = nbt.getIntArray("PendingLandingSite");
+			if (pos.length == 3) {
+				state.pendingLandingSite = new BlockPos(pos[0], pos[1], pos[2]);
+				state.pendingLandingImpact = nbt.getLong("PendingLandingImpact");
 			}
 		}
 		state.lastResupplyTime = nbt.contains("LastResupplyTime") ? nbt.getLong("LastResupplyTime") : 0L;
