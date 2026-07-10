@@ -1,0 +1,194 @@
+Program 7 Sound Effects - Licensing and Credits
+================================================
+
+This file documents the status of sound effects used in the Program 7 Minecraft mod.
+All sounds must be Public Domain or CC0 to comply with CurseForge distribution.
+
+AUDIO FILES STATUS
+==================
+
+**ATTEMPTED DOWNLOAD**: Network connectivity was tested to Wikimedia Commons
+(https://upload.wikimedia.org/wikipedia/commons/) but connection was blocked
+by the agent proxy (403 Forbidden). As a result, no .ogg files were downloaded.
+
+STATUS: sounds.json still uses the working vanilla placeholder redirects (so
+the mod is NOT silent). The list below is the sourcing plan — the CC0/PD .ogg
+files to fetch and drop into this directory, at which point sounds.json entries
+get repointed from the vanilla placeholder to the matching program7 path.
+Fetch from an unproxied machine; verify each with `file` (must be Ogg/Vorbis);
+CC0 / Public Domain ONLY.
+
+PRIORITY SOUND EFFECTS (STILL NEEDED)
+====================================
+
+1. unit/gun_fire.ogg
+   Path: program7:unit/gun_fire
+   Description: Sharp, crisp gunshot/rifle fire sound (short, non-looping)
+   Stream: false
+   Suggested Sources:
+   - Wikimedia Commons: Public domain gunshot recordings
+   - Freesound.org: CC0-licensed weapons/gunshot effects
+   - Zapsplat: Free, public domain gunshots
+   License Required: CC0 or Public Domain ONLY
+
+2. unit/sniper_fire.ogg
+   Path: program7:unit/sniper_fire
+   Description: High-caliber sniper rifle shot (short, more isolated than gun_fire)
+   Stream: false
+   Suggested Sources:
+   - Wikimedia Commons: Rifle/sniper recordings
+   - Public domain military sound archives
+   License Required: CC0 or Public Domain ONLY
+
+3. unit/mortar_fire.ogg
+   Path: program7:unit/mortar_fire
+   Description: Mortar or heavy artillery launch/fire sound (medium duration)
+   Stream: false
+   Suggested Sources:
+   - Wikimedia Commons: Cannon/artillery recordings
+   - Public domain military/weapon sound libraries
+   License Required: CC0 or Public Domain ONLY
+
+4. unit/mortar_impact.ogg
+   Path: program7:unit/mortar_impact
+   Description: Heavy explosion/impact sound (short, loud)
+   Stream: false
+   Suggested Sources:
+   - Wikimedia Commons: Explosion recordings
+   - Public domain blast/impact effects
+   License Required: CC0 or Public Domain ONLY
+
+5. event/drop_pod_impact.ogg
+   Path: program7:event/drop_pod_impact
+   Description: Heavy metal impact/crash sound (pod slamming ground)
+   Stream: false
+   Suggested Sources:
+   - Wikimedia Commons: Metal impact recordings
+   - Public domain industrial crash sounds
+   License Required: CC0 or Public Domain ONLY
+
+6. entity/helicopter_rotor.ogg
+   Path: program7:entity/helicopter_rotor
+   Description: Helicopter rotor blade loop sound (continuous, rhythmic)
+   Stream: true
+   Duration: Loop-friendly (suggest 3-5 seconds for seamless looping)
+   Suggested Sources:
+   - Wikimedia Commons: Helicopter rotor loops
+   - Public domain vehicle/machinery sound libraries
+   License Required: CC0 or Public Domain ONLY
+
+7. entity/aircraft_engine.ogg
+   Path: program7:entity/aircraft_engine
+   Description: Aircraft/jet engine loop sound (continuous, droning)
+   Stream: true
+   Duration: Loop-friendly (suggest 2-4 seconds for seamless looping)
+   Suggested Sources:
+   - Wikimedia Commons: Aircraft engine loops
+   - Public domain aviation sound recordings
+   License Required: CC0 or Public Domain ONLY
+
+8. unit/tank_tracks.ogg
+   Path: program7:unit/tank_tracks
+   Description: Tank/heavy tracked vehicle movement loop (grinding, rhythmic)
+   Stream: true
+   Duration: Loop-friendly (suggest 2-4 seconds for seamless looping)
+   Suggested Sources:
+   - Wikimedia Commons: Vehicle/machinery recordings
+   - Public domain military vehicle sound effects
+   License Required: CC0 or Public Domain ONLY
+
+9. entity/gunboat_engine.ogg
+   Path: program7:entity/gunboat_engine
+   Description: Naval vessel/boat engine loop sound (deep, mechanical)
+   Stream: true
+   Duration: Loop-friendly (suggest 2-4 seconds for seamless looping)
+   Suggested Sources:
+   - Wikimedia Commons: Naval/marine engine recordings
+   - Public domain watercraft sound effects
+   License Required: CC0 or Public Domain ONLY
+
+10. unit/alarm.ogg
+    Path: program7:unit/alarm
+    Description: Alert/alarm/klaxon sound (short to medium, urgent)
+    Stream: false
+    Suggested Sources:
+    - Wikimedia Commons: Alarm/klaxon recordings
+    - Public domain warning/alert sounds
+    License Required: CC0 or Public Domain ONLY
+
+SECONDARY SOUND EFFECTS (STILL NEEDED)
+======================================
+
+The following entries are also mapped in sounds.json but were not in the initial
+priority list. They can be sourced similarly:
+
+- entity/drone/ambient.ogg     → Quiet hum/electrical ambient
+- entity/drone/alert.ogg       → Electronic beep/alert
+- entity/drone/scan_beep.ogg   → Short electronic beep
+- entity/drone/interference.ogg → Static/interference noise
+- entity/drone/hurt.ogg        → Electronic damage/error sound
+- entity/drone/death.ogg       → Electronic shutdown/explosion
+- entity/drone/impact.ogg      → Metal impact/crash
+- entity/drone/whir.ogg        → Rising mechanical whine
+- entity/drone/fuse.ogg        → Fuse hiss/ignition
+- event/drop_pod_descent.ogg   → Whooshing descent/wind
+- event/orbital_resupply.ogg   → Sci-fi arrival/teleport
+- event/scan_sting.ogg         → Sharp psychic/horror sting
+- event/drones_inbound.ogg     → Alarm/warning for inbound threats
+- unit/gun_whistle.ogg         → Air crack/near-miss whistle
+- unit/mortar_whistle.ogg      → Incoming projectile whistle
+- block/assembler_working.ogg  → Mechanical working/construction
+- block/assembler_complete.ogg → Completion/success chime
+- block/catapult_launch.ogg    → Spring release/launch sound
+
+IMPLEMENTATION NOTES
+====================
+
+Format Requirements:
+- All .ogg files must be valid Ogg Vorbis audio format
+- Non-looping sounds should use "stream": false
+- Looping sounds (rotor, engine, tracks, etc.) should use "stream": true
+- Loop sounds should be designed for seamless looping
+
+Directory Structure:
+- All .ogg files belong in: common/src/main/resources/assets/program7/sounds/
+- Organized by category: entity/, unit/, block/, event/ subdirectories (optional)
+- Filenames must exactly match what sounds.json references (minus .ogg extension)
+
+Verification:
+- After downloading, verify each file with: file <path> (should show Ogg/Vorbis)
+- Test loop sounds in-game for seamless playback
+- Manager/maintainer must verify CC0/PD licensing before commit to CurseForge
+
+VERIFICATION CHECKLIST
+======================
+
+For each audio file added:
+☐ Verify license is CC0 or Public Domain (NOT CC-BY, CC-BY-SA, or unknown)
+☐ Confirm file is valid Ogg Vorbis format (use 'file' command)
+☐ Check file size is reasonable (not empty, not suspiciously large)
+☐ Update this CREDITS.txt with: filename, source URL, exact license text
+☐ Test in-game for quality and seamless playback (for loops)
+
+CC0 SOURCES REFERENCE
+====================
+
+Recommended public-domain/CC0 audio sources:
+- Wikimedia Commons: https://commons.wikimedia.org (Category:Public domain sounds)
+- Freesound.org: Creative Commons 0 (CC0) public domain sounds
+- Zapsplat: Free sound effects (check license per file)
+- Open Game Art: Open source game assets
+- BBC Sound Effects Library: https://sound-effects.bbcrewind.co.uk (non-commercial)
+- Internet Archive: Audio collections with CC0 license
+
+Always verify the specific file's license before use.
+
+FOOTER
+======
+
+This file serves as the licensing paper trail for CurseForge distribution.
+Do not delete or modify without updating the actual audio files and confirming
+their licensing status.
+
+Last Updated: 2026-07-10
+Status: Awaiting audio file downloads and verification
