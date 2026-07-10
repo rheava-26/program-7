@@ -12,6 +12,7 @@ import dev.rheava.program7.entity.BatteryCenterEntity;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
 import dev.rheava.program7.entity.GunboatEntity;
+import dev.rheava.program7.entity.GunshipEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
 import dev.rheava.program7.entity.HeavyAttackDroneEntity;
 import dev.rheava.program7.entity.IFVEntity;
@@ -214,6 +215,14 @@ public final class P7Entities {
 							.maxTrackingRange(12)
 							.build("battery_center"));
 
+	/** Tier 4 apex: house-sized twin-ducted-rotor gunship with a belly autocannon. Seen and heard from far off. */
+	public static final RegistrySupplier<EntityType<GunshipEntity>> GUNSHIP =
+			ENTITIES.register("gunship",
+					() -> EntityType.Builder.create(GunshipEntity::new, SpawnGroup.MISC)
+							.dimensions(4.6f, 3.2f)
+							.maxTrackingRange(48)
+							.build("gunship"));
+
 	public static void register() {
 		ENTITIES.register();
 
@@ -242,6 +251,7 @@ public final class P7Entities {
 		EntityAttributeRegistry.register(RECON_HELICOPTER,
 				ReconHelicopterEntity::createReconHelicopterAttributes);
 		EntityAttributeRegistry.register(BATTERY_CENTER, BatteryCenterEntity::createBatteryCenterAttributes);
+		EntityAttributeRegistry.register(GUNSHIP, GunshipEntity::createGunshipAttributes);
 	}
 
 	private P7Entities() {

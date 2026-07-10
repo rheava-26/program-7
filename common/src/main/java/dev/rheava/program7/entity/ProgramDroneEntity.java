@@ -199,6 +199,7 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 
 	@Override
 	public boolean damage(DamageSource source, float amount) {
+		boolean wasFullHealth = this.getHealth() >= this.getMaxHealth() - 0.01f;
 		if (!this.getWorld().isClient) {
 			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
 			ItemStack weapon = attacker != null ? attacker.getMainHandStack() : ItemStack.EMPTY;
@@ -238,20 +239,28 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			amount *= this.armorProfile().multiplierFor(this.classify(source, weapon));
 
 			if (mace && this.armorProfile() == ArmorProfile.UNARMORED) {
+				// The mace-shatter visual stays for light drones; the "Overkill
+				// much?" advancement moved to one-shotting a gunship (below).
 				this.maceShattered = true;
-				if (amount >= 40.0f && source.getAttacker() instanceof ServerPlayerEntity sp) {
-					P7Advancements.grant(sp, "overkill_much");
-				}
 			}
 		}
 
 		boolean took = super.damage(source, amount);
 
 		if (took && !this.getWorld().isClient) {
+			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
+
+			// "Overkill much?": drop a full-health gunship with a single mace
+			// blow — the apex airframe cracked open in one swing.
+			if (this instanceof GunshipEntity && wasFullHealth && !this.isAlive()
+					&& attacker instanceof ServerPlayerEntity sp
+					&& sp.getMainHandStack().getItem() instanceof MaceItem) {
+				P7Advancements.grant(sp, "overkill_much");
+			}
+
 			// Break off a fight that's going badly: once a unit built to flee
 			// drops to its threshold, it bugs out from whatever just hit it
 			// rather than trading down to zero.
-			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
 			float frac = this.fleeHealthFraction();
 			if (attacker != null && frac > 0.0f && this.isAlive() && !this.isRetreating()
 					&& this.getHealth() <= this.getMaxHealth() * frac) {

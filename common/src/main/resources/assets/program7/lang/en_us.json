@@ -28,6 +28,7 @@
   "item.program7.gunboat_spawn_egg": "Gunboat Spawn Egg",
   "item.program7.recon_helicopter_spawn_egg": "Recon Helicopter Spawn Egg",
   "item.program7.battery_center_spawn_egg": "Mobile Battery Center Spawn Egg",
+  "item.program7.gunship_spawn_egg": "Gunship Spawn Egg",
 
   "block.program7.probe_core": "Probe Core",
   "block.program7.drone_wreck": "Drone Wreck",
@@ -59,6 +60,7 @@
   "entity.program7.gunboat": "Gunboat",
   "entity.program7.recon_helicopter": "Recon Helicopter",
   "entity.program7.battery_center": "Mobile Battery Center",
+  "entity.program7.gunship": "Gunship",
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 
@@ -69,7 +71,7 @@
   "advancements.program7.datapad.title": "Know Your Enemy",
   "advancements.program7.datapad.description": "Carry a datapad and start reading the Program's movements.",
   "advancements.program7.overkill_much.title": "Overkill much?",
-  "advancements.program7.overkill_much.description": "Shatter a light drone with a single massive mace blow.",
+  "advancements.program7.overkill_much.description": "One-shot a Program gunship with a single massive mace blow.",
   "advancements.program7.incredible_performance.title": "Incredible Performance",
   "advancements.program7.incredible_performance.description": "Get the Program to write you off as a non-threat and stand down.",
   "advancements.program7.sever_the_relay.title": "Sever the Relay",
