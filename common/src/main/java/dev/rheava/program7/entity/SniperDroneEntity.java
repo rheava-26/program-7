@@ -1,5 +1,7 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.director.SupplyNetwork;
+import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.SniperAttackGoal;
@@ -16,6 +18,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Tier 2 glass cannon: a long-range standoff platform that dies to a stiff
@@ -83,5 +86,13 @@ public class SniperDroneEntity extends ProgramDroneEntity {
 	@Override
 	public boolean isRangedAttacker() {
 		return true;
+	}
+
+	@Nullable
+	@Override
+	protected UpkeepProfile upkeepProfile() {
+		// Tier 2 fuel upkeep (SUPPLY_LINES_SPEC.md §2): 150s full-power
+		// endurance off-depot.
+		return new UpkeepProfile(SupplyNetwork.SUPPLY_FUEL, 1, 15);
 	}
 }

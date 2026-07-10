@@ -5,6 +5,9 @@ import java.util.List;
 
 import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.DroneWreckBlock;
+import dev.rheava.program7.director.ProgramDirectorState;
+import dev.rheava.program7.director.SupplyNetwork;
+import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ArmorProfile.DamageClass;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.block.BlockState;
@@ -113,9 +116,36 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	private LivingEntity lastTarget = null;
 	/** See {@link AlertState}; persisted so a reload doesn't silently reset a unit's posture. */
 	private AlertState alertState = AlertState.UNAWARE;
+	/**
+	 * Supply-lines upkeep grace (see {@code SUPPLY_LINES_SPEC.md} §2/§4/§5),
+	 * in cycles left before this unit reads as degraded. {@code -1} is the
+	 * "not yet initialized" sentinel: {@link #tickUpkeep()} lazily sets it to
+	 * {@link UpkeepProfile#graceCycles()} (full) the first time it runs,
+	 * whether that's on a fresh spawn or on load from an old save with no
+	 * {@code UpkeepGrace} tag — "absent = full" either way. Meaningless for
+	 * units whose {@link #upkeepProfile()} is {@code null}.
+	 */
+	private int graceLeft = -1;
 
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
+	}
+
+	/**
+	 * Supply-lines hook (see {@code SUPPLY_LINES_SPEC.md} §2/§4): {@code null}
+	 * means exempt from upkeep entirely — the Tier 1 attack drone (void
+	 * engine), the couriers, and the battery center all leave this at the
+	 * base default. The four Tier 2/3 fliers override it to a fixed {@link
+	 * UpkeepProfile}.
+	 */
+	@Nullable
+	protected UpkeepProfile upkeepProfile() {
+		return null;
+	}
+
+	/** Whether this unit is currently reading as starved (zero upkeep grace left). Exempt units are never degraded. */
+	public boolean isDegraded() {
+		return this.upkeepProfile() != null && this.graceLeft == 0;
 	}
 
 	/** Fliers scramble and crash; ground units just get shoved around. */
@@ -378,6 +408,69 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			this.tickApproachWhir();
 			this.tickVisionProjection();
 			this.tickAcquisitionAlert();
+			this.tickUpkeep();
+		}
+	}
+
+	/**
+	 * Supply-lines upkeep (see {@code SUPPLY_LINES_SPEC.md} §2/§4/§5): a
+	 * self-contained, server-side-only block that does nothing at all for a
+	 * unit whose {@link #upkeepProfile()} is {@code null} (Tier 1, couriers,
+	 * the battery center — see §1's exemptions). Guarded so it can never
+	 * disturb existing behaviour for those units.
+	 *
+	 * <p>Staggered per §2: each unit only runs its actual draw/grace check on
+	 * the tick where {@code (age + entityId) % CYCLE_TICKS == 0} — one check
+	 * per unit per cycle, spread across ticks so a whole wave doesn't draw
+	 * (or brown out) on the same tick.
+	 */
+	private void tickUpkeep() {
+		UpkeepProfile profile = this.upkeepProfile();
+		if (profile == null) {
+			return;
+		}
+		if (!(this.getWorld() instanceof ServerWorld serverWorld)) {
+			return;
+		}
+		if (this.graceLeft < 0) {
+			// First time this unit has ever run upkeep: spawns/loads with full
+			// grace, per §4 — a dispatched wave arrives fueled for one sortie.
+			this.graceLeft = profile.graceCycles();
+		}
+
+		if ((this.age + this.getId()) % SupplyNetwork.CYCLE_TICKS == 0) {
+			SupplyNetwork net = ProgramDirectorState.get(serverWorld).getSupplyNetwork();
+			boolean fed = net.drawSupply(this.getBlockPos(), profile.supplyType(), profile.drainPerCycle());
+			if (fed) {
+				this.graceLeft = Math.min(this.graceLeft + 3, profile.graceCycles());
+			} else {
+				this.graceLeft = Math.max(this.graceLeft - 1, 0);
+			}
+
+			if (this.graceLeft == 0) {
+				this.applyDegradedUpkeepEffects(serverWorld);
+			}
+		}
+	}
+
+	/**
+	 * The brownout tell (§5): the {@link BatteryCenterEntity#onDeath} effect,
+	 * made continuous instead of a one-shot. Reapplied once per cycle while
+	 * {@link #graceLeft} sits at 0, so the debuff never actually lapses
+	 * between checks (duration outlasts the cycle by 40 ticks of slack).
+	 */
+	private void applyDegradedUpkeepEffects(ServerWorld world) {
+		int duration = SupplyNetwork.CYCLE_TICKS + 40;
+		this.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, duration, 1));
+		this.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, duration, 0));
+		world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,
+				this.getX(), this.getY() + this.getHeight() * 0.5, this.getZ(), 12, 0.3, 0.3, 0.3, 0.05);
+		// A low sputter of the unit's own engine loop — but medium/sniper fliers
+		// have no ambient sound (getAmbientSound() is null), so guard it rather
+		// than NPE inside playSound.
+		SoundEvent ambient = this.getAmbientSound();
+		if (ambient != null) {
+			this.playSound(ambient, this.getSoundVolume(), 0.6f);
 		}
 	}
 
@@ -516,6 +609,9 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		nbt.putString("AlertState", this.alertState.name());
+		if (this.graceLeft >= 0) {
+			nbt.putInt("UpkeepGrace", this.graceLeft);
+		}
 	}
 
 	@Override
@@ -527,6 +623,12 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			} catch (IllegalArgumentException e) {
 				this.alertState = AlertState.UNAWARE;
 			}
+		}
+		// Absent -> stays at the -1 sentinel, which tickUpkeep() lazily resolves
+		// to full grace on its first run — "absent = full" so old saves don't
+		// spawn pre-starved units.
+		if (nbt.contains("UpkeepGrace")) {
+			this.graceLeft = nbt.getInt("UpkeepGrace");
 		}
 	}
 

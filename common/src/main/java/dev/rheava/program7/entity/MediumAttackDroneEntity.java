@@ -1,5 +1,7 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.director.SupplyNetwork;
+import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ai.GunAttackGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
@@ -17,6 +19,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Tier 2 workhorse: where the attack drone is a one-shot warhead, this one
@@ -86,5 +89,13 @@ public class MediumAttackDroneEntity extends ProgramDroneEntity {
 		// A strafer that's lost a third of its plating peels off to reset the
 		// engagement rather than getting shredded in the merge.
 		return 0.30f;
+	}
+
+	@Nullable
+	@Override
+	protected UpkeepProfile upkeepProfile() {
+		// Tier 2 fuel upkeep (SUPPLY_LINES_SPEC.md §2): 150s full-power
+		// endurance off-depot.
+		return new UpkeepProfile(SupplyNetwork.SUPPLY_FUEL, 1, 15);
 	}
 }

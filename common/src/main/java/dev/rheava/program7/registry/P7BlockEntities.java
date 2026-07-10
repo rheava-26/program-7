@@ -6,6 +6,7 @@ import dev.rheava.program7.Program7;
 import dev.rheava.program7.block.AssemblerBlockEntity;
 import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlockEntity;
+import dev.rheava.program7.block.FuelPlantBlockEntity;
 import dev.rheava.program7.block.LaunchCatapultBlockEntity;
 import dev.rheava.program7.block.ProbeCoreBlockEntity;
 import dev.rheava.program7.block.StorageDeckBlockEntity;
@@ -45,6 +46,11 @@ public final class P7BlockEntities {
 			BLOCK_ENTITIES.register("storage_deck",
 					() -> BlockEntityType.Builder.create(StorageDeckBlockEntity::new,
 							P7Blocks.STORAGE_DECK.get()).build(null));
+
+	public static final RegistrySupplier<BlockEntityType<FuelPlantBlockEntity>> FUEL_PLANT =
+			BLOCK_ENTITIES.register("fuel_plant",
+					() -> BlockEntityType.Builder.create(FuelPlantBlockEntity::new,
+							P7Blocks.FUEL_PLANT.get()).build(null));
 
 	public static void register() {
 		BLOCK_ENTITIES.register();

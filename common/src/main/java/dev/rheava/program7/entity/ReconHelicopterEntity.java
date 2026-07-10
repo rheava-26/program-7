@@ -1,5 +1,7 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.director.SupplyNetwork;
+import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal;
@@ -17,6 +19,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The TIER 3 Recon Helicopter: a fast rotary spotter that, unlike the
@@ -96,5 +99,13 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 	@Override
 	protected ArmorProfile armorProfile() {
 		return ArmorProfile.LIGHT;
+	}
+
+	@Nullable
+	@Override
+	protected UpkeepProfile upkeepProfile() {
+		// Tier 3 fuel upkeep (SUPPLY_LINES_SPEC.md §2): 90s full-power
+		// endurance off-depot — short leash, hard brownout.
+		return new UpkeepProfile(SupplyNetwork.SUPPLY_FUEL, 2, 9);
 	}
 }

@@ -7,6 +7,7 @@ import dev.rheava.program7.block.AssemblerBlock;
 import dev.rheava.program7.block.AutogunTurretBlock;
 import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlock;
+import dev.rheava.program7.block.FuelPlantBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.ProbeCoreBlock;
 import dev.rheava.program7.block.StorageDeckBlock;
@@ -95,6 +96,21 @@ public final class P7Blocks {
 					.strength(6.0f, 200.0f)
 					.requiresTool()
 					.sounds(BlockSoundGroup.NETHERITE)));
+
+	/**
+	 * The Program's one depot block in the fuel-upkeep slice: converts
+	 * ledger coal into FUEL for Tier 2/3 fliers within its bubble (see
+	 * {@link dev.rheava.program7.director.SupplyNetwork}). Between the
+	 * autogun turret (8/200) and the assembler (12/300): a real demolition
+	 * target for an iron-pick player, not a drive-by freebie.
+	 */
+	public static final RegistrySupplier<Block> FUEL_PLANT = BLOCKS.register("fuel_plant",
+			() -> new FuelPlantBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(10.0f, 250.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)
+					.luminance(state -> 5)));
 
 	public static void register() {
 		BLOCKS.register();

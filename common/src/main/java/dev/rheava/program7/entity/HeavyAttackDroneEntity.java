@@ -1,5 +1,7 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.director.SupplyNetwork;
+import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ai.BurstGunAttackGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
@@ -19,6 +21,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Tier 3 wall: a car-sized armored gun flyer built around a machine gun that
@@ -103,5 +106,13 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 		// breaks contact once it's nearly wrecked, buying a tense "it's
 		// limping away, finish it" beat instead of a fight to the death.
 		return 0.15f;
+	}
+
+	@Nullable
+	@Override
+	protected UpkeepProfile upkeepProfile() {
+		// Tier 3 fuel upkeep (SUPPLY_LINES_SPEC.md §2): 90s full-power
+		// endurance off-depot — short leash, hard brownout.
+		return new UpkeepProfile(SupplyNetwork.SUPPLY_FUEL, 2, 9);
 	}
 }

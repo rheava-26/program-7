@@ -213,6 +213,8 @@ public class ProgramDirectorState extends PersistentState {
 	 * behaviour, it's purely registry + persistence.
 	 */
 	private final VirtualFleet virtualFleet = new VirtualFleet();
+	/** Fuel depots + per-cycle upkeep draw for the supply-lines first slice (see SUPPLY_LINES_SPEC.md §6). */
+	private final SupplyNetwork supplyNetwork = new SupplyNetwork();
 	/**
 	 * The resource ledger. The Program spends this to field units and (in
 	 * later phases) refills it by actually mining. An empty ledger means no
@@ -331,6 +333,10 @@ public class ProgramDirectorState extends PersistentState {
 		if (this.virtualFleet.tick(world)) {
 			this.markDirty();
 		}
+
+		if (this.supplyNetwork.tick(world, this)) {
+			this.markDirty();
+		}
 	}
 
 	/**
@@ -408,6 +414,14 @@ public class ProgramDirectorState extends PersistentState {
 				world.spawnParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
 						site.origin.getX() + 0.5, site.origin.getY() + 2.0, site.origin.getZ() + 0.5,
 						12, 0.6, 0.6, 0.6, 0.02);
+				// Every finished outpost is a fuel depot too — plant it in the
+				// blueprint's open center hatch, so supply lines reach forward.
+				BlockPos hatch = site.origin.up();
+				if (world.getBlockState(hatch).isReplaceable()) {
+					world.setBlockState(hatch, P7Blocks.FUEL_PLANT.get().getDefaultState());
+					this.supplyNetwork.registerDepot(hatch, SupplyNetwork.SUPPLY_FUEL,
+							SupplyNetwork.FUEL_PLANT_RADIUS, SupplyNetwork.FUEL_PLANT_CAPACITY);
+				}
 				Program7.LOGGER.info("[Program 7] Outpost construction complete at {}", site.origin.toShortString());
 				iterator.remove();
 				changed = true;
@@ -569,6 +583,7 @@ public class ProgramDirectorState extends PersistentState {
 		world.setBlockState(pos, P7Blocks.PROBE_CORE.get().getDefaultState());
 		placeAssembler(world, pos);
 		placeLaunchCatapult(world, pos);
+		placeFuelPlant(world, pos);
 		// Physical stores the player can raid the base for — seeded with what
 		// this pod arrived carrying (see StorageDeckBlock; drones skip it).
 		StorageDeckBlock.plant(world, pos, CourierUnit.cargoToItems(POD_STOCKPILE));
@@ -734,6 +749,29 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		world.setBlockState(core.south(5), P7Blocks.LAUNCH_CATAPULT.get().getDefaultState()
 				.with(LaunchCatapultBlock.FACING, Direction.SOUTH));
+	}
+
+	/**
+	 * Plant the fuel plant a short distance from the probe core. Same scan
+	 * pattern as {@link #placeAssembler}, just a longer offset (assembler sits
+	 * at 3, storage deck 4, catapult 5 — no collisions); falls back to due west
+	 * of the core if the terrain doesn't cooperate. The depot itself registers
+	 * on the block entity's first tick (see {@code FuelPlantBlockEntity}), so
+	 * nothing else needs to happen here.
+	 */
+	private static void placeFuelPlant(ServerWorld world, BlockPos core) {
+		for (Direction direction : Direction.Type.HORIZONTAL) {
+			BlockPos base = core.offset(direction, 6);
+			for (int dy = 2; dy >= -3; dy--) {
+				BlockPos candidate = base.up(dy);
+				if (world.getBlockState(candidate).isReplaceable()
+						&& world.getBlockState(candidate.down()).isSolidBlock(world, candidate.down())) {
+					world.setBlockState(candidate, P7Blocks.FUEL_PLANT.get().getDefaultState());
+					return;
+				}
+			}
+		}
+		world.setBlockState(core.west(6), P7Blocks.FUEL_PLANT.get().getDefaultState());
 	}
 
 	@Nullable
@@ -1090,6 +1128,10 @@ public class ProgramDirectorState extends PersistentState {
 		return this.virtualFleet;
 	}
 
+	public SupplyNetwork getSupplyNetwork() {
+		return this.supplyNetwork;
+	}
+
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		nbt.putInt("GlobalThreat", this.globalThreat);
@@ -1154,6 +1196,7 @@ public class ProgramDirectorState extends PersistentState {
 		nbt.put("Resources", resourceTag);
 
 		nbt.put("VirtualFleet", this.virtualFleet.toNbt(registryLookup));
+		nbt.put("SupplyNetwork", this.supplyNetwork.toNbt());
 		return nbt;
 	}
 
@@ -1225,6 +1268,9 @@ public class ProgramDirectorState extends PersistentState {
 
 		if (nbt.contains("VirtualFleet")) {
 			state.virtualFleet.readNbt(nbt.getCompound("VirtualFleet"), registryLookup);
+		}
+		if (nbt.contains("SupplyNetwork")) {
+			state.supplyNetwork.readNbt(nbt.getCompound("SupplyNetwork"));
 		}
 		return state;
 	}
