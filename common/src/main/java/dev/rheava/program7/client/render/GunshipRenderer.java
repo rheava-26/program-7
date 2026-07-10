@@ -15,9 +15,11 @@ import net.minecraft.util.Identifier;
  */
 public class GunshipRenderer extends MobEntityRenderer<GunshipEntity, GunshipModel> {
 	private static final Identifier TEXTURE = Program7.id("textures/entity/heavy_attack_drone.png");
-	// Tier 4 apex: noticeably bigger on screen than the Tier 3 heavy attack
-	// drone's 1.33 scale to sell "house-sized" per UNITS.md.
-	private static final float MODEL_SCALE = 1.9f;
+	// Tier 4 apex: bigger than the Tier 3 heavy drone (1.33) to sell "house-
+	// sized", but pulled back from an earlier 1.9 so the airframe's visual
+	// footprint stays inside the 4.6-wide hitbox — otherwise the rotor ducts
+	// (the "aim for the rotors" weak point) render out past where hits land.
+	private static final float MODEL_SCALE = 1.5f;
 
 	public GunshipRenderer(EntityRendererFactory.Context context) {
 		super(context, new GunshipModel(context.getPart(GunshipModel.LAYER)), 2.2f);

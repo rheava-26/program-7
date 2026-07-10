@@ -14,6 +14,7 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -251,8 +252,11 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
 
 			// "Overkill much?": drop a full-health gunship with a single mace
-			// blow — the apex airframe cracked open in one swing.
+			// blow — the apex airframe cracked open in one swing. Requires an
+			// actual melee hit (PLAYER_ATTACK), so a player-triggered TNT/crystal
+			// blast while merely holding a mace doesn't count.
 			if (this instanceof GunshipEntity && wasFullHealth && !this.isAlive()
+					&& source.isOf(DamageTypes.PLAYER_ATTACK)
 					&& attacker instanceof ServerPlayerEntity sp
 					&& sp.getMainHandStack().getItem() instanceof MaceItem) {
 				P7Advancements.grant(sp, "overkill_much");

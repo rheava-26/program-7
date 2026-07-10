@@ -220,7 +220,9 @@ public final class P7Entities {
 			ENTITIES.register("gunship",
 					() -> EntityType.Builder.create(GunshipEntity::new, SpawnGroup.MISC)
 							.dimensions(4.6f, 3.2f)
-							.maxTrackingRange(48)
+							// In chunks; clamped to view distance at runtime. 16 (~256 blocks)
+							// is the practical max for "seen from far off".
+							.maxTrackingRange(16)
 							.build("gunship"));
 
 	public static void register() {

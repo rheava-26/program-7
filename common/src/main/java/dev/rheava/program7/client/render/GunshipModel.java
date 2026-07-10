@@ -69,8 +69,11 @@ public class GunshipModel extends SinglePartEntityModel<GunshipEntity> {
 						.uv(60, 84).cuboid(-1.0f, -1.0f, -9.0f, 2.0f, 2.0f, 4.0f),
 				ModelTransform.pivot(0.0f, 7.0f, -10.0f));
 
-		addDuctedRotor(body, "left_pylon", "left_housing", "left_rotor", -17.0f, -14.0f);
-		addDuctedRotor(body, "right_pylon", "right_housing", "right_rotor", 17.0f, 14.0f);
+		// Pylons pulled in (was ±17 pivot / ±14 span) so the ducted housings sit
+		// against the hull rather than floating a couple of blocks past the
+		// hitbox edge — keeps the rotors inside where shots actually land.
+		addDuctedRotor(body, "left_pylon", "left_housing", "left_rotor", -11.0f, -6.0f);
+		addDuctedRotor(body, "right_pylon", "right_housing", "right_rotor", 11.0f, 6.0f);
 
 		// Tail boom + helicopter-style tail rotor housing at the rear.
 		ModelPartData tailBoom = body.addChild("tail_boom",

@@ -94,10 +94,10 @@ public class GunshipEntity extends ProgramDroneEntity {
 
 	@Override
 	public int getMinAmbientSoundDelay() {
-		// Short delay so the loop restarts often enough to stay audible well
-		// before the airframe is in view — per AIR_DOCTRINE.md §3/§7, "hear it
-		// first" is the entire point of this unit.
-		return 20;
+		// Matches the heavy attack drone's cadence so the multi-second rotor loop
+		// doesn't stack on itself into a phasing drone; loudness (below) is what
+		// carries it far, per AIR_DOCTRINE.md §3/§7 ("hear it first").
+		return 45;
 	}
 
 	@Override
