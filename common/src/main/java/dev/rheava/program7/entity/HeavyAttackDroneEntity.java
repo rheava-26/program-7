@@ -3,6 +3,7 @@ package dev.rheava.program7.entity;
 import dev.rheava.program7.entity.ai.BurstGunAttackGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -50,6 +51,7 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new BurstGunAttackGoal(this, 1.0, 24.0, 4, 50, 3.0f));
+		this.goalSelector.add(2, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));
 

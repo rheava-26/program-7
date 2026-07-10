@@ -75,12 +75,27 @@ public final class ProgramAcoustics {
 	/** Per-world queue of sounds waiting on their travel-time delay. Weak on the world so an unloaded world doesn't leak. */
 	private static final Map<ServerWorld, List<Pending>> QUEUES = new WeakHashMap<>();
 
+	/**
+	 * Per-world registry of loud player-made noises (mining, etc.) that a
+	 * nearby Program unit might "hear" and go investigate — see
+	 * {@link dev.rheava.program7.entity.ai.InvestigateNoiseGoal}. Separate
+	 * from {@link #QUEUES}: this isn't about shaping/delaying a sound the
+	 * player hears, it's about the Program's own perception of the player.
+	 */
+	private static final Map<ServerWorld, List<Noise>> NOISES = new WeakHashMap<>();
+	/** How long a reported noise stays "fresh" enough for a drone to still react to it. 5 seconds. */
+	private static final long NOISE_LIFETIME_TICKS = 100L;
+
 	private ProgramAcoustics() {
 	}
 
 	/** A single sound waiting to be played once {@code playAtTick} arrives. */
 	private record Pending(double x, double y, double z, SoundEvent sound, SoundCategory category,
 			float volume, float pitch, long playAtTick) {
+	}
+
+	/** A single loud player-made noise, still audible to drones until {@code expiryTick}. */
+	private record Noise(double x, double y, double z, float loudness, long expiryTick) {
 	}
 
 	/**
@@ -90,18 +105,57 @@ public final class ProgramAcoustics {
 	 */
 	public static void tick(ServerWorld world) {
 		List<Pending> queue = QUEUES.get(world);
-		if (queue == null || queue.isEmpty()) {
-			return;
-		}
-		long now = world.getTime();
-		Iterator<Pending> it = queue.iterator();
-		while (it.hasNext()) {
-			Pending p = it.next();
-			if (p.playAtTick() <= now) {
-				world.playSound(null, p.x(), p.y(), p.z(), p.sound(), p.category(), p.volume(), p.pitch());
-				it.remove();
+		if (queue != null && !queue.isEmpty()) {
+			long now = world.getTime();
+			Iterator<Pending> it = queue.iterator();
+			while (it.hasNext()) {
+				Pending p = it.next();
+				if (p.playAtTick() <= now) {
+					world.playSound(null, p.x(), p.y(), p.z(), p.sound(), p.category(), p.volume(), p.pitch());
+					it.remove();
+				}
 			}
 		}
+
+		List<Noise> noises = NOISES.get(world);
+		if (noises != null && !noises.isEmpty()) {
+			long t = world.getTime();
+			noises.removeIf(n -> n.expiryTick() <= t);
+		}
+	}
+
+	/** Record a loud player-made noise at a world position. Louder events are heard from farther off. */
+	public static void reportNoise(ServerWorld world, double x, double y, double z, float loudness) {
+		NOISES.computeIfAbsent(world, w -> new ArrayList<>())
+				.add(new Noise(x, y, z, loudness, world.getTime() + NOISE_LIFETIME_TICKS));
+	}
+
+	/**
+	 * The position of the nearest still-fresh noise within {@code hearingRange} of
+	 * {@code (x,y,z)}, or null if none. A noise's effective audible radius scales
+	 * with its loudness, so quiet taps don't carry.
+	 */
+	public static Vec3d nearestAudibleNoise(ServerWorld world, double x, double y, double z, double hearingRange) {
+		List<Noise> list = NOISES.get(world);
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		Noise best = null;
+		double bestSq = Double.MAX_VALUE;
+		long now = world.getTime();
+		for (Noise n : list) {
+			if (n.expiryTick() <= now) {
+				continue;
+			}
+			double dx = n.x() - x, dy = n.y() - y, dz = n.z() - z;
+			double distSq = dx * dx + dy * dy + dz * dz;
+			double audible = Math.min(hearingRange, hearingRange * n.loudness());
+			if (distSq <= audible * audible && distSq < bestSq) {
+				bestSq = distSq;
+				best = n;
+			}
+		}
+		return best == null ? null : new Vec3d(best.x(), best.y(), best.z());
 	}
 
 	/** Convenience overload taking a {@link Vec3d} source position. */

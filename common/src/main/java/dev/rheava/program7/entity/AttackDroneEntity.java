@@ -3,6 +3,7 @@ package dev.rheava.program7.entity;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.ai.ChaseAndDetonateGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
+import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.control.FlightMoveControl;
@@ -48,6 +49,7 @@ public class AttackDroneEntity extends ProgramDroneEntity {
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new ChaseAndDetonateGoal(this));
+		this.goalSelector.add(2, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));
 
