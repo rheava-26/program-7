@@ -6,6 +6,7 @@ import dev.architectury.event.events.common.TickEvent;
 import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.command.Program7Command;
 import dev.rheava.program7.config.P7Config;
+import dev.rheava.program7.director.HostileReactivity;
 import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.network.InterferenceManager;
 import dev.rheava.program7.registry.P7BlockEntities;
@@ -48,6 +49,7 @@ public final class Program7 {
 		P7Items.register();
 		Program7Command.register();
 		InterferenceManager.register();
+		HostileReactivity.register();
 
 		// The Program hears you: breaking a hard block (stone and up) is a loud,
 		// carrying noise nearby combat units can drift over to investigate — the

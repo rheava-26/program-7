@@ -23,6 +23,10 @@ public class P7Config {
 	public boolean interferenceOverlay = true;
 	/** During psionic interference, vanilla music ducks out so the Program's sounds carry. */
 	public boolean interferenceMusicDuck = true;
+	/** Hostile mobs prioritize attacking nearby Program drones, so a cave full of monsters is a real
+	 * gauntlet the Program must escort combat drones through (a wither tears into the drones instead
+	 * of ignoring them). */
+	public boolean changeEnemyAi = true;
 	/** Drones haul off unattended gear / death drops. */
 	public boolean itemStealing = true;
 	/** Drones may modify player-built structures outside active conflict. */
