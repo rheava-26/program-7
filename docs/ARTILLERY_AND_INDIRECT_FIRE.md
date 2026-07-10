@@ -277,6 +277,38 @@ artillery-shaped hole in the logistics framework — see
 if the tubes survive. Heavier munitions (howitzer, rocket, missile) cost
 progressively more, so the scariest fire is also the most starvable.
 
+### 6a. Loading & rearming — the gun's soft points
+
+Two **separate** things gate whether a tube actually keeps firing, and each is
+its own vulnerability:
+
+- **Loading (who chambers each round).** A gun is one of:
+  - **Crew-loaded** — a single dedicated **loader drone** attends the gun and
+    feeds it round by round. That loader *is* the gun's rate of fire and a
+    **soft point**: kill the loader and the gun's cadence collapses (or it goes
+    silent until another loader is sent up). Cheaper guns are crew-loaded — a
+    small servicing drone standing beside the tube is a thing you can shoot.
+  - **Autoloading** — the gun feeds itself, no attendant. Steadier cadence, no
+    loader to pick off, but it costs more and sits a tier higher. The premium,
+    harder-to-suppress option.
+- **Rearming (where the rounds come from).** Independent of loading, every gun
+  holds only a **finite ready magazine.** When it runs dry it **must rearm —
+  regardless of how it loads.** A **mobile** piece drives back to a depot/base
+  to top up (shoot-scoot-**rearm**); an **emplaced** piece waits for a resupply
+  convoy (the couriers we already have). This is the physical, spatial face of
+  the §6 supply rule: even an intact, autoloading gun **goes quiet when its
+  magazine empties and the ammo isn't coming.**
+
+**Ready-magazine size reinforces the platform split (§4):** emplaced batteries
+carry a **big** ready magazine (they sustain long bombardments before needing
+resupply — part of why a dug-in battery is a grind to outlast), while mobile
+pieces carry **less** and shuttle back to depots more often. So a gun has up to
+**four** independent soft points now — the **observer** (accuracy), the
+**loader** (rate, if crew-loaded), the **rearm/ammo line** (sustainment), and
+the **tubes** themselves — and interdicting any one degrades it a different way.
+The **loader drone** joins the roster as a cheap support unit (see the logistics
+family), not a combatant.
+
 ## 7. Off-screen / statistical resolution
 
 Bombardment must work in unloaded chunks (the Program shells a base you're not
