@@ -13,6 +13,8 @@ import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
 import dev.rheava.program7.entity.GunboatEntity;
 import dev.rheava.program7.entity.GunshipEntity;
+import dev.rheava.program7.entity.HowitzerEntity;
+import dev.rheava.program7.entity.HowitzerShellEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
 import dev.rheava.program7.entity.HeavyAttackDroneEntity;
 import dev.rheava.program7.entity.IFVEntity;
@@ -225,6 +227,22 @@ public final class P7Entities {
 							.maxTrackingRange(16)
 							.build("gunship"));
 
+	/** Tier 3 mobile artillery: tracked self-propelled howitzer, the wall-breaker — heavy arcing shells at long range. */
+	public static final RegistrySupplier<EntityType<HowitzerEntity>> HOWITZER =
+			ENTITIES.register("howitzer",
+					() -> EntityType.Builder.create(HowitzerEntity::new, SpawnGroup.MISC)
+							.dimensions(2.9f, 2.6f)
+							.maxTrackingRange(16)
+							.build("howitzer"));
+
+	/** The howitzer's heavy arcing shell. */
+	public static final RegistrySupplier<EntityType<HowitzerShellEntity>> HOWITZER_SHELL =
+			ENTITIES.register("howitzer_shell",
+					() -> EntityType.Builder.<HowitzerShellEntity>create(HowitzerShellEntity::new, SpawnGroup.MISC)
+							.dimensions(0.5f, 0.5f)
+							.maxTrackingRange(48)
+							.build("howitzer_shell"));
+
 	public static void register() {
 		ENTITIES.register();
 
@@ -254,6 +272,7 @@ public final class P7Entities {
 				ReconHelicopterEntity::createReconHelicopterAttributes);
 		EntityAttributeRegistry.register(BATTERY_CENTER, BatteryCenterEntity::createBatteryCenterAttributes);
 		EntityAttributeRegistry.register(GUNSHIP, GunshipEntity::createGunshipAttributes);
+		EntityAttributeRegistry.register(HOWITZER, HowitzerEntity::createHowitzerAttributes);
 	}
 
 	private P7Entities() {

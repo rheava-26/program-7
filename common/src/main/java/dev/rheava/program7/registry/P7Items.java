@@ -131,6 +131,9 @@ public final class P7Items {
 	public static final RegistrySupplier<Item> GUNSHIP_SPAWN_EGG = ITEMS.register("gunship_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.GUNSHIP, 0x2b2f33, 0x39e6ff,
 					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> HOWITZER_SPAWN_EGG = ITEMS.register("howitzer_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.HOWITZER, 0x23272b, 0x53592e,
+					new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();

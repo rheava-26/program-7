@@ -1,0 +1,97 @@
+package dev.rheava.program7.entity;
+
+import dev.rheava.program7.entity.ai.HowitzerAttackGoal;
+import dev.rheava.program7.registry.P7Sounds;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.goal.ActiveTargetGoal;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.RevengeGoal;
+import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.world.World;
+
+/**
+ * Tier 3 mobile artillery: a tracked self-propelled howitzer modeled on the
+ * M109 Paladin — boxy hull, big boxy turret, long barrel projecting up and
+ * forward. Where the mortar emplacement ({@link MortarEmplacementEntity}) is
+ * bolted down and short-ranged, this is a standoff platform per the artillery
+ * doc's "wall-breaker" role: it drops heavy arcing shells from well outside
+ * the fight and mostly just holds ground doing it, taking only a slow
+ * reposition between salvos rather than chasing anything down.
+ *
+ * <p>This pass is a self-contained bombardment unit, same shape as the
+ * mortar: it self-targets and self-observes (no {@code FireMissionManager} /
+ * observer / ranging layer yet — that's a later pass per the artillery doc's
+ * build order).
+ */
+public class HowitzerEntity extends ProgramDroneEntity {
+	public HowitzerEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
+		super(entityType, world);
+		this.experiencePoints = 35;
+	}
+
+	public static DefaultAttributeContainer.Builder createHowitzerAttributes() {
+		return MobEntity.createMobAttributes()
+				.add(EntityAttributes.GENERIC_MAX_HEALTH, 140.0)
+				// Slow tracked artillery, not a line vehicle — it isn't built to
+				// close distance, just to waddle between firing positions.
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.16)
+				// Big standoff acquisition range so it can lock a target well
+				// outside its own gun range and start walking fire onto it.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 72.0)
+				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.5)
+				.add(EntityAttributes.GENERIC_ARMOR, 16.0)
+				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
+	}
+
+	@Override
+	protected boolean isFlier() {
+		return false;
+	}
+
+	@Override
+	public boolean isRangedAttacker() {
+		return true;
+	}
+
+	@Override
+	protected void initGoals() {
+		this.goalSelector.add(1, new HowitzerAttackGoal(this));
+		this.goalSelector.add(3, new WanderAroundFarGoal(this, 0.5));
+		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
+		this.goalSelector.add(5, new LookAroundGoal(this));
+
+		// Players first, then whatever else is hostile — same doctrine as the
+		// IFV: this is a war machine answering a real threat.
+		this.targetSelector.add(1, new RevengeGoal(this));
+		this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true));
+		this.targetSelector.add(3, new ActiveTargetGoal<>(this, HostileEntity.class, 10, true, false, null));
+	}
+
+	@Override
+	protected SoundEvent getAmbientSound() {
+		return P7Sounds.TANK_TRACKS_LOOP.get();
+	}
+
+	@Override
+	public int getMinAmbientSoundDelay() {
+		return 50;
+	}
+
+	@Override
+	protected float getSoundVolume() {
+		return 1.1f;
+	}
+
+	@Override
+	protected ArmorProfile armorProfile() {
+		return ArmorProfile.ARMORED_VEHICLE;
+	}
+}

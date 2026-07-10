@@ -19,6 +19,10 @@ import dev.rheava.program7.client.render.GunboatModel;
 import dev.rheava.program7.client.render.GunboatRenderer;
 import dev.rheava.program7.client.render.GunshipModel;
 import dev.rheava.program7.client.render.GunshipRenderer;
+import dev.rheava.program7.client.render.HowitzerModel;
+import dev.rheava.program7.client.render.HowitzerRenderer;
+import dev.rheava.program7.client.render.HowitzerShellModel;
+import dev.rheava.program7.client.render.HowitzerShellRenderer;
 import dev.rheava.program7.client.render.GroundDroneModel;
 import dev.rheava.program7.client.render.GroundDroneRenderer;
 import dev.rheava.program7.client.render.HarvesterDroneModel;
@@ -103,6 +107,10 @@ public final class Program7Client {
 				BatteryCenterModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(GunshipModel.LAYER,
 				GunshipModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(HowitzerModel.LAYER,
+				HowitzerModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(HowitzerShellModel.LAYER,
+				HowitzerShellModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
@@ -127,6 +135,8 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.RECON_HELICOPTER, ReconHelicopterRenderer::new);
 		EntityRendererRegistry.register(P7Entities.BATTERY_CENTER, BatteryCenterRenderer::new);
 		EntityRendererRegistry.register(P7Entities.GUNSHIP, GunshipRenderer::new);
+		EntityRendererRegistry.register(P7Entities.HOWITZER, HowitzerRenderer::new);
+		EntityRendererRegistry.register(P7Entities.HOWITZER_SHELL, HowitzerShellRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,
