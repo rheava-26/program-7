@@ -7,6 +7,7 @@ import dev.rheava.program7.block.AssemblerBlockEntity;
 import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlockEntity;
 import dev.rheava.program7.block.LaunchCatapultBlockEntity;
+import dev.rheava.program7.block.ProbeCoreBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.RegistryKeys;
 
@@ -33,6 +34,11 @@ public final class P7BlockEntities {
 			BLOCK_ENTITIES.register("launch_catapult",
 					() -> BlockEntityType.Builder.create(LaunchCatapultBlockEntity::new,
 							P7Blocks.LAUNCH_CATAPULT.get()).build(null));
+
+	public static final RegistrySupplier<BlockEntityType<ProbeCoreBlockEntity>> PROBE_CORE =
+			BLOCK_ENTITIES.register("probe_core",
+					() -> BlockEntityType.Builder.create(ProbeCoreBlockEntity::new,
+							P7Blocks.PROBE_CORE.get()).build(null));
 
 	public static void register() {
 		BLOCK_ENTITIES.register();

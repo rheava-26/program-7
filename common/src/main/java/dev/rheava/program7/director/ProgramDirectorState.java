@@ -11,6 +11,7 @@ import dev.rheava.program7.Program7;
 import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.config.P7Config;
+import dev.rheava.program7.entity.CourierUnit;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.entity.SniperDroneEntity;
@@ -19,6 +20,7 @@ import dev.rheava.program7.registry.P7Entities;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.advancement.AdvancementEntry;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -27,6 +29,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -98,6 +101,13 @@ public class ProgramDirectorState extends PersistentState {
 	private static final Map<String, Integer> POD_STOCKPILE = Map.of(
 			Resources.IRON, 64, Resources.COPPER, 48, Resources.REDSTONE, 32,
 			Resources.COAL, 64, Resources.GUNPOWDER, 32);
+	/**
+	 * Modest resource windfall dropped when a probe core is actually cracked
+	 * open — a stack or two of salvage, not the full payoff. The real reward
+	 * (psionic unlock / tier cap) is a later task.
+	 */
+	private static final Map<String, Integer> BASE_DESTROYED_LOOT = Map.of(
+			Resources.IRON, 32, Resources.REDSTONE, 12);
 
 	/** Never more than this many outposts under construction at once. */
 	private static final int MAX_ACTIVE_SITES = 2;
@@ -127,6 +137,12 @@ public class ProgramDirectorState extends PersistentState {
 	private BlockPos probeCorePos = null;
 	/** Every probe core site the Program has planted, live or since razed. */
 	private final List<BlockPos> coreSites = new ArrayList<>();
+	/**
+	 * Whether the first probe core the Program ever planted has been
+	 * cracked open by a player. This is the base-destroyed milestone flag; a
+	 * later task reads it to gate the psionic unlock / tier cap.
+	 */
+	private boolean firstBaseKilled = false;
 	/** Outposts currently being built up incrementally — see {@link ConstructionSite}. */
 	private final List<ConstructionSite> constructionSites = new ArrayList<>();
 	/** Spacing gate so outposts don't all break ground back-to-back. */
@@ -481,6 +497,29 @@ public class ProgramDirectorState extends PersistentState {
 		this.coreSites.removeIf(site -> !world.getBlockState(site).isOf(P7Blocks.PROBE_CORE.get()));
 	}
 
+	/**
+	 * A probe core was actually cracked open by a player (see {@link
+	 * dev.rheava.program7.block.ProbeCoreBlock#onStateReplaced}). Retires the
+	 * site, flags the base-destroyed milestone, and drops a modest resource
+	 * windfall at the wreck — the full payoff (psionic unlock / tier cap) is
+	 * a later task, this just makes the base destructible with a real
+	 * consequence attached.
+	 */
+	public void onBaseDestroyed(ServerWorld world, BlockPos pos) {
+		this.coreSites.remove(pos);
+		this.firstBaseKilled = true;
+		this.markDirty();
+
+		for (ItemStack stack : CourierUnit.cargoToItems(BASE_DESTROYED_LOOT)) {
+			ItemScatterer.spawn(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+		}
+		Program7.LOGGER.info("[Program 7] Probe core destroyed at {}", pos.toShortString());
+	}
+
+	public boolean isFirstBaseKilled() {
+		return this.firstBaseKilled;
+	}
+
 	public void addResource(String key, int amount) {
 		this.resources.merge(key, amount, Integer::sum);
 		this.markDirty();
@@ -801,6 +840,7 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		nbt.putLong("LastResupplyTime", this.lastResupplyTime);
 		nbt.putLong("LastContactTime", this.lastContactTime);
+		nbt.putBoolean("FirstBaseKilled", this.firstBaseKilled);
 
 		NbtList coreSitesList = new NbtList();
 		for (BlockPos site : this.coreSites) {
@@ -863,6 +903,7 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		state.lastResupplyTime = nbt.contains("LastResupplyTime") ? nbt.getLong("LastResupplyTime") : 0L;
 		state.lastContactTime = nbt.contains("LastContactTime") ? nbt.getLong("LastContactTime") : 0L;
+		state.firstBaseKilled = nbt.contains("FirstBaseKilled") && nbt.getBoolean("FirstBaseKilled");
 
 		NbtList coreSitesList = nbt.getList("CoreSites", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < coreSitesList.size(); i++) {

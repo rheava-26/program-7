@@ -8,6 +8,7 @@ import dev.rheava.program7.block.AutogunTurretBlock;
 import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
+import dev.rheava.program7.block.ProbeCoreBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
@@ -20,12 +21,13 @@ public final class P7Blocks {
 
 	/**
 	 * The heart of a landed pod. Tough enough that cracking it is a project,
-	 * but it IS crackable — and it drops the good salvage when it goes.
-	 * Later phases turn this into the fabricator block entity that runs the
-	 * whole base.
+	 * but it IS crackable — and it drops the good salvage when it goes. A
+	 * block entity ({@link dev.rheava.program7.block.ProbeCoreBlockEntity})
+	 * carries the HP/under-attack model and reports to the Director when the
+	 * base is actually destroyed.
 	 */
 	public static final RegistrySupplier<Block> PROBE_CORE = BLOCKS.register("probe_core",
-			() -> new Block(AbstractBlock.Settings.create()
+			() -> new ProbeCoreBlock(AbstractBlock.Settings.create()
 					.mapColor(MapColor.GRAY)
 					.strength(25.0f, 600.0f)
 					.requiresTool()
