@@ -237,8 +237,12 @@ Phases are ordered so every phase ships something playable, and the Director
 - [ ] Skirmisher drone (car-sized: HMG + grenade launcher) and light attack
       drone
 - [ ] Component hitboxes on larger drones (snipe a rotor / diamond hardpoints)
-- [ ] Drones flee fights they can't win; environmental damage tuning
-      (withers and golem armies are viable base-killers through mid game)
+- [~] Drones flee fights they can't win: a `fleeHealthFraction()` hook on the
+      shared drone base breaks a unit off toward its attacker (via the existing
+      RetreatGoal at priority 0) once its health drops to the threshold — the
+      medium attack drone peels off at 30%, the heavy limps away at 15% ("it's
+      running, finish it"). TODO: environmental damage tuning (withers and
+      golem armies as viable base-killers through mid game)
 - [x] Gear theft v1: surveyors snatch dropped item stacks (config-gated)
       and carry them as cargo — killing the thief spills everything back
       out (moved up)

@@ -4,6 +4,7 @@ import dev.rheava.program7.entity.ai.BurstGunAttackGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
+import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -50,6 +51,9 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 
 	@Override
 	protected void initGoals() {
+		// Priority 0: even a heavy limps off when it's nearly dead rather than
+		// dying in place (see fleeHealthFraction) — only fires while retreating.
+		this.goalSelector.add(0, new RetreatGoal(this));
 		this.goalSelector.add(1, new BurstGunAttackGoal(this, 1.0, 24.0, 4, 50, 3.0f));
 		this.goalSelector.add(2, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
@@ -91,5 +95,13 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 	@Override
 	public boolean isRangedAttacker() {
 		return true;
+	}
+
+	@Override
+	protected float fleeHealthFraction() {
+		// A heavy holds the line far longer than a light strafer — it only
+		// breaks contact once it's nearly wrecked, buying a tense "it's
+		// limping away, finish it" beat instead of a fight to the death.
+		return 0.15f;
 	}
 }

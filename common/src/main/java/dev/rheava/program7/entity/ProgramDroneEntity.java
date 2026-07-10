@@ -183,6 +183,20 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 		return this.retreatFrom;
 	}
 
+	/** How long a unit that breaks off a losing fight stays in flight before it may re-engage. */
+	private static final int FLEE_DURATION_TICKS = 120;
+
+	/**
+	 * The fraction of max health at or below which this unit breaks off a fight
+	 * and flees its attacker (needs a {@link dev.rheava.program7.entity.ai.RetreatGoal}
+	 * registered to actually move). Default {@code 0} — most units fight to the
+	 * death; a subclass overrides this to say "I bug out when I'm losing." A
+	 * committed suicide unit should leave it at 0.
+	 */
+	protected float fleeHealthFraction() {
+		return 0.0f;
+	}
+
 	@Override
 	public boolean damage(DamageSource source, float amount) {
 		if (!this.getWorld().isClient) {
@@ -230,7 +244,21 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 				}
 			}
 		}
-		return super.damage(source, amount);
+
+		boolean took = super.damage(source, amount);
+
+		if (took && !this.getWorld().isClient) {
+			// Break off a fight that's going badly: once a unit built to flee
+			// drops to its threshold, it bugs out from whatever just hit it
+			// rather than trading down to zero.
+			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
+			float frac = this.fleeHealthFraction();
+			if (attacker != null && frac > 0.0f && this.isAlive() && !this.isRetreating()
+					&& this.getHealth() <= this.getMaxHealth() * frac) {
+				this.beginRetreat(attacker, FLEE_DURATION_TICKS);
+			}
+		}
+		return took;
 	}
 
 	/**
