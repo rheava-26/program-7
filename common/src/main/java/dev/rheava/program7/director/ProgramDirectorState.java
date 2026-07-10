@@ -878,6 +878,19 @@ public class ProgramDirectorState extends PersistentState {
 		return this.globalThreat;
 	}
 
+	/**
+	 * A coarse "escalation tier" reading for the datapad: 1 = Tier 1 probe
+	 * response only, 2 = Tier 2 unlocked (medium/standoff units), 3 = the
+	 * heavy tier is loose (a main base has already fallen). Deliberately a
+	 * display estimate, not the hard production cap.
+	 */
+	public int currentTierEstimate() {
+		if (this.firstBaseKilled) {
+			return 3;
+		}
+		return this.tier2Unlocked() ? 2 : 1;
+	}
+
 	/** Whether it's been long enough since the last hostile contact that heat has started (or could start) falling. */
 	public boolean isDormant(long worldTime) {
 		return worldTime - this.lastContactTime > HEAT_DECAY_COOLDOWN;

@@ -39,6 +39,7 @@ public final class InterferenceManager {
 		// client registers it together with its receiver.
 		if (Platform.getEnvironment() == Env.SERVER) {
 			NetworkManager.registerS2CPayloadType(InterferencePayload.ID, InterferencePayload.CODEC);
+			NetworkManager.registerS2CPayloadType(DatapadSnapshotPayload.ID, DatapadSnapshotPayload.CODEC);
 		}
 		TickEvent.SERVER_LEVEL_POST.register(InterferenceManager::tickWorld);
 		PlayerEvent.PLAYER_QUIT.register(player -> LAST_SENT.remove(player.getUuid()));

@@ -1,15 +1,27 @@
 package dev.rheava.program7.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import dev.architectury.networking.NetworkManager;
 import dev.rheava.program7.director.ProgramDirectorState;
+import dev.rheava.program7.entity.AirUAVEntity;
+import dev.rheava.program7.entity.HarvesterDroneEntity;
+import dev.rheava.program7.entity.LogisticsDroneEntity;
+import dev.rheava.program7.entity.MediumMiningDroneEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
+import dev.rheava.program7.entity.ReconHelicopterEntity;
+import dev.rheava.program7.entity.ScoutCarEntity;
+import dev.rheava.program7.entity.SniperDroneEntity;
+import dev.rheava.program7.entity.SurveyorDroneEntity;
+import dev.rheava.program7.entity.TransportDroneEntity;
+import dev.rheava.program7.entity.WheeledHaulerEntity;
+import dev.rheava.program7.network.DatapadSnapshotPayload;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -17,20 +29,16 @@ import net.minecraft.util.math.MathHelper;
 
 /**
  * The Datapad — the player's window into the Program's own instrumentation.
- * A right-click prints a short, in-fiction intel readout to chat: the
- * Program's current global threat reading, how many hostile units are
- * loitering nearby (and where), and a bearing to the nearest known base, if
- * one has ever been scouted.
- *
- * <p>Deliberately simple for v1: no custom HUD, no networking — everything
- * resolves server-side inside {@link #use}.
+ * Reading it (right-click) opens the v2 radar screen: a chunk-grid sweep of
+ * everything the Program knows about the area, its posture/heat, the size of
+ * the off-screen fleet, the escalation tier, and a bearing to the nearest
+ * known base. All of that is resolved server-side here and pushed to the
+ * client as a {@link DatapadSnapshotPayload}; the client opens the screen
+ * when it arrives.
  */
 public class DatapadItem extends Item {
-	/** How far out to count loitering Program hardware. */
-	private static final double SCAN_RANGE = 64.0;
-	private static final String[] COMPASS_POINTS = {
-			"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-			"S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
+	/** Radar reach: everything within this many blocks of the player is plotted (~7 chunks). */
+	private static final double RADAR_RANGE = 112.0;
 
 	public DatapadItem(Item.Settings settings) {
 		super(settings);
@@ -38,66 +46,66 @@ public class DatapadItem extends Item {
 
 	@Override
 	public TypedActionResult<ItemStack> use(net.minecraft.world.World world, PlayerEntity user, Hand hand) {
-		if (world.isClient) {
+		if (world.isClient || !(user instanceof ServerPlayerEntity serverPlayer)) {
 			return TypedActionResult.success(user.getStackInHand(hand));
 		}
 
 		ServerWorld serverWorld = (ServerWorld) world;
 		ProgramDirectorState state = ProgramDirectorState.get(serverWorld);
 
+		List<DatapadSnapshotPayload.Contact> contacts = new ArrayList<>();
 		List<ProgramDroneEntity> nearby = serverWorld.getEntitiesByClass(ProgramDroneEntity.class,
-				user.getBoundingBox().expand(SCAN_RANGE), e -> true);
-
-		user.sendMessage(Text.literal("▚ PROGRAM DATAPAD ▚").formatted(Formatting.AQUA, Formatting.BOLD), false);
-		user.sendMessage(Text.literal("Program posture: " + state.posture(serverWorld.getTime()) + "  (heat "
-				+ state.getHeat() + "/" + ProgramDirectorState.MAX_THREAT + ")").formatted(Formatting.GRAY), false);
-
-		if (nearby.isEmpty()) {
-			user.sendMessage(Text.literal("No hostile signatures within " + (int) SCAN_RANGE + "m.")
-					.formatted(Formatting.DARK_GRAY), false);
-		} else {
-			ProgramDroneEntity nearest = null;
-			double nearestDistSq = Double.MAX_VALUE;
-			for (ProgramDroneEntity drone : nearby) {
-				double distSq = drone.squaredDistanceTo(user);
-				if (distSq < nearestDistSq) {
-					nearestDistSq = distSq;
-					nearest = drone;
-				}
+				user.getBoundingBox().expand(RADAR_RANGE), e -> true);
+		for (ProgramDroneEntity drone : nearby) {
+			double dx = drone.getX() - user.getX();
+			double dz = drone.getZ() - user.getZ();
+			if (dx * dx + dz * dz > RADAR_RANGE * RADAR_RANGE) {
+				continue;
 			}
-			String bearing = nearest != null
-					? bearingTo(user.getX(), user.getZ(), nearest.getX(), nearest.getZ())
-					: "?";
-			user.sendMessage(Text.literal(nearby.size() + " hostile signature(s) within " + (int) SCAN_RANGE
-					+ "m — nearest bearing " + bearing).formatted(Formatting.RED), false);
+			contacts.add(new DatapadSnapshotPayload.Contact(
+					(float) dx, (float) dz, drone.getAlertState().ordinal(), guessCategory(drone)));
 		}
 
-		// coreSites isn't exposed beyond the probe core itself; the live core
-		// (if any) is the closest thing to a "nearest known base" the Director
-		// currently surfaces.
+		float baseYaw = Float.NaN;
+		int baseDistance = -1;
 		BlockPos basePos = state.getProbeCorePos();
 		if (basePos != null) {
-			double distance = Math.sqrt(user.getBlockPos().getSquaredDistance(basePos));
-			String bearing = bearingTo(user.getX(), user.getZ(), basePos.getX() + 0.5, basePos.getZ() + 0.5);
-			user.sendMessage(Text.literal("Nearest known base: bearing " + bearing + ", ~"
-					+ (int) distance + "m").formatted(Formatting.GOLD), false);
-		} else {
-			user.sendMessage(Text.literal("No base located.").formatted(Formatting.DARK_GRAY), false);
+			double dx = basePos.getX() + 0.5 - user.getX();
+			double dz = basePos.getZ() + 0.5 - user.getZ();
+			// atan2(dx, -dz): 0 = north (-Z), 90 = east (+X), matching Minecraft's axes.
+			baseYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(dx, -dz)));
+			baseDistance = (int) Math.sqrt(dx * dx + dz * dz);
 		}
+
+		DatapadSnapshotPayload.Header header = new DatapadSnapshotPayload.Header(
+				state.posture(serverWorld.getTime()),
+				state.getHeat(),
+				state.getVirtualFleet().size(),
+				state.currentTierEstimate(),
+				baseYaw,
+				baseDistance);
+		NetworkManager.sendToPlayer(serverPlayer, new DatapadSnapshotPayload(header, contacts));
 
 		return TypedActionResult.success(user.getStackInHand(hand));
 	}
 
-	/** 16-point compass bearing from (fromX, fromZ) to (toX, toZ). */
-	private static String bearingTo(double fromX, double fromZ, double toX, double toZ) {
-		double dx = toX - fromX;
-		double dz = toZ - fromZ;
-		// atan2(dx, -dz): 0 = north (-Z), 90 = east (+X), matching Minecraft's axes.
-		double angle = MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(dx, -dz)));
-		if (angle < 0) {
-			angle += 360.0;
+	/**
+	 * A deliberately coarse type read: the datapad can tell roughly what class
+	 * of hardware it's looking at, not the exact unit. 1 = gun/armed, 2 =
+	 * recon/spotter, 3 = logistics. (Acoustic bluffing — a logistics drone
+	 * faking gunfire — is a later layer; for now this is an honest guess.)
+	 */
+	private static int guessCategory(ProgramDroneEntity drone) {
+		if (drone instanceof SurveyorDroneEntity || drone instanceof AirUAVEntity
+				|| drone instanceof ScoutCarEntity || drone instanceof ReconHelicopterEntity
+				|| drone instanceof SniperDroneEntity) {
+			return 2;
 		}
-		int index = (int) Math.round(angle / 22.5) % 16;
-		return COMPASS_POINTS[index];
+		if (drone instanceof LogisticsDroneEntity || drone instanceof WheeledHaulerEntity
+				|| drone instanceof TransportDroneEntity || drone instanceof MediumMiningDroneEntity
+				|| drone instanceof HarvesterDroneEntity) {
+			return 3;
+		}
+		return 1;
 	}
 }
