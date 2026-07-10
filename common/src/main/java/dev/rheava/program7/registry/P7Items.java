@@ -55,6 +55,8 @@ public final class P7Items {
 			() -> new BlockItem(P7Blocks.AUTOGUN_TURRET.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> METAL_SCAFFOLD = ITEMS.register("metal_scaffold",
 			() -> new BlockItem(P7Blocks.METAL_SCAFFOLD.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> STORAGE_DECK_BLOCK = ITEMS.register("storage_deck",
+			() -> new BlockItem(P7Blocks.STORAGE_DECK.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> SURVEYOR_DRONE_SPAWN_EGG = ITEMS.register("surveyor_drone_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.SURVEYOR_DRONE, 0x23272b, 0x27e2d3,

@@ -9,6 +9,7 @@ import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.ProbeCoreBlock;
+import dev.rheava.program7.block.StorageDeckBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
@@ -84,6 +85,14 @@ public final class P7Blocks {
 			() -> new Block(AbstractBlock.Settings.create()
 					.mapColor(MapColor.GRAY)
 					.strength(4.0f, 30.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)));
+
+	/** The Program's physical stockpile: a lootable crate-bank the player can raid a base for. */
+	public static final RegistrySupplier<Block> STORAGE_DECK = BLOCKS.register("storage_deck",
+			() -> new StorageDeckBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(6.0f, 200.0f)
 					.requiresTool()
 					.sounds(BlockSoundGroup.NETHERITE)));
 

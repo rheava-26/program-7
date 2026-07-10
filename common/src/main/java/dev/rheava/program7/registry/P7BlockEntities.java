@@ -8,6 +8,7 @@ import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.DroneWreckBlockEntity;
 import dev.rheava.program7.block.LaunchCatapultBlockEntity;
 import dev.rheava.program7.block.ProbeCoreBlockEntity;
+import dev.rheava.program7.block.StorageDeckBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.RegistryKeys;
 
@@ -39,6 +40,11 @@ public final class P7BlockEntities {
 			BLOCK_ENTITIES.register("probe_core",
 					() -> BlockEntityType.Builder.create(ProbeCoreBlockEntity::new,
 							P7Blocks.PROBE_CORE.get()).build(null));
+
+	public static final RegistrySupplier<BlockEntityType<StorageDeckBlockEntity>> STORAGE_DECK =
+			BLOCK_ENTITIES.register("storage_deck",
+					() -> BlockEntityType.Builder.create(StorageDeckBlockEntity::new,
+							P7Blocks.STORAGE_DECK.get()).build(null));
 
 	public static void register() {
 		BLOCK_ENTITIES.register();

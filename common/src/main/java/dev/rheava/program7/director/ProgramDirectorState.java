@@ -11,6 +11,7 @@ import dev.rheava.program7.Program7;
 import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.ProbeCoreBlockEntity;
+import dev.rheava.program7.block.StorageDeckBlock;
 import dev.rheava.program7.config.P7Config;
 import dev.rheava.program7.entity.CourierUnit;
 import dev.rheava.program7.entity.DropPodEntity;
@@ -498,6 +499,9 @@ public class ProgramDirectorState extends PersistentState {
 		world.setBlockState(pos, P7Blocks.PROBE_CORE.get().getDefaultState());
 		placeAssembler(world, pos);
 		placeLaunchCatapult(world, pos);
+		// Physical stores the player can raid the base for — seeded with what
+		// this pod arrived carrying (see StorageDeckBlock; drones skip it).
+		StorageDeckBlock.plant(world, pos, CourierUnit.cargoToItems(POD_STOCKPILE));
 		DropPodEntity.spawnLandingComplement(world, pos);
 
 		ProgramDirectorState state = get(world);
