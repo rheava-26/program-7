@@ -10,6 +10,7 @@ import java.util.UUID;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.LaunchCatapultBlock;
+import dev.rheava.program7.block.ProbeCoreBlockEntity;
 import dev.rheava.program7.config.P7Config;
 import dev.rheava.program7.entity.CourierUnit;
 import dev.rheava.program7.entity.DropPodEntity;
@@ -119,6 +120,10 @@ public class ProgramDirectorState extends PersistentState {
 	private static final int FIRST_KILL_THREAT_RELIEF = 25;
 	/** With fabrication degraded, an escalation wave has this chance to simply fail to be built. */
 	private static final float FABRICATION_DEGRADE_SKIP = 0.5f;
+	/** How often the Director checks whether any of its bases is under attack. */
+	private static final int BASE_DEFENSE_INTERVAL = 60;
+	/** A player must be within this many blocks of a core for it to rally defenders onto them. */
+	private static final double BASE_DEFENSE_RANGE = 64.0;
 
 	/** Never more than this many outposts under construction at once. */
 	private static final int MAX_ACTIVE_SITES = 2;
@@ -249,6 +254,10 @@ public class ProgramDirectorState extends PersistentState {
 				&& world.getTime() % HEAT_DECAY_INTERVAL == 0 && this.globalThreat > 0) {
 			this.globalThreat--;
 			this.markDirty();
+		}
+
+		if (world.getTime() % BASE_DEFENSE_INTERVAL == 0) {
+			this.tickBaseDefense(world);
 		}
 
 		if (!this.dispatches.isEmpty()) {
@@ -784,6 +793,45 @@ public class ProgramDirectorState extends PersistentState {
 		if (world.getRandom().nextDouble() < SNIPER_DRONE_CHANCE
 				&& this.tryConsume(SNIPER_DRONE_COST)) {
 			this.spawnEscort(world, player, P7Entities.SNIPER_DRONE.get().create(world));
+		}
+	}
+
+	/**
+	 * A base being mined out fights back: while a probe core reads as under
+	 * attack, it rallies a fresh defender onto the nearest attacker, paid from
+	 * the ledger — so starving the Program throttles its defense too. Heavier
+	 * units come once the fleet has reached Tier 2.
+	 */
+	private void tickBaseDefense(ServerWorld world) {
+		if (this.coreSites.isEmpty()) {
+			return;
+		}
+		long now = world.getTime();
+		for (BlockPos site : this.coreSites) {
+			if (!(world.getBlockEntity(site) instanceof ProbeCoreBlockEntity core) || !core.isUnderAttack(now)) {
+				continue;
+			}
+			ServerPlayerEntity attacker = null;
+			double best = BASE_DEFENSE_RANGE * BASE_DEFENSE_RANGE;
+			for (ServerPlayerEntity p : world.getPlayers()) {
+				double d = p.squaredDistanceTo(site.getX() + 0.5, site.getY() + 0.5, site.getZ() + 0.5);
+				if (d < best) {
+					best = d;
+					attacker = p;
+				}
+			}
+			if (attacker == null) {
+				continue;
+			}
+			// Its base is under fire — the fleet stays wound up rather than decaying.
+			this.lastContactTime = now;
+			if (this.tier2Unlocked() && world.getRandom().nextBoolean()) {
+				if (this.tryConsume(MEDIUM_ATTACK_DRONE_COST)) {
+					this.spawnEscort(world, attacker, P7Entities.MEDIUM_ATTACK_DRONE.get().create(world));
+				}
+			} else if (this.tryConsume(ATTACK_DRONE_COST)) {
+				this.spawnEscort(world, attacker, P7Entities.ATTACK_DRONE.get().create(world));
+			}
 		}
 	}
 
