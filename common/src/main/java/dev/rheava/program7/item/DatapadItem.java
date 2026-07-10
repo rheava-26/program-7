@@ -49,16 +49,26 @@ public class DatapadItem extends Item {
 		if (world.isClient || !(user instanceof ServerPlayerEntity serverPlayer)) {
 			return TypedActionResult.success(user.getStackInHand(hand));
 		}
+		NetworkManager.sendToPlayer(serverPlayer, snapshotFor(serverPlayer));
+		return TypedActionResult.success(user.getStackInHand(hand));
+	}
 
-		ServerWorld serverWorld = (ServerWorld) world;
+	/**
+	 * Build the datapad's current read for {@code player}: nearby contacts as
+	 * offsets from the player, plus the status-rail scalars. Called both when
+	 * the datapad is first read and on each live-refresh poll from the open
+	 * screen (see {@link dev.rheava.program7.network.DatapadRefreshPayload}).
+	 */
+	public static DatapadSnapshotPayload snapshotFor(ServerPlayerEntity player) {
+		ServerWorld serverWorld = player.getServerWorld();
 		ProgramDirectorState state = ProgramDirectorState.get(serverWorld);
 
 		List<DatapadSnapshotPayload.Contact> contacts = new ArrayList<>();
 		List<ProgramDroneEntity> nearby = serverWorld.getEntitiesByClass(ProgramDroneEntity.class,
-				user.getBoundingBox().expand(RADAR_RANGE), e -> true);
+				player.getBoundingBox().expand(RADAR_RANGE), e -> true);
 		for (ProgramDroneEntity drone : nearby) {
-			double dx = drone.getX() - user.getX();
-			double dz = drone.getZ() - user.getZ();
+			double dx = drone.getX() - player.getX();
+			double dz = drone.getZ() - player.getZ();
 			if (dx * dx + dz * dz > RADAR_RANGE * RADAR_RANGE) {
 				continue;
 			}
@@ -70,8 +80,8 @@ public class DatapadItem extends Item {
 		int baseDistance = -1;
 		BlockPos basePos = state.getProbeCorePos();
 		if (basePos != null) {
-			double dx = basePos.getX() + 0.5 - user.getX();
-			double dz = basePos.getZ() + 0.5 - user.getZ();
+			double dx = basePos.getX() + 0.5 - player.getX();
+			double dz = basePos.getZ() + 0.5 - player.getZ();
 			// atan2(dx, -dz): 0 = north (-Z), 90 = east (+X), matching Minecraft's axes.
 			baseYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(dx, -dz)));
 			baseDistance = (int) Math.sqrt(dx * dx + dz * dz);
@@ -84,9 +94,7 @@ public class DatapadItem extends Item {
 				state.currentTierEstimate(),
 				baseYaw,
 				baseDistance);
-		NetworkManager.sendToPlayer(serverPlayer, new DatapadSnapshotPayload(header, contacts));
-
-		return TypedActionResult.success(user.getStackInHand(hand));
+		return new DatapadSnapshotPayload(header, contacts);
 	}
 
 	/**

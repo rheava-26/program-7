@@ -11,6 +11,7 @@ import dev.architectury.networking.NetworkManager;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import dev.rheava.program7.entity.AttackDroneEntity;
+import dev.rheava.program7.item.DatapadItem;
 import dev.rheava.program7.registry.P7Entities;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -41,6 +42,15 @@ public final class InterferenceManager {
 			NetworkManager.registerS2CPayloadType(InterferencePayload.ID, InterferencePayload.CODEC);
 			NetworkManager.registerS2CPayloadType(DatapadSnapshotPayload.ID, DatapadSnapshotPayload.CODEC);
 		}
+		// Server side of the datapad live-refresh: an open datapad screen polls
+		// for a fresh read; answer the sending player with a new snapshot.
+		NetworkManager.registerReceiver(NetworkManager.Side.C2S,
+				DatapadRefreshPayload.ID, DatapadRefreshPayload.CODEC,
+				(payload, context) -> {
+					if (context.getPlayer() instanceof ServerPlayerEntity sender) {
+						context.queue(() -> NetworkManager.sendToPlayer(sender, DatapadItem.snapshotFor(sender)));
+					}
+				});
 		TickEvent.SERVER_LEVEL_POST.register(InterferenceManager::tickWorld);
 		PlayerEvent.PLAYER_QUIT.register(player -> LAST_SENT.remove(player.getUuid()));
 	}

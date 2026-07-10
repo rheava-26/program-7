@@ -47,6 +47,7 @@ import dev.rheava.program7.client.render.TransportDroneModel;
 import dev.rheava.program7.client.render.TransportDroneRenderer;
 import dev.rheava.program7.client.render.WheeledHaulerModel;
 import dev.rheava.program7.client.render.WheeledHaulerRenderer;
+import dev.rheava.program7.network.DatapadRefreshPayload;
 import dev.rheava.program7.network.DatapadSnapshotPayload;
 import dev.rheava.program7.network.InterferencePayload;
 import dev.rheava.program7.registry.P7Entities;
@@ -129,6 +130,8 @@ public final class Program7Client {
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				DatapadSnapshotPayload.ID, DatapadSnapshotPayload.CODEC,
 				(payload, context) -> context.queue(() -> DatapadScreen.open(payload)));
+		// So the open datapad screen can poll the server for live updates.
+		NetworkManager.registerC2SPayloadType(DatapadRefreshPayload.ID, DatapadRefreshPayload.CODEC);
 		ClientTickEvent.CLIENT_POST.register(InterferenceOverlay::clientTick);
 		ClientGuiEvent.RENDER_HUD.register(InterferenceOverlay::render);
 	}

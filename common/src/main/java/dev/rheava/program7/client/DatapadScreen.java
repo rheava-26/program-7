@@ -3,7 +3,9 @@ package dev.rheava.program7.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.architectury.networking.NetworkManager;
 import dev.rheava.program7.director.ProgramDirectorState;
+import dev.rheava.program7.network.DatapadRefreshPayload;
 import dev.rheava.program7.network.DatapadSnapshotPayload;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.client.MinecraftClient;
@@ -68,9 +70,12 @@ public final class DatapadScreen extends Screen {
 	private static final int RADAR_SIDE = 156;
 	private static final long SWEEP_PERIOD_MS = 3000L;
 	private static final long BEEP_INTERVAL_MS = 1500L;
+	/** How often the open screen polls the server for a fresh read (client ticks). */
+	private static final int REFRESH_INTERVAL_TICKS = 10;
 
-	private final DatapadSnapshotPayload snapshot;
+	private DatapadSnapshotPayload snapshot;
 	private long lastBeepMs;
+	private int refreshCooldown = REFRESH_INTERVAL_TICKS;
 
 	private DatapadScreen(DatapadSnapshotPayload snapshot) {
 		super(Text.translatable("item.program7.datapad"));
@@ -78,14 +83,33 @@ public final class DatapadScreen extends Screen {
 		this.lastBeepMs = Util.getMeasuringTimeMs();
 	}
 
-	/** Open (or replace) the datapad screen on the client with a fresh snapshot. */
+	/**
+	 * Open the datapad screen with a fresh snapshot — or, if it's already open,
+	 * update it in place so a live-refresh reply doesn't tear down and rebuild
+	 * the screen (which would reset the sweep and eat the player's hover).
+	 */
 	public static void open(DatapadSnapshotPayload snapshot) {
-		MinecraftClient.getInstance().setScreen(new DatapadScreen(snapshot));
+		MinecraftClient client = MinecraftClient.getInstance();
+		if (client.currentScreen instanceof DatapadScreen existing) {
+			existing.snapshot = snapshot;
+		} else {
+			client.setScreen(new DatapadScreen(snapshot));
+		}
 	}
 
 	@Override
 	public boolean shouldPause() {
 		return false;
+	}
+
+	@Override
+	public void tick() {
+		// Poll the server for a live read a couple of times a second, so the
+		// radar stays current while it's open — contacts drift, alerts warm.
+		if (--this.refreshCooldown <= 0) {
+			this.refreshCooldown = REFRESH_INTERVAL_TICKS;
+			NetworkManager.sendToServer(DatapadRefreshPayload.INSTANCE);
+		}
 	}
 
 	@Override
