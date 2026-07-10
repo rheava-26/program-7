@@ -11,7 +11,10 @@ Phases are ordered so every phase ships something playable, and the Director
 > cutting the long-term vision — Tier 1–3 is already a complete game with a
 > real win state (destroy a main base).
 
-> **Living design docs (2026-07 session):** the mod's next act is captured in
+> **Living design docs (2026-07 session):** start with `FRAMEWORKS.md` — the
+> architecture-of-architectures that names the shared backbones and every
+> remaining system, and the order we flesh them out. From there: fire support
+> in `ARTILLERY_AND_INDIRECT_FIRE.md` (the fully-worked framework example),
 > `RESEARCH_AND_LOGISTICS.md` (research tree + infrastructure/logistics +
 > counter-logistics + the psionic research building), `EXPANSION_PLAN.md`
 > (datapad v2, virtualization/LOD, acoustic intelligence, material tree), and
