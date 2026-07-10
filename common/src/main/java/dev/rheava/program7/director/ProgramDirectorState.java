@@ -99,6 +99,25 @@ public class ProgramDirectorState extends PersistentState {
 	/** Minimum filed scans before Tier 2 can unlock, even at low threat. */
 	private static final int TIER_2_MIN_SCANS = 3;
 	private static final double SNIPER_DRONE_CHANCE = 0.25;
+	/**
+	 * Global threat at which waves start folding in Tier 3 heavies on top of
+	 * the Tier 2 escalation. This is the ceiling the fleet fields before any
+	 * main base falls — Tier 4+ is post-first-kill content, so in v1.0 Tier 3
+	 * is effectively the hard cap. Requires Tier 2 already unlocked.
+	 */
+	private static final int TIER_3_THREAT = 30;
+	/** What one heavy attack drone (car-sized burst-fire gun flyer) costs to field. */
+	private static final Map<String, Integer> HEAVY_ATTACK_DRONE_COST = Map.of(
+			Resources.IRON, 12, Resources.COPPER, 6, Resources.REDSTONE, 6, Resources.GUNPOWDER, 4);
+	/** What one recon helicopter (the elytra-hunter) costs to field. */
+	private static final Map<String, Integer> RECON_HELICOPTER_COST = Map.of(
+			Resources.IRON, 14, Resources.COPPER, 8, Resources.REDSTONE, 6);
+	/**
+	 * Heavy fabrication is exactly what the first base kill degrades, so once
+	 * the relay's cut a Tier 3 heavy usually just fails to come off the line —
+	 * a much steeper skip than the general {@link #FABRICATION_DEGRADE_SKIP}.
+	 */
+	private static final float FABRICATION_DEGRADE_SKIP_HEAVY = 0.75f;
 	/** The starter stockpile every pod brings down with it. */
 	private static final Map<String, Integer> POD_STOCKPILE = Map.of(
 			Resources.IRON, 64, Resources.COPPER, 48, Resources.REDSTONE, 32,
@@ -708,6 +727,16 @@ public class ProgramDirectorState extends PersistentState {
 		return this.globalThreat >= TIER_2_THREAT || this.scansCompleted >= TIER_2_MIN_SCANS;
 	}
 
+	/**
+	 * Whether the fleet has earned the right to field Tier 3 heavies: Tier 2
+	 * already open and the global threat reading up past {@link #TIER_3_THREAT}.
+	 * This is the top of the escalation ladder in v1.0 — nothing heavier is
+	 * fielded until a main base falls and opens the post-v1.0 tiers.
+	 */
+	private boolean tier3Unlocked() {
+		return this.tier2Unlocked() && this.globalThreat >= TIER_3_THREAT;
+	}
+
 	private void executeDispatch(ServerWorld world, PendingDispatch dispatch) {
 		ServerPlayerEntity player = world.getServer().getPlayerManager().getPlayer(dispatch.playerId);
 		if (player == null || player.getServerWorld() != world || player.isDead()) {
@@ -717,9 +746,12 @@ public class ProgramDirectorState extends PersistentState {
 
 		PlayerIntel intel = this.getIntel(dispatch.playerId);
 		String profile = intel != null ? intel.weaponProfile : ScanRecord.PROFILE_NONE;
+		boolean elytra = intel != null && intel.elytra;
 
 		this.dispatchRushers(world, player, dispatch, profile);
 		this.dispatchEscalation(world, player, profile);
+		this.dispatchInterception(world, player, elytra);
+		this.dispatchHeavy(world, player, elytra);
 	}
 
 	/**
@@ -797,6 +829,51 @@ public class ProgramDirectorState extends PersistentState {
 		if (world.getRandom().nextDouble() < SNIPER_DRONE_CHANCE
 				&& this.tryConsume(SNIPER_DRONE_COST)) {
 			this.spawnEscort(world, player, P7Entities.SNIPER_DRONE.get().create(world));
+		}
+	}
+
+	/**
+	 * The elytra answer (Phase 3): a gliding player who can outrun a ground
+	 * escort draws a fast interceptor the moment Tier 2 is open — a medium
+	 * attack drone peeled off to chase them down, on top of whatever the
+	 * profile escalation already sent. Being airborne is its own threat flag.
+	 */
+	private void dispatchInterception(ServerWorld world, ServerPlayerEntity player, boolean elytra) {
+		if (!elytra || !this.tier2Unlocked()) {
+			return;
+		}
+		if (this.fabricationDegraded && world.getRandom().nextFloat() < FABRICATION_DEGRADE_SKIP) {
+			return;
+		}
+		if (this.tryConsume(MEDIUM_ATTACK_DRONE_COST)) {
+			this.spawnEscort(world, player, P7Entities.MEDIUM_ATTACK_DRONE.get().create(world));
+		}
+	}
+
+	/**
+	 * Field a Tier 3 heavy once the fleet has earned it ({@link
+	 * #tier3Unlocked()}) — the top of the v1.0 escalation ladder. A gliding
+	 * player draws a recon helicopter, a flyer built to hunt other flyers and
+	 * pin them; everyone else meets a heavy attack drone, the car-sized
+	 * burst-fire gun flyer. Both are airborne, so {@link #spawnEscort}'s aerial
+	 * drop suits them (tracked/naval Tier 3 units stay base-composition units,
+	 * where they can be placed on real ground).
+	 */
+	private void dispatchHeavy(ServerWorld world, ServerPlayerEntity player, boolean elytra) {
+		if (!this.tier3Unlocked()) {
+			return;
+		}
+		// Heavy fabrication is the first casualty of a severed relay.
+		float skip = this.fabricationDegraded ? FABRICATION_DEGRADE_SKIP_HEAVY : 0.0f;
+		if (skip > 0.0f && world.getRandom().nextFloat() < skip) {
+			return;
+		}
+		if (elytra && this.tryConsume(RECON_HELICOPTER_COST)) {
+			this.spawnEscort(world, player, P7Entities.RECON_HELICOPTER.get().create(world));
+			return;
+		}
+		if (this.tryConsume(HEAVY_ATTACK_DRONE_COST)) {
+			this.spawnEscort(world, player, P7Entities.HEAVY_ATTACK_DRONE.get().create(world));
 		}
 	}
 
