@@ -108,6 +108,17 @@ public class ProgramDirectorState extends PersistentState {
 	 */
 	private static final Map<String, Integer> BASE_DESTROYED_LOOT = Map.of(
 			Resources.IRON, 32, Resources.REDSTONE, 12);
+	/**
+	 * The big one-time windfall for cracking the FIRST main base — severing the
+	 * psionic relay spills a real haul on top of the per-core loot above.
+	 */
+	private static final Map<String, Integer> FIRST_KILL_BONUS_LOOT = Map.of(
+			Resources.IRON, 96, Resources.COPPER, 64, Resources.REDSTONE, 32,
+			Resources.DIAMOND, 4, Resources.GOLD, 24);
+	/** Losing the relay reels the whole fleet — its aggression posture takes this much of a hit. */
+	private static final int FIRST_KILL_THREAT_RELIEF = 25;
+	/** With fabrication degraded, an escalation wave has this chance to simply fail to be built. */
+	private static final float FABRICATION_DEGRADE_SKIP = 0.5f;
 
 	/** Never more than this many outposts under construction at once. */
 	private static final int MAX_ACTIVE_SITES = 2;
@@ -143,6 +154,8 @@ public class ProgramDirectorState extends PersistentState {
 	 * later task reads it to gate the psionic unlock / tier cap.
 	 */
 	private boolean firstBaseKilled = false;
+	/** Set once the first main base falls — the fleet's heavy fabrication is degraded thereafter. */
+	private boolean fabricationDegraded = false;
 	/** Outposts currently being built up incrementally — see {@link ConstructionSite}. */
 	private final List<ConstructionSite> constructionSites = new ArrayList<>();
 	/** Spacing gate so outposts don't all break ground back-to-back. */
@@ -506,6 +519,7 @@ public class ProgramDirectorState extends PersistentState {
 	 * consequence attached.
 	 */
 	public void onBaseDestroyed(ServerWorld world, BlockPos pos) {
+		boolean wasFirst = !this.firstBaseKilled;
 		this.coreSites.remove(pos);
 		this.firstBaseKilled = true;
 		this.markDirty();
@@ -514,10 +528,38 @@ public class ProgramDirectorState extends PersistentState {
 			ItemScatterer.spawn(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
 		}
 		Program7.LOGGER.info("[Program 7] Probe core destroyed at {}", pos.toShortString());
+
+		if (wasFirst) {
+			this.onFirstBaseKilled(world, pos);
+		}
+	}
+
+	/**
+	 * The first main base falling is the win-condition payoff: a big resource
+	 * windfall on top of the per-core loot, the fleet's aggression reeling, its
+	 * heavy fabrication degraded from here on, and everyone in the world earns
+	 * the "sever the relay" mark. (The full player psionic-power unlock is the
+	 * later player-tech phase; this lands the fleet-side consequences now.)
+	 */
+	private void onFirstBaseKilled(ServerWorld world, BlockPos pos) {
+		for (ItemStack stack : CourierUnit.cargoToItems(FIRST_KILL_BONUS_LOOT)) {
+			ItemScatterer.spawn(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+		}
+		this.globalThreat = Math.max(0, this.globalThreat - FIRST_KILL_THREAT_RELIEF);
+		this.fabricationDegraded = true;
+		this.markDirty();
+		for (ServerPlayerEntity player : world.getPlayers()) {
+			P7Advancements.grant(player, "sever_the_relay");
+		}
+		Program7.LOGGER.info("[Program 7] First base destroyed — psionic relay severed, fabrication degraded.");
 	}
 
 	public boolean isFirstBaseKilled() {
 		return this.firstBaseKilled;
+	}
+
+	public boolean isFabricationDegraded() {
+		return this.fabricationDegraded;
 	}
 
 	public void addResource(String key, int amount) {
@@ -712,6 +754,11 @@ public class ProgramDirectorState extends PersistentState {
 		if (!this.tier2Unlocked()) {
 			return;
 		}
+		// Fabrication degraded after the first base fell: heavy escalation waves
+		// often just fail to come together now.
+		if (this.fabricationDegraded && world.getRandom().nextFloat() < FABRICATION_DEGRADE_SKIP) {
+			return;
+		}
 
 		if (ScanRecord.PROFILE_MELEE.equals(profile)) {
 			if (this.tryConsume(SNIPER_DRONE_COST)) {
@@ -841,6 +888,7 @@ public class ProgramDirectorState extends PersistentState {
 		nbt.putLong("LastResupplyTime", this.lastResupplyTime);
 		nbt.putLong("LastContactTime", this.lastContactTime);
 		nbt.putBoolean("FirstBaseKilled", this.firstBaseKilled);
+		nbt.putBoolean("FabricationDegraded", this.fabricationDegraded);
 
 		NbtList coreSitesList = new NbtList();
 		for (BlockPos site : this.coreSites) {
@@ -904,6 +952,7 @@ public class ProgramDirectorState extends PersistentState {
 		state.lastResupplyTime = nbt.contains("LastResupplyTime") ? nbt.getLong("LastResupplyTime") : 0L;
 		state.lastContactTime = nbt.contains("LastContactTime") ? nbt.getLong("LastContactTime") : 0L;
 		state.firstBaseKilled = nbt.contains("FirstBaseKilled") && nbt.getBoolean("FirstBaseKilled");
+		state.fabricationDegraded = nbt.contains("FabricationDegraded") && nbt.getBoolean("FabricationDegraded");
 
 		NbtList coreSitesList = nbt.getList("CoreSites", NbtElement.COMPOUND_TYPE);
 		for (int i = 0; i < coreSitesList.size(); i++) {

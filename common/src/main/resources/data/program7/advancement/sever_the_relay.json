@@ -1,0 +1,14 @@
+{
+  "parent": "program7:arrival",
+  "display": {
+    "icon": { "id": "program7:transmitter" },
+    "title": { "translate": "advancements.program7.sever_the_relay.title" },
+    "description": { "translate": "advancements.program7.sever_the_relay.description" },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": { "unlocked": { "trigger": "minecraft:impossible" } },
+  "requirements": [ ["unlocked"] ]
+}
