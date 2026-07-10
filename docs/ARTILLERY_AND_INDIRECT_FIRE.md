@@ -26,6 +26,17 @@ falls out of it:
 - It **announces itself** (whistle-in, ranging shots) → fair telegraph, not a
   silent one-shot.
 - It is **ammo-hungry and supply-bound** → starving it is real counterplay.
+- It is **expensive**, so the Program is **economical with it** → it does not
+  waste standard artillery on harmless threats (a lone zombie, a passing
+  low-threat player). Shells are reserved for real targets: fortified players,
+  massed threats, base assaults. Economy of fire is both a balance lever and a
+  characterization — the Program is a cold quartermaster, not trigger-happy.
+
+Also fixed in the fiction: **artillery fires from almost anywhere** (any
+emplaced or mobile platform with the range), it is **always visible on the
+datapad map** once its fire is detected, and its rounds have **real travel
+time** — you hear the distant *bang* of the tube, then the *whizzing* of the
+inbound before it lands. Firing position is a place you can go find and kill.
 
 ## 2. The fire-mission loop (the heart of it)
 
@@ -82,6 +93,23 @@ error = baseSpread[type]
 - The Program **never needs perfect accuracy** — near-misses that chew up your
   cover and kick up debris are the point. Suppression, not precision.
 
+**Spotting vs range — the accuracy tug-of-war.** A **UAV (or any observer) with
+eyes on tightens accuracy** — better spotting shrinks `stalenessFactor` and
+feeds `rangingProgress`. But **range always fights back**: `rangeFactor` grows
+with distance and is a **hard floor that spotting can never fully cancel**, so
+even a perfectly-spotted target at extreme range still eats a spread. Long shots
+are inherently loose; that's why the scariest-accurate fire is *close* fire, and
+why pushing the guns back out of spotting range is itself a defense. Guided
+munitions (§4 missiles) are the exception that pays through the nose to beat the
+floor.
+
+**Economy of fire (targeting discipline).** The Director does **not** open a fire
+mission on a harmless target — expensive shells aren't spent on a lone mob or a
+low-threat player who could be handled by a cheap direct-fire unit. A target has
+to clear a **threat/value bar** (fortified, massed, dug-in, or a base assault)
+before it's worth a tube. This reads as the Program being deliberate and cold,
+and keeps artillery a *response to real pressure*, not ambient noise.
+
 ## 4. The artillery roster (types framework)
 
 Every type is one row in the same schema, so adding one is data, not new
@@ -93,50 +121,94 @@ systems:
 | **rangeBand** | close / medium / long / strategic — feeds the sound tiers |
 | **cadence** | rounds per burst + reload time |
 | **baseSpread** | signature CEP — precision vs saturation |
-| **munition** | single shell / stick of bombs / rocket ripple / heavy shell |
-| **mobility** | fixed emplacement / towed-emplaced / self-propelled / airborne |
-| **supplyCost** | shells per mission (the ledger burden) |
+| **munition** | single shell / stick of bombs / rocket ripple / heavy shell / guided missile |
+| **platform** | **emplaced** or **mobile** — the defining split, see below |
+| **supplyCost** | shells per mission — **all indirect fire is expensive**; heavier munitions cost progressively more |
 | **audio** | launch report + inbound whistle profile per range tier |
-| **tier** | when it unlocks (§ ties to UNITS.md tiers) |
+| **tier** | when it unlocks (ties to UNITS.md tiers) |
 
-### The types
+### Platform classes — emplaced vs mobile (the defining split)
+
+Every artillery unit is one of two platform classes, and the choice shapes its
+whole feel and counterplay:
+
+- **Emplaced (set positions)** — dug-in, static tubes. **Upsides:** can fire as
+  a **battery** (several tubes ranging and firing *together* on one target —
+  faster ranging, denser fire-for-effect), carries **more ammo on hand** (a
+  stocked position sustains a long bombardment), and is **more defendable**
+  (bunkered, escorted, part of a fortified outpost). **Downside:** it **can't
+  shoot and scoot** — once you find it, it's there to be assaulted and killed.
+  These are the siege guns you go take out.
+
+- **Mobile (self-propelled)** — self-propelled mortars, tanks firing indirect,
+  warships. **Upsides:** **shoot and scoot** (displaces after firing to dodge
+  counter-battery), goes where the front is, harder to pin. **Downsides:**
+  **less ammo on hand** (must return to a depot to rearm — ties straight into
+  SupplyNetwork), usually fires alone rather than as a massed battery, and is
+  more fragile than a bunkered position. These are the guns that hunt you.
+
+The two classes are a **tempo dial**: emplaced batteries are the slow,
+overwhelming siege; mobile pieces are the mobile, harassing threat that's always
+somewhere new. A fortified Program base fields emplaced batteries; an advancing
+one leans on mobile guns and warships.
+
+The roster spans a **caliber spectrum** (mortar → standard artillery → heavy
+gun) crossed with the **platform split** (emplaced/mobile) and the **munition
+axis** (dumb shell → unguided rocket → guided missile). All the same loop.
 
 - **Mortar** — *Tier 2, already in game (`MortarEmplacementEntity` +
   `MortarShellEntity`).* Steep arc, short–medium range, single arcing shell,
-  whistle-in, **fixed emplacement.** The entry-level indirect weapon and the
-  reference implementation the rest generalize from.
+  whistle-in. Comes **emplaced** (the current unit) **and mobile**
+  (self-propelled mortar — the reference mobile platform). Cheapest indirect;
+  the reference implementation everything else generalizes from.
 
-- **Field gun / howitzer** — *Tier 3.* Medium arc, longer range, **heavy
-  shell** with real block-breaking bite (the **wall-breaker** — cracks the
-  fort you built), slow cadence, towed-and-emplaced. The unit that makes
-  "hide behind stone" stop working.
+- **Standard field artillery / howitzer** — *Tier 3.* Medium arc, longer range,
+  **heavy shell** with real block-breaking bite (the **wall-breaker** — cracks
+  the fort you built), slow cadence. Usually **emplaced as a battery** (several
+  tubes ranging together) at a fortified base; a towed variant can reposition
+  slowly. The unit that makes "hide behind stone" stop working.
 
-- **Rocket artillery / MLRS** — *Tier 3–4.* **Saturation, not precision:** a
-  ripple of many rockets blanketing an *area* at once. Huge suppression and
-  area denial, long reload, wide baseSpread by design. Its audio is the
-  scariest in the game — a stutter of launches, a few seconds of silence, then
-  a wall of impacts arriving together.
+- **Tank / AFV bombardment** — *Tier 3, mobile.* An armored vehicle firing its
+  main gun **indirect** (arced onto a spotted position) rather than direct. Less
+  ammo on hand than an emplaced battery and fires alone, but it's **mobile and
+  armored** — it rolls up with the advance, lobs a few, and moves. Ties the tank
+  line into siege work without needing a dedicated artillery unit.
 
-- **Close air support (CAS) bombing** — *Tier 3–4.* A fixed-wing or the gunship
-  makes a **bombing run**: a stick of bombs walked along a line across the
-  target on a diving pass. Telegraphed by the approaching engine note and the
-  visible run-in — the one indirect attack you can see coming and sprint out of
-  the lane of.
+- **Naval bombardment** — *Tier 3, the gunboat/warship (mobile).* The warship's
+  main gun as **shore bombardment** when an inland observer feeds it a target.
+  Long reach from the water and free to reposition along the coast; this is what
+  ties the boats into land sieges instead of leaving them at the shoreline.
 
-- **Naval gunfire** — *Tier 3, the gunboat.* The gunboat's main gun as **shore
-  bombardment** when an inland observer feeds it a target. Long reach from the
-  water; this is what ties the boats into land sieges instead of leaving them
-  stuck at the shoreline.
+- **Unguided rocket artillery / MLRS** — *Tier 3–4.* The **cheap, inaccurate**
+  end of the munition axis: a **ripple of many unguided rockets saturating an
+  area** at once. Wide baseSpread by design — *area denial, not precision* —
+  huge suppression, long reload. Comes emplaced (a massed launcher battery) or
+  mobile (a launch vehicle). Its audio is the scariest in the game: a stutter of
+  launches, a few seconds of silence, then a wall of impacts arriving together.
 
-- **Gunship belly autocannon** — *NOT indirect; listed for contrast.* It's
-  direct fire from altitude (line of sight straight down). It traverses
-  fluidly and hoses — it does not arc or need an observer. The gunship's
-  *bombs* (CAS) are indirect; its *cannon* is not.
+- **Guided missiles** — *Tier 4–5.* **Same framework, different travel path and
+  cost.** A missile flies a **guided path** and **beats the range accuracy
+  floor** (the one munition that stays precise at long range), but it is **far
+  more expensive** per shot. The deliberate inversion of unguided rockets:
+  rockets are cheap-and-loose, missiles are dear-and-exact. Reserved for
+  high-value targets where precision is worth the price (and, later, the
+  anti-mod / anti-boss role — a missile answer to something huge from far off).
 
-- **Ballistic missile / orbital strike** — *Tier 5 / finale.* The extreme end:
-  long-range near-precision or pure terror weapon, rare, enormous supply cost,
-  the thing the anti-orbital endgame is a race against. Frameworked here so the
-  ladder is complete; built last.
+- **Close air support (CAS) bombing** — *Tier 3–4, airborne.* A fixed-wing or
+  the gunship makes a **bombing run**: a stick of bombs walked along a line
+  across the target on a diving pass. Telegraphed by the approaching engine note
+  and the visible run-in — the one indirect attack you can see coming and sprint
+  out of the lane of.
+
+- **Gunship belly autocannon** — *NOT indirect; listed for contrast.* Direct
+  fire from altitude (line of sight straight down). It traverses fluidly and
+  hoses — no arc, no observer. The gunship's *bombs* (CAS) are indirect; its
+  *cannon* is not.
+
+- **Ballistic missile / orbital strike** — *Tier 5 / finale.* The extreme end of
+  the guided-missile line: strategic range, near-precision or pure terror
+  weapon, rare, enormous supply cost — the thing the anti-orbital endgame is a
+  race against. Frameworked here so the ladder is complete; built last.
 
 ## 5. Warning & counterplay (the fairness contract)
 
@@ -220,18 +292,24 @@ datapad:
 ## 10. Build order (when we do specifics)
 
 1. Generalize `MortarShellEntity` → a parameterized shell family (arc, spread,
-   payload). *Low risk, unlocks everything below.*
-2. Stand up `FireMissionManager` with the mortar as the first client (ranging,
-   ammo debit, audio lead time) — proves the loop on a unit that already exists.
-3. Wire **observers** (recon units feed target positions) so accuracy responds
-   to killing the eyes.
-4. Add the **howitzer** (wall-breaker) and **naval gunfire** (gunboat) — same
-   loop, new rows.
-5. Add **rocket artillery** (saturation audio + area denial) and **CAS bombing**
-   (the run-in) — the set-piece scares.
-6. Off-screen statistical resolution + datapad triangulation — the "war over
+   payload, travel path). *Low risk, unlocks everything below.*
+2. Stand up `FireMissionManager` with the **emplaced mortar** as the first
+   client (ranging, ammo debit, audio lead time, the threat/value bar) — proves
+   the loop on a unit that already exists.
+3. Wire **observers** (UAV/recon feed target positions; range floor on accuracy)
+   so accuracy responds to spotting *and* distance, and killing the eyes hurts.
+4. Add the **platform split**: a **mobile self-propelled mortar** (shoot-and-
+   scoot, rearms at a depot) and **battery fire** for emplaced tubes (several
+   ranging/firing together) — proves both tempos.
+5. Add **standard artillery/howitzer** (wall-breaker), **naval bombardment**
+   (warship), and **tank/AFV indirect** — same loop, new rows across the caliber
+   and platform axes.
+6. Add the **munition axis**: **unguided rocket artillery** (cheap saturation +
+   the wall-of-impacts audio) and **guided missiles** (expensive, beats the
+   range floor) — the set-piece scares and the precision option.
+7. Off-screen statistical resolution + datapad triangulation — the "war over
    the horizon" layer.
-7. Ballistic/orbital terror weapon — last, with the finale.
+8. Ballistic/orbital terror weapon — last, with the finale.
 
 Nothing here is fielded before its tier, and nothing fires without supply. The
 guns are only ever as loud as the war economy behind them.

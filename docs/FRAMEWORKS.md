@@ -90,10 +90,11 @@ Each entry: **what it is · owner · depends on · doc · framework status.**
 - **Owner:** `SupplyNetwork` (planned) — depots, links, per-unit upkeep.
 - **Depends on:** ledger (it *is* the economy's spatial layer), perception
   (convoys are visible/killable), off-screen (supply moves in unloaded chunks).
-- **Doc:** `RESEARCH_AND_LOGISTICS.md` (layer 2) + `EXPANSION_PLAN.md` C3/C6.
-- **Status:** vision frameworked; the **manager architecture** (how upkeep and
-  supply links actually tick) is the open framework work — the highest-leverage
-  next framework, because artillery/air both lean on it.
+- **Doc:** `SUPPLY_NETWORK.md` ✅ **frameworked** (manager architecture) +
+  `RESEARCH_AND_LOGISTICS.md` (layer 2, vision) + `EXPANSION_PLAN.md` C3/C6.
+- **Status:** frameworked — the upkeep model, depot/link data model, and tick
+  loop are speced; it's the keystone artillery/air both lean on. Ready for
+  specifics.
 
 ### Research & the psionic building
 - **What:** an adaptive research tree at the main base gating *what the Program
