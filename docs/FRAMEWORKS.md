@@ -19,7 +19,7 @@ The backbones:
 | **Perception / observer** | LOS-gated detection + the `AlertState` ramp; the "eyes" that find targets and feed indirect fire, recon, and the datapad | `ProgramDroneEntity.AlertState`, `InvestigateDisturbanceGoal`, recon units |
 | **Supply / ledger** | The resource economy; *everything* costs the ledger, and an empty ledger stops it — the universal off-switch | `ProgramDirectorState` ledger, `tryConsume`, courier logistics |
 | **Acoustic / datapad** | Sound as physics + as intelligence; travel time, muffling, and the radar that lets the player read it all | `ProgramAcoustics`, `DatapadScreen`, `DatapadSnapshotPayload` |
-| **Off-screen resolution** | Virtualized units + statistical combat so the war continues in unloaded chunks | `VirtualFleet`, `DroneToken` |
+| **Off-screen resolution** | Virtualized units + statistical combat so the war continues in unloaded chunks | `VirtualFleet`, `DroneToken`; statistical layer frameworked in `ABSTRACT_COMBAT.md` |
 | **Tier gating** | Capability unlocks by earned threat, hard-capped until the first base kill | `tier2Unlocked()`, `tier3Unlocked()`, `currentTierEstimate()` |
 | **The manager pattern** | Each system is a sibling manager inside/around the Director, ticked once per server tick, NBT-persisted | Director dispatch queue, `VirtualFleet`, (planned) `FireMissionManager` |
 | **Persistence discipline** | Any in-flight state (a falling pod, a virtual drone, a live fire mission) persists so a restart resolves it, never strands it | pod-descent, virtualization NBT |
@@ -72,13 +72,12 @@ Each entry: **what it is · owner · depends on · doc · framework status.**
   basing + `FireMissionManager` for its bombs.
 - **Depends on:** supply (airbases/fuel), fire support (CAS), acoustic (heard
   from far off), tier gating (Tier 4 = post-first-kill).
-- **Doc:** silhouette + tiers in `UNITS.md`; movement shipped; **doctrine
-  framework:** *this section is the frame — the gunship is not a new engine, it
-  is (existing air movement) + (fire-support bombs) + (supply basing) + a
-  model.* Build the blockout model, then the entity as a composition of parts
-  we already have.
-- **Status:** partially frameworked (silhouette + this composition rule); model
-  + entity are specifics.
+- **Doc:** `AIR_DOCTRINE.md` ✅ **frameworked** (air layer as a system + the
+  gunship as an explicit composition) + silhouette/tiers in `UNITS.md`.
+- **Status:** frameworked — the doctrine (loud + pivoting), basing, and the
+  gunship-as-composition are speced; the blockout **model is the owner's art
+  plate** and the entity is a specific to build after `FireMissionManager` +
+  `SupplyNetwork` exist.
 
 ### Supply lines & infrastructure
 - **What:** units require infrastructure to *build* and to *sustain* —
@@ -105,9 +104,12 @@ Each entry: **what it is · owner · depends on · doc · framework status.**
 - **Depends on:** ledger (research costs), perception/datapad (the player can
   *see* research progress and target the building), tier gating (research is
   how higher tiers actually open).
-- **Doc:** `RESEARCH_AND_LOGISTICS.md` (layer 1) + `DESIGN.md`.
-- **Status:** vision frameworked; the **tree data model + disruption hook** are
-  the open framework work.
+- **Doc:** `RESEARCH_TREE.md` ✅ **frameworked** (manager, node schema,
+  research building, gating hook) + `RESEARCH_AND_LOGISTICS.md` (layer 1,
+  vision) + `DESIGN.md`.
+- **Status:** frameworked — the `ResearchTree` manager, the node/adaptive-focus
+  model, the disruptable `PsionicResearchBlock`, and the `tier*Unlocked()`
+  gating hook are speced. Ready for specifics.
 
 ### Sound assets (real audio pass)
 - **What:** replace vanilla placeholders with real, **CC0/public-domain,
@@ -176,6 +178,11 @@ A system is ready for specifics when its doc answers all of:
    doctrine, the probe-core payoff for research)
 
 Artillery (`ARTILLERY_AND_INDIRECT_FIRE.md`) is the worked example of a
-fully-frameworked system. The next framework passes bring **SupplyNetwork** and
-**ResearchTree** to that same bar; then the specifics — models, stats, sounds —
-drop onto a skeleton that already holds together.
+fully-frameworked system. **The framework set is now complete** — SupplyNetwork
+(`SUPPLY_NETWORK.md`), ResearchTree (`RESEARCH_TREE.md`), air doctrine + the
+gunship (`AIR_DOCTRINE.md`), and off-screen statistical combat
+(`ABSTRACT_COMBAT.md`) all sit at the same bar. The skeleton holds together;
+what remains is **specifics** — models, stats, sounds, and the code that fills
+in each manager, dropped onto a frame that already agrees with itself. The
+recommended first specific is the cheapest proven client of the keystone:
+generalize the existing mortar into the fire-mission loop.
