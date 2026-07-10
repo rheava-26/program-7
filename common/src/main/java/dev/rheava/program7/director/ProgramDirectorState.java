@@ -57,6 +57,13 @@ public class ProgramDirectorState extends PersistentState {
 	/** Earliest insertion: 2 in-game days, plus up to 1 day of drift. */
 	private static final long MIN_LANDING_DELAY = 48000L;
 	private static final int LANDING_DELAY_DRIFT = 24000;
+	/**
+	 * Raze the last base and the invasion regroups rather than ending: the
+	 * Program waits this long (4 in-game days, plus up to 2 of drift) before
+	 * re-inserting a fresh pod near a player, the same as the opening drop.
+	 */
+	private static final long REINSERTION_DELAY = 4L * 24000L;
+	private static final int REINSERTION_DELAY_DRIFT = 2 * 24000;
 	/** A pod only descends "live" if someone is close enough to watch it. */
 	private static final double SIMULATED_DESCENT_RANGE = 160.0;
 
@@ -564,6 +571,29 @@ public class ProgramDirectorState extends PersistentState {
 		if (wasFirst) {
 			this.onFirstBaseKilled(world, pos);
 		}
+
+		// The invasion regroups rather than ending: with the last core site
+		// gone, schedule a fresh insertion a few days out.
+		if (this.coreSites.isEmpty()) {
+			this.scheduleReinsertion(world);
+		}
+	}
+
+	/**
+	 * Every base is gone — but the Program doesn't quit, it regroups. Reset the
+	 * insertion state so {@link #tick}'s normal landing path fires a fresh pod
+	 * near a player after {@link #REINSERTION_DELAY}. The relay stays severed
+	 * (fabrication degraded) and the first-kill payoff is one-time, so a
+	 * re-insertion is renewed pressure, not a clean slate.
+	 */
+	private void scheduleReinsertion(ServerWorld world) {
+		this.podDeployed = false;
+		this.probeCorePos = null;
+		this.landingDeadline = world.getTime() + REINSERTION_DELAY
+				+ world.getRandom().nextInt(REINSERTION_DELAY_DRIFT);
+		this.markDirty();
+		Program7.LOGGER.info("[Program 7] Last base lost — re-insertion scheduled for tick {}.",
+				this.landingDeadline);
 	}
 
 	/**
