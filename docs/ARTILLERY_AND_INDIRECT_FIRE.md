@@ -220,13 +220,52 @@ Indirect fire is only fair if it always announces itself. Non-negotiable:
   sound model from `SOUND_DESIGN.md`.
 - **Ranging tell.** The walk-in *is* a warning: the first wide round says "they
   have a battery on you, move" before fire-for-effect arrives.
-- **Impact.** Area damage + **block destruction gated by blast resistance**
-  (mobGriefing-respecting, `HitscanImpact`-style, already the pattern for our
-  gun rounds) + crater particles and debris kicked up.
+- **Impact.** Area damage to entities + **loud, violent, destructive
+  presentation** — big concussion sound, screen/camera shake, a gout of debris
+  particles, knockback, scorch. The *feel* of every single round is heavy.
+  Terrain destruction, though, is deliberately restrained per-round (see §5a).
 - **The four answers** (any one works): kill the **observer** (fire goes stale),
   kill the **tubes** (mission ends), **move** out of the beaten zone (ranging
   resets), or **cut the ammo** (supply). Overhead cover defeats high-arc fire;
   distance and terrain defeat flat-arc fire. There is always a lever.
+
+### 5a. Terrain destruction — restrained per round, total over time
+
+**Design rule (owner):** a single shell is *loud, violent, and destructive in
+feel* but **does not chew up the world much on its own** — no instant craters
+that trivially delete a base or dig you a hole. **Sustained bombardment is what
+reshapes terrain**: keep pounding the same ground and it eventually gets *beaten
+into dust.* This keeps the weapon terrifying without turning every barrage into
+free excavation, and makes an extended siege *visibly* grind the landscape down.
+
+The model is **cumulative erosion**, not per-hit demolition:
+
+- **Per round:** mostly **surface scarring** — scorch, a shallow pockmark, soft
+  cover (leaves, crops, snow, loose blocks) knocked away, debris thrown. Solid
+  stone shrugs off a single hit. The violence is in the *sound and particles*,
+  not the block count.
+- **Bombardment saturation (the accumulator):** each impact adds "damage" to a
+  coarse per-cell **saturation field** over the beaten zone (a lightweight grid,
+  decaying slowly when fire stops). As a cell's saturation climbs, terrain there
+  degrades in **stages**: intact → cratered surface → **rubble** (stone →
+  cracked/cobble-ish, then gravel) → **pulverized** (ground pounded to
+  dust/sand, a genuine crater). Only *extended* fire on one spot reaches the
+  late stages.
+- **Blast resistance still gates the rate:** hardened/valuable blocks erode far
+  slower; bedrock and `program7` blocks never; the accumulator just means even
+  tough ground *eventually* yields to a long enough barrage. Heavier munitions
+  (howitzer, missile) add more saturation per hit, so a wall-breaker howitzer
+  cracks a fort in a handful of rounds while a mortar would take a real
+  pounding.
+- **mobGriefing-respecting**, reuses the `HitscanImpact` block-erosion pattern
+  we already ship for gun rounds — this is that idea with a **saturation
+  accumulator** on top and a **staged block-downgrade** (block → weaker block →
+  gone) instead of straight deletion, so erosion *reads* as grinding-to-dust.
+- **The tactical payoff:** because terrain gives way only under *sustained*
+  fire, **staying in the beaten zone is what gets you (and your walls) ground
+  down** — moving denies the accumulator time to build. It also means a
+  defensive line the Program *wants* gone takes a real, audible, drawn-out
+  bombardment to erase, which is exactly the siege fantasy.
 
 ## 6. Supply & the ledger
 
@@ -296,20 +335,24 @@ datapad:
 2. Stand up `FireMissionManager` with the **emplaced mortar** as the first
    client (ranging, ammo debit, audio lead time, the threat/value bar) — proves
    the loop on a unit that already exists.
-3. Wire **observers** (UAV/recon feed target positions; range floor on accuracy)
+3. **Impact + terrain erosion (§5a):** loud/violent per-round presentation with
+   restrained per-hit block damage, plus the **bombardment-saturation
+   accumulator** and staged block-downgrade so *sustained* fire grinds ground to
+   dust. Extends the existing `HitscanImpact` erosion.
+4. Wire **observers** (UAV/recon feed target positions; range floor on accuracy)
    so accuracy responds to spotting *and* distance, and killing the eyes hurts.
-4. Add the **platform split**: a **mobile self-propelled mortar** (shoot-and-
+5. Add the **platform split**: a **mobile self-propelled mortar** (shoot-and-
    scoot, rearms at a depot) and **battery fire** for emplaced tubes (several
    ranging/firing together) — proves both tempos.
-5. Add **standard artillery/howitzer** (wall-breaker), **naval bombardment**
+6. Add **standard artillery/howitzer** (wall-breaker), **naval bombardment**
    (warship), and **tank/AFV indirect** — same loop, new rows across the caliber
    and platform axes.
-6. Add the **munition axis**: **unguided rocket artillery** (cheap saturation +
+7. Add the **munition axis**: **unguided rocket artillery** (cheap saturation +
    the wall-of-impacts audio) and **guided missiles** (expensive, beats the
    range floor) — the set-piece scares and the precision option.
-7. Off-screen statistical resolution + datapad triangulation — the "war over
+8. Off-screen statistical resolution + datapad triangulation — the "war over
    the horizon" layer.
-8. Ballistic/orbital terror weapon — last, with the finale.
+9. Ballistic/orbital terror weapon — last, with the finale.
 
 Nothing here is fielded before its tier, and nothing fires without supply. The
 guns are only ever as loud as the war economy behind them.
