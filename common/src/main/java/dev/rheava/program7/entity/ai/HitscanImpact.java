@@ -10,6 +10,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.particle.BlockStateParticleEffect;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
@@ -66,7 +67,37 @@ public final class HitscanImpact {
 	/** Per-world, per-position chip accumulation. Weak on the world so a closed/unloaded world doesn't leak. */
 	private static final Map<ServerWorld, Map<BlockPos, Float>> CHIP_DAMAGE = new WeakHashMap<>();
 
+	/**
+	 * The tracer: a thin, soft red streak (the {@code DUST} particle is a small
+	 * rounded glow, not a blocky sparkle) drawn muzzle-to-impact. Packed-int
+	 * color per the 1.20.5+ {@link DustParticleEffect} constructor; scale below
+	 * 1.0 keeps each dot small so the line reads thin.
+	 */
+	private static final DustParticleEffect TRACER = new DustParticleEffect(0xE01818, 0.6f);
+	/** Spacing (blocks) between tracer dots — tight, so the streak looks continuous rather than dotted. */
+	private static final double TRACER_SPACING = 0.4;
+
 	private HitscanImpact() {
+	}
+
+	/**
+	 * Draws the visible tracer streak from {@code from} (muzzle) to {@code to}
+	 * (where the round is going) as a thin line of small red dust — replaces
+	 * the old blocky white crit-sparkle tracer. Server-side; call once per shot.
+	 */
+	public static void drawTracer(ServerWorld world, Vec3d from, Vec3d to) {
+		Vec3d delta = to.subtract(from);
+		double length = delta.length();
+		if (length < 1.0e-4) {
+			return;
+		}
+		int steps = Math.max(2, (int) (length / TRACER_SPACING));
+		Vec3d step = delta.multiply(1.0 / steps);
+		Vec3d point = from;
+		for (int i = 0; i < steps; i++) {
+			point = point.add(step);
+			world.spawnParticles(TRACER, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
+		}
 	}
 
 	/**

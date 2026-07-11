@@ -298,16 +298,9 @@ public class GunAttackGoal extends Goal {
 			aim = aim.add(missOffset);
 		}
 
-		// Muzzle flash + tracer line, vanilla particles per the VFX direction.
+		// Muzzle smoke + a thin red tracer streak muzzle-to-target.
 		world.spawnParticles(ParticleTypes.SMOKE, muzzle.x, muzzle.y, muzzle.z, 2, 0.05, 0.05, 0.05, 0.01);
-		Vec3d step = aim.subtract(muzzle);
-		int steps = Math.max(2, (int) (step.length() / 0.8));
-		step = step.multiply(1.0 / steps);
-		Vec3d point = muzzle;
-		for (int i = 0; i < steps; i++) {
-			point = point.add(step);
-			world.spawnParticles(ParticleTypes.CRIT, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
-		}
+		HitscanImpact.drawTracer(world, muzzle, aim);
 		HitscanImpact.ejectCasing(world, muzzle, this.shooter.getRandom());
 
 		this.playFireSound();

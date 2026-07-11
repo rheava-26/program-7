@@ -202,16 +202,9 @@ public class AutogunTurretBlockEntity extends BlockEntity implements ReloadableW
 					(world.random.nextDouble() - 0.5) * 2.4);
 		}
 
-		// Muzzle flash + tracer line, same particles GunAttackGoal.fire() uses.
+		// Muzzle smoke + the same thin red tracer streak GunAttackGoal.fire() draws.
 		world.spawnParticles(ParticleTypes.SMOKE, muzzle.x, muzzle.y, muzzle.z, 2, 0.05, 0.05, 0.05, 0.01);
-		Vec3d step = aim.subtract(muzzle);
-		int steps = Math.max(2, (int) (step.length() / 0.8));
-		step = step.multiply(1.0 / steps);
-		Vec3d point = muzzle;
-		for (int i = 0; i < steps; i++) {
-			point = point.add(step);
-			world.spawnParticles(ParticleTypes.CRIT, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
-		}
+		HitscanImpact.drawTracer(world, muzzle, aim);
 		HitscanImpact.ejectCasing(world, muzzle, world.random);
 
 		ProgramAcoustics.emit(world, muzzle, P7Sounds.GUN_FIRE.get(), SoundCategory.HOSTILE, 1.0f,
