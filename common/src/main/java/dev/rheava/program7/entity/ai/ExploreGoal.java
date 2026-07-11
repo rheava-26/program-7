@@ -206,7 +206,9 @@ public class ExploreGoal extends Goal {
 		double radians = Math.toRadians(headingDegrees);
 		double targetX = origin.x + Math.cos(radians) * distance;
 		double targetZ = origin.z + Math.sin(radians) * distance;
-		double targetY = origin.y + (random.nextDouble() - 0.35) * 24.0;
+		// Centred vertical jitter (mean 0): the old -0.35 bias meant every leg
+		// drifted ~3.6 blocks upward on average, ratcheting scouts into the sky.
+		double targetY = origin.y + (random.nextDouble() - 0.5) * 16.0;
 		targetY = MathHelper.clamp(targetY, this.drone.getWorld().getBottomY() + 8, this.drone.getWorld().getTopY() - 8);
 
 		this.destination = new Vec3d(targetX, targetY, targetZ);

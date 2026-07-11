@@ -9,6 +9,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.Heightmap;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -131,35 +132,26 @@ public class LandAndChargeGoal extends Goal {
 		}
 	}
 
-	/** Walk outward from the drone and drop straight down to the first solid footing with headroom above it. */
+	/** Pick a nearby column and land on its actual surface — via the heightmap, so a drone that has drifted high still finds ground. */
 	@Nullable
 	private BlockPos findLandingSpot() {
+		if (!(this.drone.getWorld() instanceof ServerWorld world)) {
+			return null;
+		}
 		Random random = this.drone.getRandom();
 		BlockPos origin = this.drone.getBlockPos();
 		for (int attempt = 0; attempt < SEARCH_ATTEMPTS; attempt++) {
-			BlockPos candidate = origin.add(
-					random.nextInt(SEARCH_RADIUS * 2 + 1) - SEARCH_RADIUS,
-					0,
-					random.nextInt(SEARCH_RADIUS * 2 + 1) - SEARCH_RADIUS);
-			BlockPos ground = this.findGroundBelow(candidate);
-			if (ground != null) {
-				return ground;
+			int x = origin.getX() + random.nextInt(SEARCH_RADIUS * 2 + 1) - SEARCH_RADIUS;
+			int z = origin.getZ() + random.nextInt(SEARCH_RADIUS * 2 + 1) - SEARCH_RADIUS;
+			// The heightmap gives the real surface no matter how high the drone
+			// has drifted; the old fixed 24-block downward probe simply failed
+			// (and stranded the drone in the sky forever) once it was higher.
+			int surfaceY = world.getTopY(Heightmap.Type.MOTION_BLOCKING, x, z);
+			BlockPos spot = new BlockPos(x, surfaceY, z);
+			if (world.getBlockState(spot).isAir() && world.getBlockState(spot.up()).isAir()
+					&& !world.getBlockState(spot.down()).isAir()) {
+				return spot;
 			}
-		}
-		return null;
-	}
-
-	@Nullable
-	private BlockPos findGroundBelow(BlockPos candidate) {
-		BlockPos.Mutable pos = candidate.mutableCopy();
-		int bottom = Math.max(this.drone.getWorld().getBottomY(), candidate.getY() - 24);
-		while (pos.getY() > bottom) {
-			if (!this.drone.getWorld().getBlockState(pos).isAir()
-					&& this.drone.getWorld().getBlockState(pos.up()).isAir()
-					&& this.drone.getWorld().getBlockState(pos.up(2)).isAir()) {
-				return pos.up().toImmutable();
-			}
-			pos.move(0, -1, 0);
 		}
 		return null;
 	}

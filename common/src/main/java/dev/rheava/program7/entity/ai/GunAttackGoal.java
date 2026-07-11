@@ -315,14 +315,19 @@ public class GunAttackGoal extends Goal {
 			if (this.bypassesIframes()) {
 				// Rapid fire: zero the target's post-hit invulnerability timer
 				// so this hit actually lands instead of every other round in a
-				// hose doing nothing — see the gun-feel pass. Paired with a
-				// knockback well below vanilla melee's ~0.4 baseline (below) so
-				// a burst doesn't juggle its target into the air instead of
-				// just hitting hard.
-				target.hurtTime = 0;
+				// hose doing nothing — see the gun-feel pass. This is
+				// timeUntilRegen (the field LivingEntity.damage() actually gates
+				// repeat hits on), NOT hurtTime (only the red-flash animation).
+				// Paired with a knockback well below vanilla melee's ~0.4
+				// baseline (below) so a burst doesn't juggle its target into the
+				// air instead of just hitting hard.
+				target.timeUntilRegen = 0;
 			}
 			target.damage(this.shooter.getDamageSources().mobAttack(this.shooter), this.damage);
-			Vec3d shove = target.getPos().subtract(this.shooter.getPos());
+			// Push the target AWAY from the gun: takeKnockback shoves opposite
+			// the (x,z) it's handed, and vanilla passes (attacker - target), so
+			// this must be shooter-minus-target, not target-minus-shooter.
+			Vec3d shove = this.shooter.getPos().subtract(target.getPos());
 			if (shove.lengthSquared() > 1.0E-4) {
 				target.takeKnockback(this.roundClass.knockbackStrength(), shove.x, shove.z);
 			}

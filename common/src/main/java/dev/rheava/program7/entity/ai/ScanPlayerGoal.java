@@ -136,7 +136,7 @@ public class ScanPlayerGoal extends Goal {
 			// made" beat — only the first scan to complete on an already-spotted
 			// player within the cooldown window gets to play these; a second
 			// surveyor finishing its scan a moment later doesn't restack them.
-			if (SpottedAlertCoordinator.tryAnnounceSpotted(player.getServerWorld(), player)) {
+			if (SpottedAlertCoordinator.tryAnnounceScan(player.getServerWorld(), player)) {
 				player.getServerWorld().playSound(null, player.getBlockPos(),
 						P7Sounds.SCAN_STING.get(), SoundCategory.HOSTILE, 1.4f, 1.0f);
 				// A beat later, in-fiction: the sound of drones now inbound on the

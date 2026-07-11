@@ -8,6 +8,7 @@ import dev.rheava.program7.registry.P7Blocks;
 import dev.rheava.program7.registry.P7Entities;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.BlockState;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -153,6 +154,13 @@ public final class BasePad {
 	private static boolean canBuildAt(ServerWorld world, BlockPos pos, boolean mobGriefing,
 			P7Config.DiggingPolicy policy) {
 		BlockState state = world.getBlockState(pos);
+		// Never clear the Program's own structures — most importantly the probe
+		// core sitting at the pad's centre (clearing it would fire
+		// onBaseDestroyed and self-destruct the base), but also the assembler,
+		// fuel plant, and already-laid plating. Same guard HitscanImpact uses.
+		if (Program7.MOD_ID.equals(Registries.BLOCK.getId(state.getBlock()).getNamespace())) {
+			return false;
+		}
 		if (state.isReplaceable()) {
 			return true;
 		}

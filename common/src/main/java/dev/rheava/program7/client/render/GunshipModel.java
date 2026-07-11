@@ -138,10 +138,13 @@ public class GunshipModel extends SinglePartEntityModel<GunshipEntity> {
 	@Override
 	public void setAngles(GunshipEntity entity, float limbAngle, float limbDistance,
 			float animationProgress, float headYaw, float headPitch) {
+		// Rotors spin around Z (roll): the crossed blades lie in the X/Y plane
+		// (ducts open along Z), so rolling them sweeps a visible disc — spinning
+		// yaw would just rotate the flat cross about its own edge, invisibly.
 		float spin = animationProgress * 2.2f;
-		this.leftRotor.yaw = spin;
-		this.rightRotor.yaw = -spin;
-		this.tailRotor.yaw = spin * 1.6f;
+		this.leftRotor.roll = spin;
+		this.rightRotor.roll = -spin;
+		this.tailRotor.roll = spin * 1.6f;
 
 		// Tiltrotor transition: the ducted pylons swing from vertical-lift (hover)
 		// toward forward-thrust as horizontal airspeed builds — the V-22 pivot.

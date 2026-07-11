@@ -219,14 +219,17 @@ public class AutogunTurretBlockEntity extends BlockEntity implements ReloadableW
 
 		if (hit) {
 			// Rapid fire: bypass the target's post-hit invulnerability window
-			// (see GunAttackGoal's gun-feel pass for the same treatment) so a
-			// sustained hose actually stacks, paired with knockback well below
-			// vanilla melee's ~0.4 baseline so it doesn't juggle the target.
-			target.hurtTime = 0;
+			// (see GunAttackGoal's gun-feel pass) so a sustained hose stacks.
+			// This is timeUntilRegen (the field damage() gates repeat hits on),
+			// NOT hurtTime (just the hurt animation), paired with knockback well
+			// below vanilla melee's ~0.4 so it doesn't juggle the target.
+			target.timeUntilRegen = 0;
 			// No LivingEntity shooter to attribute this to (a block entity isn't one),
 			// so this uses a generic damage source rather than GunAttackGoal's mobAttack().
 			target.damage(world.getDamageSources().generic(), DAMAGE);
-			Vec3d shove = target.getPos().subtract(Vec3d.ofCenter(pos));
+			// Push AWAY from the turret: (turret - target), since takeKnockback
+			// shoves opposite the vector it's given (vanilla passes attacker-target).
+			Vec3d shove = Vec3d.ofCenter(pos).subtract(target.getPos());
 			if (shove.lengthSquared() > 1.0E-4) {
 				target.takeKnockback(ROUND_CLASS.knockbackStrength(), shove.x, shove.z);
 			}

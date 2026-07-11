@@ -55,7 +55,11 @@ public class AmmoRunGoal extends Goal {
 		TO_STOCKPILE, PICKING_UP, TO_WEAPON, DELIVERING
 	}
 
+	/** Throttle for the expensive weapon scan while idle — don't run a big AABB entity query every selector poll. */
+	private static final int IDLE_SCAN_COOLDOWN = 20;
+
 	private final LogisticsDroneEntity drone;
+	private int scanCooldown;
 
 	@Nullable
 	private Entity targetWeapon;
@@ -78,12 +82,20 @@ public class AmmoRunGoal extends Goal {
 		if (!(this.drone.getWorld() instanceof ServerWorld world)) {
 			return false;
 		}
+		// Throttle the expensive scans: when there's nothing to do (the common
+		// case), only re-check about once a second instead of every poll.
+		if (this.scanCooldown > 0) {
+			this.scanCooldown--;
+			return false;
+		}
 		Entity weapon = findWeaponNeedingReload(world, this.drone);
 		if (weapon == null) {
+			this.scanCooldown = IDLE_SCAN_COOLDOWN;
 			return false;
 		}
 		BlockPos stockpile = findStockpile(world, this.drone.getBlockPos());
 		if (stockpile == null) {
+			this.scanCooldown = IDLE_SCAN_COOLDOWN;
 			return false;
 		}
 		this.targetWeapon = weapon;

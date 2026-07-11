@@ -36,8 +36,33 @@ public final class SpottedAlertCoordinator {
 	private static final int SWEEP_THRESHOLD = 64;
 
 	private static final Map<UUID, Long> lastAnnouncedTick = new HashMap<>();
+	/** Separate window for the scan-completion sting, so the spotted-shriek window doesn't swallow it. */
+	private static final Map<UUID, Long> lastScanTick = new HashMap<>();
 
 	private SpottedAlertCoordinator() {
+	}
+
+	/**
+	 * Dedup gate for the scan-completion sting (SCAN_STING + DRONES_INBOUND) —
+	 * a <em>different</em> cue from the "spotted" shriek, on its own cooldown.
+	 * Without this the shriek fired at scan <em>start</em> would keep the
+	 * shared window open and silently suppress the completion sting 70 ticks
+	 * later (the whole horror beat). Still dedups two surveyors finishing scans
+	 * on the same player at nearly the same moment.
+	 */
+	public static boolean tryAnnounceScan(ServerWorld world, PlayerEntity player) {
+		long now = world.getTime();
+		UUID id = player.getUuid();
+		Long last = lastScanTick.get(id);
+		if (last != null && now >= last && now - last < COOLDOWN_TICKS) {
+			return false;
+		}
+		lastScanTick.put(id, now);
+		if (lastScanTick.size() > SWEEP_THRESHOLD) {
+			long cutoff = now - COOLDOWN_TICKS * 20L;
+			lastScanTick.values().removeIf(tick -> tick < cutoff);
+		}
+		return true;
 	}
 
 	/**
@@ -54,7 +79,12 @@ public final class SpottedAlertCoordinator {
 		long now = world.getTime();
 		UUID id = player.getUuid();
 		Long last = lastAnnouncedTick.get(id);
-		if (last != null && now - last < COOLDOWN_TICKS) {
+		// now < last means the world time went backwards — a different or
+		// reloaded world in the same session (the map is static). Treat that
+		// stale future-dated entry as expired instead of suppressing the cue
+		// forever; only a genuine recent announcement (0 <= now-last < window)
+		// suppresses.
+		if (last != null && now >= last && now - last < COOLDOWN_TICKS) {
 			return false;
 		}
 		lastAnnouncedTick.put(id, now);

@@ -769,8 +769,11 @@ public class ProgramDirectorState extends PersistentState {
 	 * nothing else needs to happen here.
 	 */
 	private static void placeFuelPlant(ServerWorld world, BlockPos core) {
+		// Offset 7: just outside the BasePad barrier ring (radius 6) so the scan
+		// lands on real terrain instead of always failing on the ring posts and
+		// overwriting one, and short of the ammo stockpile apron (offset 8).
 		for (Direction direction : Direction.Type.HORIZONTAL) {
-			BlockPos base = core.offset(direction, 6);
+			BlockPos base = core.offset(direction, 7);
 			for (int dy = 2; dy >= -3; dy--) {
 				BlockPos candidate = base.up(dy);
 				if (world.getBlockState(candidate).isReplaceable()
@@ -780,7 +783,7 @@ public class ProgramDirectorState extends PersistentState {
 				}
 			}
 		}
-		world.setBlockState(core.west(6), P7Blocks.FUEL_PLANT.get().getDefaultState());
+		world.setBlockState(core.west(7), P7Blocks.FUEL_PLANT.get().getDefaultState());
 	}
 
 	@Nullable
