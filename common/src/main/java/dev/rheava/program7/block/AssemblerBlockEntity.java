@@ -233,16 +233,30 @@ public class AssemblerBlockEntity extends BlockEntity {
 	}
 
 	private static BlockPos findRollOffSpot(ServerWorld world, BlockPos pos) {
-		for (Direction direction : Direction.Type.HORIZONTAL) {
-			BlockPos side = pos.offset(direction);
-			for (BlockPos candidate : new BlockPos[] {side, side.down(), side.up()}) {
-				if (world.getBlockState(candidate).isReplaceable()
-						&& !world.getBlockState(candidate.down()).isReplaceable()) {
-					return candidate;
+		// Widen the search out to a few blocks and skip any footing a built
+		// unit is already standing on, so a second turret (or drone) doesn't
+		// roll off directly on top of the first and share its exact position —
+		// the "turrets stack and fire from the same spot" bug. The old version
+		// always returned the first free side-cell regardless of occupancy.
+		for (int radius = 1; radius <= 3; radius++) {
+			for (Direction direction : Direction.Type.HORIZONTAL) {
+				BlockPos side = pos.offset(direction, radius);
+				for (BlockPos candidate : new BlockPos[] {side, side.down(), side.up()}) {
+					if (world.getBlockState(candidate).isReplaceable()
+							&& !world.getBlockState(candidate.down()).isReplaceable()
+							&& isRollOffSpotClear(world, candidate)) {
+						return candidate;
+					}
 				}
 			}
 		}
 		return pos.up();
+	}
+
+	/** True if no already-built Program unit is occupying this cell — prevents fresh units stacking on old ones. */
+	private static boolean isRollOffSpotClear(ServerWorld world, BlockPos candidate) {
+		return world.getEntitiesByClass(ProgramDroneEntity.class,
+				new Box(candidate).expand(0.4), e -> true).isEmpty();
 	}
 
 	/** Debug/inspection: what's on the line right now, if anything. */

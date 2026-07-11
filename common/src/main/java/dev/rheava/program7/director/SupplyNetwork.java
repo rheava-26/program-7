@@ -39,6 +39,13 @@ public final class SupplyNetwork {
 	public static final int FUEL_PLANT_CAPACITY = 240;
 	/** FUEL produced per coal consumed from the ledger, at most once per cycle per depot. */
 	public static final int FUEL_PER_COAL = 8;
+	/**
+	 * Ammo crates produced per iron consumed from the ledger, at most once per
+	 * cycle per depot. Deliberately slower than {@link #FUEL_PER_COAL}: rounds
+	 * are precious, so a base under sustained assault burns through its iron
+	 * and eventually its guns fall quiet — "starving the ledger silences it."
+	 */
+	public static final int AMMO_PER_IRON = 3;
 
 	/**
 	 * Ammo stockpile provision radius — deliberately tighter than the fuel
@@ -49,11 +56,9 @@ public final class SupplyNetwork {
 	public static final int AMMO_STOCKPILE_RADIUS = 48;
 	/**
 	 * Stock cap in "crate" units — one unit per {@code AmmoRunGoal} trip.
-	 * Unlike the fuel plant, this slice has no refill loop (no ledger
-	 * conversion wired up yet): a stockpile runs down over real deliveries
-	 * and isn't replenished automatically. See RISKS/NOTES for the natural
-	 * follow-up (an ammo-plant-style ledger refill, mirroring {@link
-	 * #FUEL_PER_COAL}).
+	 * Refilled from the ledger each cycle (see {@link #AMMO_PER_IRON}), so a
+	 * base keeps its guns fed as long as it has iron and runs dry once the
+	 * ledger is starved.
 	 */
 	public static final int AMMO_STOCKPILE_CAPACITY = 32;
 
@@ -91,8 +96,16 @@ public final class SupplyNetwork {
 				continue;
 			}
 
-			if (depot.stock <= depot.capacity - FUEL_PER_COAL
+			if (SUPPLY_AMMO.equals(depot.supplyType)) {
+				// Ammo stockpiles convert ledger iron into crates.
+				if (depot.stock <= depot.capacity - AMMO_PER_IRON
+						&& director.tryConsume(Map.of(Resources.IRON, 1))) {
+					depot.stock += AMMO_PER_IRON;
+					changed = true;
+				}
+			} else if (depot.stock <= depot.capacity - FUEL_PER_COAL
 					&& director.tryConsume(Map.of(Resources.COAL, 1))) {
+				// Fuel plants convert ledger coal into fuel.
 				depot.stock += FUEL_PER_COAL;
 				changed = true;
 			}

@@ -13,13 +13,14 @@ import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.util.math.MathHelper;
 
 /**
- * Placeholder blockout for the Tier 4 apex gunship. Silhouette per
- * {@code UNITS.md}'s Tier 4 entry: a fat Osprey-derived fuselage, but instead
- * of wings, two big metal-shrouded (ducted) rotors on short stub pylons,
- * plus a helicopter-style tail rotor at the rear, plus a belly-mounted
- * autocannon turret. This is a first-pass blockout (bigger cuboids, same
- * construction pattern as {@link HeavyAttackDroneModel}) so the unit reads
- * as the apex and doesn't crash — a real sculpted model is a later art pass.
+ * The Tier 4 apex gunship. Silhouette per {@code UNITS.md}'s Tier 4 entry: a
+ * fat Osprey-derived fuselage, but instead of wings, two big metal-shrouded
+ * (ducted) rotors on short stub pylons, plus a helicopter-style tail rotor at
+ * the rear, plus a belly-mounted autocannon turret. Sculpted pass: the ducts
+ * are open rings (four rims round a hollow centre) with a spinnable
+ * crossed-blade rotor inside each, the fuselage tapers from a fat rear hull
+ * through a stepped-in cockpit to a nose sensor, and the tail boom tapers into
+ * a crossed tail rotor — all packed onto a clean 256x128 UV atlas.
  */
 public class GunshipModel extends SinglePartEntityModel<GunshipEntity> {
 	public static final EntityModelLayer LAYER = new EntityModelLayer(Program7.id("gunship"), "main");
@@ -54,75 +55,84 @@ public class GunshipModel extends SinglePartEntityModel<GunshipEntity> {
 		this.body = root.getChild("body");
 		this.leftPylon = this.body.getChild("left_pylon");
 		this.rightPylon = this.body.getChild("right_pylon");
-		this.leftRotor = this.leftPylon.getChild("left_housing").getChild("left_rotor");
-		this.rightRotor = this.rightPylon.getChild("right_housing").getChild("right_rotor");
-		this.tailRotor = this.body.getChild("tail_boom").getChild("tail_housing").getChild("tail_rotor");
+		this.leftRotor = this.leftPylon.getChild("left_rotor");
+		this.rightRotor = this.rightPylon.getChild("right_rotor");
+		this.tailRotor = this.body.getChild("tail_boom").getChild("tail_boom2")
+				.getChild("tail_housing").getChild("tail_rotor");
 	}
 
 	public static TexturedModelData getTexturedModelData() {
 		ModelData modelData = new ModelData();
 		ModelPartData root = modelData.getRoot();
 
-		// Fat central fuselage (Osprey-derived hull), a nose sensor cluster,
-		// and a ventral spine — all one part, same pattern as the heavy
-		// attack drone's multi-cuboid body.
+		// Tapered fuselage: fat rear hull (where the ducts + tail mount) ->
+		// stepped-in cockpit -> small nose sensor, plus a dorsal spine.
 		ModelPartData body = root.addChild("body",
 				ModelPartBuilder.create()
-						.uv(0, 0).cuboid(-17.0f, -7.0f, -20.0f, 34.0f, 14.0f, 40.0f)
-						.uv(0, 70).cuboid(-6.0f, -3.0f, -26.0f, 12.0f, 6.0f, 6.0f)
-						.uv(30, 70).cuboid(-2.0f, -9.0f, -12.0f, 4.0f, 2.0f, 16.0f),
+						.uv(0, 0).cuboid(-14.0f, -6.0f, -4.0f, 28.0f, 12.0f, 24.0f)
+						.uv(105, 0).cuboid(-10.0f, -5.0f, -20.0f, 20.0f, 10.0f, 16.0f)
+						.uv(160, 61).cuboid(-5.0f, -4.0f, -26.0f, 10.0f, 7.0f, 6.0f)
+						.uv(178, 0).cuboid(-3.0f, -9.0f, -6.0f, 6.0f, 3.0f, 14.0f),
 				ModelTransform.pivot(0.0f, 10.0f, 0.0f));
 
 		// Belly-mounted autocannon turret + barrel, hung underneath, forward.
 		body.addChild("belly_turret",
 				ModelPartBuilder.create()
-						.uv(60, 70).cuboid(-3.0f, -2.0f, -5.0f, 6.0f, 4.0f, 10.0f)
-						.uv(60, 84).cuboid(-1.0f, -1.0f, -9.0f, 2.0f, 2.0f, 4.0f),
-				ModelTransform.pivot(0.0f, 7.0f, -10.0f));
+						.uv(84, 61).cuboid(-3.0f, -2.0f, -5.0f, 6.0f, 4.0f, 10.0f)
+						.uv(87, 105).cuboid(-1.0f, -1.0f, -9.0f, 2.0f, 2.0f, 4.0f),
+				ModelTransform.pivot(0.0f, 6.0f, -8.0f));
 
-		// Pylons pulled in (was ±17 pivot / ±14 span) so the ducted housings sit
-		// against the hull rather than floating a couple of blocks past the
-		// hitbox edge — keeps the rotors inside where shots actually land.
-		addDuctedRotor(body, "left_pylon", "left_housing", "left_rotor", -11.0f, -6.0f);
-		addDuctedRotor(body, "right_pylon", "right_housing", "right_rotor", 11.0f, 6.0f);
+		// Left ducted fan: stub strut + open ring (4 rims) on the tilting pylon,
+		// with a spinnable crossed-blade rotor sub-part inside the ring.
+		ModelPartData leftPylon = body.addChild("left_pylon",
+				ModelPartBuilder.create()
+						.uv(193, 61).cuboid(-8.0f, -2.0f, -3.0f, 8.0f, 4.0f, 6.0f)
+						.uv(0, 88).cuboid(-11.0f, -11.0f, -3.0f, 22.0f, 4.0f, 6.0f)
+						.uv(57, 88).cuboid(-11.0f, 7.0f, -3.0f, 22.0f, 4.0f, 6.0f)
+						.uv(0, 61).cuboid(-11.0f, -7.0f, -3.0f, 4.0f, 14.0f, 6.0f)
+						.uv(21, 61).cuboid(7.0f, -7.0f, -3.0f, 4.0f, 14.0f, 6.0f),
+				ModelTransform.pivot(-6.0f, 0.0f, 2.0f));
+		leftPylon.addChild("left_rotor",
+				ModelPartBuilder.create()
+						.uv(100, 105).cuboid(-9.0f, -1.0f, -1.0f, 18.0f, 2.0f, 2.0f)
+						.uv(117, 61).cuboid(-1.0f, -9.0f, -1.0f, 2.0f, 18.0f, 2.0f),
+				ModelTransform.pivot(0.0f, 0.0f, 0.0f));
 
-		// Tail boom + helicopter-style tail rotor housing at the rear.
+		// Right ducted fan, mirrored.
+		ModelPartData rightPylon = body.addChild("right_pylon",
+				ModelPartBuilder.create()
+						.uv(114, 88).cuboid(0.0f, -2.0f, -3.0f, 8.0f, 4.0f, 6.0f)
+						.uv(143, 88).cuboid(-11.0f, -11.0f, -3.0f, 22.0f, 4.0f, 6.0f)
+						.uv(0, 105).cuboid(-11.0f, 7.0f, -3.0f, 22.0f, 4.0f, 6.0f)
+						.uv(42, 61).cuboid(-11.0f, -7.0f, -3.0f, 4.0f, 14.0f, 6.0f)
+						.uv(63, 61).cuboid(7.0f, -7.0f, -3.0f, 4.0f, 14.0f, 6.0f),
+				ModelTransform.pivot(6.0f, 0.0f, 2.0f));
+		rightPylon.addChild("right_rotor",
+				ModelPartBuilder.create()
+						.uv(141, 105).cuboid(-9.0f, -1.0f, -1.0f, 18.0f, 2.0f, 2.0f)
+						.uv(126, 61).cuboid(-1.0f, -9.0f, -1.0f, 2.0f, 18.0f, 2.0f),
+				ModelTransform.pivot(0.0f, 0.0f, 0.0f));
+
+		// Tapering tail boom -> housing -> spinnable crossed tail rotor.
 		ModelPartData tailBoom = body.addChild("tail_boom",
 				ModelPartBuilder.create()
-						.uv(0, 96).cuboid(-3.0f, -3.0f, 0.0f, 6.0f, 6.0f, 16.0f),
-				ModelTransform.pivot(0.0f, 0.0f, 20.0f));
-		ModelPartData tailHousing = tailBoom.addChild("tail_housing",
+						.uv(219, 0).cuboid(-3.0f, -3.0f, 0.0f, 6.0f, 6.0f, 12.0f),
+				ModelTransform.pivot(0.0f, -2.0f, 20.0f));
+		ModelPartData tailBoom2 = tailBoom.addChild("tail_boom2",
 				ModelPartBuilder.create()
-						.uv(40, 96).cuboid(-4.0f, -4.0f, -2.0f, 8.0f, 8.0f, 4.0f),
-				ModelTransform.pivot(0.0f, -2.0f, 16.0f));
+						.uv(135, 61).cuboid(-2.0f, -2.0f, 0.0f, 4.0f, 4.0f, 8.0f),
+				ModelTransform.pivot(0.0f, 0.0f, 12.0f));
+		ModelPartData tailHousing = tailBoom2.addChild("tail_housing",
+				ModelPartBuilder.create()
+						.uv(57, 105).cuboid(-4.0f, -4.0f, -2.0f, 8.0f, 8.0f, 4.0f),
+				ModelTransform.pivot(0.0f, 0.0f, 8.0f));
 		tailHousing.addChild("tail_rotor",
-				ModelPartBuilder.create().uv(70, 96).cuboid(-6.0f, -0.5f, -0.5f, 12.0f, 1.0f, 1.0f),
+				ModelPartBuilder.create()
+						.uv(182, 105).cuboid(-6.0f, -0.5f, -0.5f, 12.0f, 1.0f, 1.0f)
+						.uv(82, 105).cuboid(-0.5f, -6.0f, -0.5f, 1.0f, 12.0f, 1.0f),
 				ModelTransform.pivot(0.0f, 0.0f, 2.0f));
 
-		return TexturedModelData.of(modelData, 128, 128);
-	}
-
-	/**
-	 * One "big metal-shrouded (ducted) rotor on a short stub pylon" — a stub
-	 * strut off the fuselage side carrying an oversized ring housing with a
-	 * spinning disc inside it. {@code pylonPivotX} is where the stub attaches
-	 * to the fuselage; {@code pylonSpanX} is how far it (and the housing) sit
-	 * out from that attachment point, signed to point away from the body.
-	 */
-	private static void addDuctedRotor(ModelPartData body, String pylonName, String housingName,
-			String rotorName, float pylonPivotX, float pylonSpanX) {
-		ModelPartData pylon = body.addChild(pylonName,
-				ModelPartBuilder.create()
-						.uv(0, 60).cuboid(Math.min(0.0f, pylonSpanX), -3.0f, -6.0f,
-								Math.abs(pylonSpanX), 6.0f, 12.0f),
-				ModelTransform.pivot(pylonPivotX, -1.0f, -2.0f));
-		ModelPartData housing = pylon.addChild(housingName,
-				ModelPartBuilder.create()
-						.uv(90, 0).cuboid(-9.0f, -9.0f, -9.0f, 18.0f, 18.0f, 18.0f),
-				ModelTransform.pivot(pylonSpanX, 0.0f, 0.0f));
-		housing.addChild(rotorName,
-				ModelPartBuilder.create().uv(90, 27).cuboid(-8.0f, -1.0f, -8.0f, 16.0f, 2.0f, 16.0f),
-				ModelTransform.pivot(0.0f, 0.0f, 0.0f));
+		return TexturedModelData.of(modelData, 256, 128);
 	}
 
 	@Override
