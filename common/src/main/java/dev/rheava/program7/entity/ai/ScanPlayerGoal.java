@@ -71,7 +71,14 @@ public class ScanPlayerGoal extends Goal {
 	@Override
 	public void start() {
 		this.scanTicks = 0;
-		this.drone.playSound(P7Sounds.DRONE_ALERT.get(), 1.0f, 1.0f);
+		if (this.target != null && this.drone.getWorld() instanceof ServerWorld world
+				&& SpottedAlertCoordinator.tryAnnounceSpotted(world, this.target)) {
+			// First spotter on this player within the cooldown window: full shrill cue.
+			this.drone.playSound(P7Sounds.DRONE_ALERT.get(), 1.0f, 1.0f);
+		} else {
+			// Already announced very recently by something else — just layer the hum.
+			this.drone.playSound(P7Sounds.DRONE_INTERFERENCE.get(), 0.4f, 1.2f);
+		}
 	}
 
 	@Override
@@ -120,14 +127,23 @@ public class ScanPlayerGoal extends Goal {
 			// Show, don't tell: no action-bar text, just a sensory spike — the
 			// player should FEEL that they've been made, not read it.
 			player.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 80, 0, false, false));
+			// The interference hum always layers in, completed scan or not —
+			// it's the ambient "you're being watched" texture, not the shrill
+			// one-shot cue, so it never needs gating.
 			player.getServerWorld().playSound(null, player.getBlockPos(),
 					P7Sounds.DRONE_INTERFERENCE.get(), SoundCategory.HOSTILE, 1.0f, 1.0f);
-			player.getServerWorld().playSound(null, player.getBlockPos(),
-					P7Sounds.SCAN_STING.get(), SoundCategory.HOSTILE, 1.4f, 1.0f);
-			// A beat later, in-fiction: the sound of drones now inbound on the
-			// player's marked position.
-			player.getServerWorld().playSound(null, player.getBlockPos(),
-					P7Sounds.DRONES_INBOUND.get(), SoundCategory.HOSTILE, 1.0f, 1.0f);
+			// The sting + "more are coming" horn are the shrill "you've been
+			// made" beat — only the first scan to complete on an already-spotted
+			// player within the cooldown window gets to play these; a second
+			// surveyor finishing its scan a moment later doesn't restack them.
+			if (SpottedAlertCoordinator.tryAnnounceSpotted(player.getServerWorld(), player)) {
+				player.getServerWorld().playSound(null, player.getBlockPos(),
+						P7Sounds.SCAN_STING.get(), SoundCategory.HOSTILE, 1.4f, 1.0f);
+				// A beat later, in-fiction: the sound of drones now inbound on the
+				// player's marked position.
+				player.getServerWorld().playSound(null, player.getBlockPos(),
+						P7Sounds.DRONES_INBOUND.get(), SoundCategory.HOSTILE, 1.0f, 1.0f);
+			}
 		}
 		this.drone.setScanCooldown(SCAN_COOLDOWN);
 		this.drone.beginRetreat(this.target, 160);

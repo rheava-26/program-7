@@ -45,22 +45,41 @@ import net.minecraft.world.RaycastContext;
  * and explosion sounds should route through this.
  */
 public final class ProgramAcoustics {
-	/** How far out to even look for a player to shape the sound for. */
-	private static final double PLAYER_SEARCH_RADIUS = 220.0;
+	/**
+	 * How far out to even look for a player to shape the sound for. Raised
+	 * for the "distant menace" pass (see #6) alongside the wide fixed ranges
+	 * {@code P7Sounds} now registers for artillery/gunfire/spotting cues —
+	 * this needs enough headroom that a player standing right at the edge of
+	 * one of those registered ranges still gets found and shaped for, rather
+	 * than falling back to the unshaped immediate-play path below.
+	 */
+	private static final double PLAYER_SEARCH_RADIUS = 320.0;
 	/** Speed of sound, in blocks per tick, used to derive travel delay. */
 	private static final double SPEED_OF_SOUND = 17.0;
-	/** Longest travel delay we'll ever schedule, so a very distant blast doesn't sit in queue forever. */
-	private static final long MAX_DELAY_TICKS = 60L;
+	/**
+	 * Longest travel delay we'll ever schedule. Raised alongside the search
+	 * radius (see #6) so a genuinely distant artillery boom still gets a
+	 * satisfying "thump... then the sound arrives" beat instead of getting
+	 * clipped to the same cap as a medium-range shot.
+	 */
+	private static final long MAX_DELAY_TICKS = 100L;
 
 	/** Below this distance a sound is "close": no tone shaping at all. */
 	private static final double CLOSE_DISTANCE = 20.0;
-	/** At or above this distance a sound is "far": maximum shaping. Between {@link #CLOSE_DISTANCE} and here is "medium". */
-	private static final double FAR_DISTANCE = 80.0;
+	/**
+	 * At or above this distance a sound is "far": maximum shaping. Between
+	 * {@link #CLOSE_DISTANCE} and here is "medium". Pushed out for #6 so the
+	 * far band — the one that reads as "boomy and distant" — actually covers
+	 * the kind of range the Program's now-loud artillery/gunfire is meant to
+	 * carry across, instead of maxing out a stone's throw from the source.
+	 */
+	private static final double FAR_DISTANCE = 150.0;
 
-	private static final float MEDIUM_VOLUME_SCALE = 1.1f;
+	private static final float MEDIUM_VOLUME_SCALE = 1.15f;
 	private static final float MEDIUM_PITCH_SCALE = 0.9f;
-	private static final float FAR_VOLUME_SCALE = 1.35f;
-	private static final float FAR_PITCH_SCALE = 0.78f;
+	/** Boosted for #6 — a far-off shot needs to survive vanilla's own falloff on top of this scale to actually carry. */
+	private static final float FAR_VOLUME_SCALE = 1.8f;
+	private static final float FAR_PITCH_SCALE = 0.75f;
 
 	/** Volume/pitch scale applied when rock sits between the player and the source. */
 	private static final float OCCLUSION_VOLUME_SCALE = 0.5f;

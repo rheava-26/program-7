@@ -124,9 +124,17 @@ public class SpotTargetGoal extends Goal {
 
 	/** Paint the target: alert sound, a marker column, every idle drone in range locks on. */
 	private void paint(PlayerEntity player) {
-		this.scout.playSound(P7Sounds.DRONE_ALERT.get(), 1.0f, 1.0f);
 		if (!(this.scout.getWorld() instanceof ServerWorld world)) {
 			return;
+		}
+		if (SpottedAlertCoordinator.tryAnnounceSpotted(world, player)) {
+			// First spotter to confirm this player within the cooldown window:
+			// play the real shrill cue.
+			this.scout.playSound(P7Sounds.DRONE_ALERT.get(), 1.0f, 1.0f);
+		} else {
+			// Player's already been announced very recently by something else —
+			// don't stack another shriek, just layer the quieter interference hum.
+			this.scout.playSound(P7Sounds.DRONE_INTERFERENCE.get(), 0.4f, 1.2f);
 		}
 		for (int i = 0; i < 6; i++) {
 			world.spawnParticles(ParticleTypes.END_ROD,

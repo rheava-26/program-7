@@ -3,9 +3,11 @@ package dev.rheava.program7.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.rheava.program7.entity.ai.ExploreGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal;
+import dev.rheava.program7.entity.ai.LandAndChargeGoal;
 import dev.rheava.program7.entity.ai.RaidStorageGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.ScanPlayerGoal;
@@ -66,11 +68,21 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 		this.goalSelector.add(1, new RetreatGoal(this));
 		this.goalSelector.add(2, new ScanPlayerGoal(this));
 		this.goalSelector.add(3, new InvestigateDisturbanceGoal(this));
-		this.goalSelector.add(4, new StealItemsGoal(this));
-		this.goalSelector.add(5, new RaidStorageGoal(this));
-		this.goalSelector.add(6, new HoverWanderGoal(this));
-		this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
-		this.goalSelector.add(8, new LookAroundGoal(this));
+		// Priority 4: battery management (see #4) — outranks exploring/idle
+		// duty below it, but a scan/retreat/disturbance in progress above it
+		// always wins, so a low-charge surveyor still finishes what it's doing
+		// before peeling off to land.
+		this.goalSelector.add(4, new LandAndChargeGoal(this));
+		// Priority 5: "prioritize exploring above all else" (see #3) — sits
+		// above the scavenging/idle goals below it so a fresh surveyor spends
+		// its time fanning out over new ground instead of immediately settling
+		// into raiding storage or hovering near its spawn point.
+		this.goalSelector.add(5, new ExploreGoal(this));
+		this.goalSelector.add(6, new StealItemsGoal(this));
+		this.goalSelector.add(7, new RaidStorageGoal(this));
+		this.goalSelector.add(8, new HoverWanderGoal(this));
+		this.goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
+		this.goalSelector.add(10, new LookAroundGoal(this));
 	}
 
 	@Override
@@ -125,7 +137,8 @@ public class SurveyorDroneEntity extends ProgramDroneEntity {
 
 	@Override
 	protected float getSoundVolume() {
-		return 0.7f;
+		// Bumped for the "distant menace" pass (see #6).
+		return 1.0f;
 	}
 
 	@Override

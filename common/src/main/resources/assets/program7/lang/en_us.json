@@ -113,5 +113,6 @@
   "subtitles.program7.entity.recon_helicopter.rotor_loop": "Rotors thump overhead",
   "subtitles.program7.entity.air_uav.engine_loop": "Engine drones past",
   "subtitles.program7.unit.tank_tracks_loop": "Tracks grind closer",
-  "subtitles.program7.entity.gunboat.engine_loop": "Engine throbs"
+  "subtitles.program7.entity.gunboat.engine_loop": "Engine throbs",
+  "subtitles.program7.entity.mining_drone.laser": "Mining laser whines"
 }

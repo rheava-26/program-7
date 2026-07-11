@@ -1,8 +1,10 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.CircleLoiterGoal;
+import dev.rheava.program7.entity.ai.ExploreGoal;
 import dev.rheava.program7.entity.ai.FixedWingMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateDisturbanceGoal;
+import dev.rheava.program7.entity.ai.LandAndChargeGoal;
 import dev.rheava.program7.entity.ai.UAVSpotGoal;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
@@ -54,9 +56,20 @@ public class AirUAVEntity extends ProgramDroneEntity {
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new UAVSpotGoal(this));
-		this.goalSelector.add(2, new InvestigateDisturbanceGoal(this));
-		this.goalSelector.add(3, new CircleLoiterGoal(this, 28.0, 20.0, 1.0));
-		this.goalSelector.add(4, new LookAroundGoal(this));
+		// Priority 2: battery management outranks everything below it (see #4)
+		// so a low-charge UAV breaks off exploring/loitering to land, but never
+		// preempts UAVSpotGoal — it's LOOK-only and only actually contests
+		// LandAndChargeGoal's controls while a player is in view to spot.
+		this.goalSelector.add(2, new LandAndChargeGoal(this));
+		this.goalSelector.add(3, new InvestigateDisturbanceGoal(this));
+		// Priority 4: "prioritize exploring above all else" (see #3) — a fresh
+		// UAV fans out on long legs looking for structures/caves/villages
+		// instead of immediately settling into its home loiter circle. Still
+		// below the disturbance check above it, so a moving contact nearby
+		// interrupts a long leg rather than getting ignored.
+		this.goalSelector.add(4, new ExploreGoal(this));
+		this.goalSelector.add(5, new CircleLoiterGoal(this, 28.0, 20.0, 1.0));
+		this.goalSelector.add(6, new LookAroundGoal(this));
 
 		// No target selectors: unarmed spotter. UAVSpotGoal hands contacts off
 		// to whatever armed hardware is already in range.
@@ -104,7 +117,9 @@ public class AirUAVEntity extends ProgramDroneEntity {
 
 	@Override
 	protected float getSoundVolume() {
-		return 1.0f;
+		// Bumped for the "distant menace" pass (see #6): a plane droning
+		// overhead should be audible well before it's visible.
+		return 1.3f;
 	}
 
 	@Override

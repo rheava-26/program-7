@@ -56,6 +56,10 @@ public class P7Config {
 	public boolean ceasefireProtocol = true;
 	/** Re-insertion never stops; anti-orbital victory disabled. */
 	public boolean endlessWaves = false;
+	/** Drones fan out over long distances hunting structures/caves/villages instead of loitering near spawn. */
+	public boolean longRangeScouting = true;
+	/** Units periodically land and recharge instead of running forever; tier-1 hardware does this most often. */
+	public boolean droneLandToCharge = true;
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 

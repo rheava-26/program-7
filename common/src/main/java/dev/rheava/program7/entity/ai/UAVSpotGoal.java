@@ -68,6 +68,22 @@ public class UAVSpotGoal extends Goal {
 	@Override
 	public void start() {
 		this.losTicks = 0;
+		// Ping immediately on acquisition rather than waiting for the full
+		// PAINT_TICKS hold — the UAV should audibly announce "found you" the
+		// moment it spots the player, same as a regular drone locking on, not
+		// only after it's held an unbroken sightline for four seconds (see #2).
+		if (this.target != null && this.uav.getWorld() instanceof ServerWorld world) {
+			this.announceSpotted(world, this.target);
+		}
+	}
+
+	/** Play the shrill cue if nobody else has announced this player recently; otherwise just layer the hum. */
+	private void announceSpotted(ServerWorld world, PlayerEntity player) {
+		if (SpottedAlertCoordinator.tryAnnounceSpotted(world, player)) {
+			this.uav.playSound(P7Sounds.DRONE_ALERT.get(), 1.0f, 1.0f);
+		} else {
+			this.uav.playSound(P7Sounds.DRONE_INTERFERENCE.get(), 0.4f, 1.2f);
+		}
 	}
 
 	@Override
@@ -95,10 +111,10 @@ public class UAVSpotGoal extends Goal {
 
 	/** Paint the target: alert sound, a marker column below the UAV, every idle drone in range locks on. */
 	private void paint(PlayerEntity player) {
-		this.uav.playSound(P7Sounds.DRONE_ALERT.get(), 1.0f, 1.0f);
 		if (!(this.uav.getWorld() instanceof ServerWorld world)) {
 			return;
 		}
+		this.announceSpotted(world, player);
 		for (int i = 0; i < 6; i++) {
 			world.spawnParticles(ParticleTypes.END_ROD,
 					this.uav.getX(), this.uav.getY() - i * 0.3, this.uav.getZ(),

@@ -87,8 +87,17 @@ public class SearchlightSpotGoal extends Goal {
 		}
 
 		if (target != this.trackedTarget) {
+			boolean freshAcquisition = this.trackedTarget == null;
 			this.trackedTarget = target;
 			this.resetTrackingState();
+			// Ping immediately on a genuinely new lock (not a revenge-goal target
+			// swap) rather than waiting on the full LOS-hold paint — the heli
+			// should announce "found you" the moment it acquires, same as any
+			// other spotter (see #2).
+			if (freshAcquisition && target instanceof PlayerEntity player
+					&& this.heli.getWorld() instanceof ServerWorld world) {
+				this.announceSpotted(world, player);
+			}
 		}
 
 		if (!this.isValidTarget(target)) {
@@ -178,11 +187,24 @@ public class SearchlightSpotGoal extends Goal {
 		}
 	}
 
+	/** Play the shrill cue if nobody else has announced this player recently; otherwise just layer the hum. */
+	private void announceSpotted(ServerWorld world, PlayerEntity player) {
+		if (SpottedAlertCoordinator.tryAnnounceSpotted(world, player)) {
+			this.heli.playSound(P7Sounds.DRONE_ALERT.get(), 1.5f, 1.0f);
+		} else {
+			this.heli.playSound(P7Sounds.DRONE_INTERFERENCE.get(), 0.5f, 1.2f);
+		}
+	}
+
 	/** Paint the target: alert sound, every idle armed drone in range locks on. */
 	private void paint(LivingEntity target) {
-		this.heli.playSound(P7Sounds.DRONE_ALERT.get(), 1.5f, 1.0f);
 		if (!(this.heli.getWorld() instanceof ServerWorld world)) {
 			return;
+		}
+		if (target instanceof PlayerEntity player) {
+			this.announceSpotted(world, player);
+		} else {
+			this.heli.playSound(P7Sounds.DRONE_ALERT.get(), 1.5f, 1.0f);
 		}
 		Box box = this.heli.getBoundingBox().expand(ALERT_RANGE);
 		List<ProgramDroneEntity> drones = world.getEntitiesByClass(ProgramDroneEntity.class, box,

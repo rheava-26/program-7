@@ -127,8 +127,68 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	 */
 	private int graceLeft = -1;
 
+	/**
+	 * Onboard battery (see {@link dev.rheava.program7.entity.ai.LandAndChargeGoal}).
+	 * Drains slowly while active; when it sags to the low-charge threshold a
+	 * unit peels off to land and recharge. Tier-1 hardware drains fast and
+	 * lands often; heavier tiers override {@link #chargeDrainPerTick()} to
+	 * drain slowly or never. "Absent from NBT = full" so old saves don't spawn
+	 * pre-drained units.
+	 */
+	public static final int MAX_CHARGE = 100;
+	private static final int LOW_CHARGE_THRESHOLD = 20;
+	private int charge = MAX_CHARGE;
+	private boolean charging = false;
+	private float chargeDrainAccumulator = 0.0f;
+
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
+	}
+
+	public int getCharge() {
+		return this.charge;
+	}
+
+	public float getChargeFraction() {
+		return this.charge / (float) MAX_CHARGE;
+	}
+
+	public boolean isLowCharge() {
+		return this.charge <= LOW_CHARGE_THRESHOLD;
+	}
+
+	public boolean isChargeFull() {
+		return this.charge >= MAX_CHARGE;
+	}
+
+	public boolean isCharging() {
+		return this.charging;
+	}
+
+	public void setCharging(boolean charging) {
+		this.charging = charging;
+	}
+
+	public void addCharge(int amount) {
+		this.charge = Math.min(MAX_CHARGE, this.charge + amount);
+	}
+
+	/** Per-tick battery drain while not charging; heavier tiers override to drain slower or never. */
+	protected float chargeDrainPerTick() {
+		return 0.0125f; // tier-1 default: ~8000 ticks (~6.7 min) to empty
+	}
+
+	private void tickCharge() {
+		if (this.charging) {
+			return;
+		}
+		this.chargeDrainAccumulator += this.chargeDrainPerTick();
+		while (this.chargeDrainAccumulator >= 1.0f) {
+			this.chargeDrainAccumulator -= 1.0f;
+			if (this.charge > 0) {
+				this.charge--;
+			}
+		}
 	}
 
 	/**
@@ -409,6 +469,7 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			this.tickVisionProjection();
 			this.tickAcquisitionAlert();
 			this.tickUpkeep();
+			this.tickCharge();
 		}
 	}
 
@@ -612,6 +673,7 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 		if (this.graceLeft >= 0) {
 			nbt.putInt("UpkeepGrace", this.graceLeft);
 		}
+		nbt.putInt("Charge", this.charge);
 	}
 
 	@Override
@@ -629,6 +691,10 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 		// spawn pre-starved units.
 		if (nbt.contains("UpkeepGrace")) {
 			this.graceLeft = nbt.getInt("UpkeepGrace");
+		}
+		// Absent -> stays at MAX_CHARGE (full), same "absent = full" rule as grace.
+		if (nbt.contains("Charge")) {
+			this.charge = nbt.getInt("Charge");
 		}
 	}
 

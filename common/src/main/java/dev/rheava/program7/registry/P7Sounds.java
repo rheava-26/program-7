@@ -19,48 +19,61 @@ public final class P7Sounds {
 	public static final DeferredRegister<SoundEvent> SOUNDS =
 			DeferredRegister.create(Program7.MOD_ID, RegistryKeys.SOUND_EVENT);
 
-	public static final RegistrySupplier<SoundEvent> DRONE_AMBIENT = register("entity.surveyor_drone.ambient");
-	public static final RegistrySupplier<SoundEvent> DRONE_ALERT = register("entity.surveyor_drone.alert");
+	// Sounds carrying the "distant menace" get wide FIXED audible ranges (in
+	// blocks) via registerRanged(...) so the player hears the Program working
+	// from far off — ambient loops, alarms, gunfire and (loudest) artillery.
+	// Close-quarters cues (scan beep, hurt, whir, fuse, assembler) stay on the
+	// default variable range via register(...).
+	public static final RegistrySupplier<SoundEvent> DRONE_AMBIENT = registerRanged("entity.surveyor_drone.ambient", 48f);
+	public static final RegistrySupplier<SoundEvent> DRONE_ALERT = registerRanged("entity.surveyor_drone.alert", 64f);
 	public static final RegistrySupplier<SoundEvent> DRONE_SCAN_BEEP = register("entity.surveyor_drone.scan_beep");
-	public static final RegistrySupplier<SoundEvent> DRONE_INTERFERENCE = register("entity.surveyor_drone.interference");
+	public static final RegistrySupplier<SoundEvent> DRONE_INTERFERENCE = registerRanged("entity.surveyor_drone.interference", 64f);
 	public static final RegistrySupplier<SoundEvent> DRONE_HURT = register("entity.surveyor_drone.hurt");
-	public static final RegistrySupplier<SoundEvent> DRONE_DEATH = register("entity.surveyor_drone.death");
+	public static final RegistrySupplier<SoundEvent> DRONE_DEATH = registerRanged("entity.surveyor_drone.death", 48f);
 	/** A wreck slamming into the ground after the unit dies mid-air — see #7. */
-	public static final RegistrySupplier<SoundEvent> DRONE_IMPACT = register("entity.surveyor_drone.impact");
+	public static final RegistrySupplier<SoundEvent> DRONE_IMPACT = registerRanged("entity.surveyor_drone.impact", 64f);
 	/** Rising engine note as a drone closes on its target — see #4. */
 	public static final RegistrySupplier<SoundEvent> DRONE_WHIR = register("entity.surveyor_drone.whir");
 	public static final RegistrySupplier<SoundEvent> ATTACK_DRONE_FUSE = register("entity.attack_drone.fuse");
-	public static final RegistrySupplier<SoundEvent> DROP_POD_DESCENT = register("event.drop_pod.descent");
-	public static final RegistrySupplier<SoundEvent> DROP_POD_IMPACT = register("event.drop_pod.impact");
-	public static final RegistrySupplier<SoundEvent> ORBITAL_RESUPPLY = register("event.orbital_resupply");
+	public static final RegistrySupplier<SoundEvent> DROP_POD_DESCENT = registerRanged("event.drop_pod.descent", 128f);
+	public static final RegistrySupplier<SoundEvent> DROP_POD_IMPACT = registerRanged("event.drop_pod.impact", 160f);
+	public static final RegistrySupplier<SoundEvent> ORBITAL_RESUPPLY = registerRanged("event.orbital_resupply", 128f);
 	/** Loud psychic-sting stinger the instant a scan completes — see horror-beat pass. */
-	public static final RegistrySupplier<SoundEvent> SCAN_STING = register("event.scan_sting");
+	public static final RegistrySupplier<SoundEvent> SCAN_STING = registerRanged("event.scan_sting", 96f);
 	/** Ominous swell right after a scan sting: drones are now inbound on the mark. */
-	public static final RegistrySupplier<SoundEvent> DRONES_INBOUND = register("event.drones_inbound");
-	public static final RegistrySupplier<SoundEvent> GUN_FIRE = register("unit.gun_fire");
-	public static final RegistrySupplier<SoundEvent> SNIPER_FIRE = register("unit.sniper_fire");
+	public static final RegistrySupplier<SoundEvent> DRONES_INBOUND = registerRanged("event.drones_inbound", 96f);
+	public static final RegistrySupplier<SoundEvent> GUN_FIRE = registerRanged("unit.gun_fire", 128f);
+	public static final RegistrySupplier<SoundEvent> SNIPER_FIRE = registerRanged("unit.sniper_fire", 160f);
 	/** Near-miss air-crack played at the target's position on a graze — see #1. */
-	public static final RegistrySupplier<SoundEvent> GUN_WHISTLE = register("unit.gun_whistle");
-	public static final RegistrySupplier<SoundEvent> MORTAR_FIRE = register("unit.mortar_fire");
-	public static final RegistrySupplier<SoundEvent> MORTAR_WHISTLE = register("unit.mortar_whistle");
-	public static final RegistrySupplier<SoundEvent> MORTAR_IMPACT = register("unit.mortar_impact");
+	public static final RegistrySupplier<SoundEvent> GUN_WHISTLE = registerRanged("unit.gun_whistle", 64f);
+	public static final RegistrySupplier<SoundEvent> MORTAR_FIRE = registerRanged("unit.mortar_fire", 192f);
+	public static final RegistrySupplier<SoundEvent> MORTAR_WHISTLE = registerRanged("unit.mortar_whistle", 128f);
+	public static final RegistrySupplier<SoundEvent> MORTAR_IMPACT = registerRanged("unit.mortar_impact", 192f);
 	/** Fixed emplacements' contact klaxon, latched once per approach — see #8. */
-	public static final RegistrySupplier<SoundEvent> UNIT_ALARM = register("unit.alarm");
+	public static final RegistrySupplier<SoundEvent> UNIT_ALARM = registerRanged("unit.alarm", 64f);
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_WORKING = register("block.assembler.working");
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_COMPLETE = register("block.assembler.complete");
-	public static final RegistrySupplier<SoundEvent> CATAPULT_LAUNCH = register("block.catapult.launch");
+	public static final RegistrySupplier<SoundEvent> CATAPULT_LAUNCH = registerRanged("block.catapult.launch", 96f);
 	/** Rhythmic heavy rotor thump loop for helicopter entities. */
-	public static final RegistrySupplier<SoundEvent> HELI_ROTOR_LOOP = register("entity.recon_helicopter.rotor_loop");
+	public static final RegistrySupplier<SoundEvent> HELI_ROTOR_LOOP = registerRanged("entity.recon_helicopter.rotor_loop", 112f);
 	/** Droning engine loop for fixed-wing aircraft entities. */
-	public static final RegistrySupplier<SoundEvent> PLANE_ENGINE_LOOP = register("entity.air_uav.engine_loop");
+	public static final RegistrySupplier<SoundEvent> PLANE_ENGINE_LOOP = registerRanged("entity.air_uav.engine_loop", 96f);
 	/** Grinding heavy track loop for ground vehicle entities. */
-	public static final RegistrySupplier<SoundEvent> TANK_TRACKS_LOOP = register("unit.tank_tracks_loop");
+	public static final RegistrySupplier<SoundEvent> TANK_TRACKS_LOOP = registerRanged("unit.tank_tracks_loop", 64f);
 	/** Deep throbbing engine loop for aquatic vehicle entities. */
-	public static final RegistrySupplier<SoundEvent> BOAT_ENGINE_LOOP = register("entity.gunboat.engine_loop");
+	public static final RegistrySupplier<SoundEvent> BOAT_ENGINE_LOOP = registerRanged("entity.gunboat.engine_loop", 64f);
+	/** Standoff mining-laser hum — see MineResourceGoal. */
+	public static final RegistrySupplier<SoundEvent> MINING_LASER = registerRanged("entity.mining_drone.laser", 48f);
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);
 		return SOUNDS.register(name, () -> SoundEvent.of(id));
+	}
+
+	/** Registers a sound with a wide FIXED audible range (in blocks) — the "hear it from far off" cues. */
+	private static RegistrySupplier<SoundEvent> registerRanged(String name, float range) {
+		Identifier id = Program7.id(name);
+		return SOUNDS.register(name, () -> SoundEvent.of(id, range));
 	}
 
 	public static void register() {

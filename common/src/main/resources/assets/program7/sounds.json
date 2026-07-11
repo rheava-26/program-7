@@ -166,5 +166,11 @@
     "sounds": [
       { "name": "minecraft:entity.guardian.ambient", "type": "event" }
     ]
+  },
+  "entity.mining_drone.laser": {
+    "subtitle": "subtitles.program7.entity.mining_drone.laser",
+    "sounds": [
+      { "name": "minecraft:block.beacon.power_select", "type": "event" }
+    ]
   }
 }

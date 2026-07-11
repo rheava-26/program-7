@@ -6,6 +6,7 @@ import java.util.Map;
 import dev.rheava.program7.entity.ai.DepositCargoGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.LandAndChargeGoal;
 import dev.rheava.program7.entity.ai.MineResourceGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.EscapeDangerGoal;
@@ -53,8 +54,23 @@ public class MediumMiningDroneEntity extends ProgramDroneEntity implements Cargo
 		this.goalSelector.add(1, new EscapeDangerGoal(this, 1.5));
 		this.goalSelector.add(2, new DepositCargoGoal(this));
 		this.goalSelector.add(3, new MineResourceGoal(this));
-		this.goalSelector.add(4, new HoverWanderGoal(this));
-		this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
+		// Priority 4: this is Tier 2 hardware — see the chargeDrainPerTick
+		// override below, it lands to charge far less often than the tier-1
+		// ground hauler does.
+		this.goalSelector.add(4, new LandAndChargeGoal(this));
+		this.goalSelector.add(5, new HoverWanderGoal(this));
+		this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
+	}
+
+	/**
+	 * Tier 2 hardware carries a bigger battery than the ground hauler's —
+	 * roughly a third of the drain rate, so it lands to recharge only
+	 * occasionally instead of constantly (see #4: "tier-1 drones do this
+	 * most often; bigger units rarely/never").
+	 */
+	@Override
+	protected float chargeDrainPerTick() {
+		return super.chargeDrainPerTick() * 0.35f;
 	}
 
 	@Override
@@ -100,7 +116,8 @@ public class MediumMiningDroneEntity extends ProgramDroneEntity implements Cargo
 
 	@Override
 	protected float getSoundVolume() {
-		return 0.5f;
+		// Bumped for the "distant menace" pass (see #6).
+		return 0.8f;
 	}
 
 	@Override

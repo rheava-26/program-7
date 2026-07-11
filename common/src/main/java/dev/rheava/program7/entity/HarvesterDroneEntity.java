@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.rheava.program7.entity.ai.DepositCargoGoal;
+import dev.rheava.program7.entity.ai.LandAndChargeGoal;
 import dev.rheava.program7.entity.ai.MineResourceGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.EscapeDangerGoal;
@@ -55,9 +56,14 @@ public class HarvesterDroneEntity extends ProgramDroneEntity implements CargoHau
 		this.goalSelector.add(1, new EscapeDangerGoal(this, 1.5));
 		this.goalSelector.add(2, new DepositCargoGoal(this));
 		this.goalSelector.add(3, new MineResourceGoal(this));
-		this.goalSelector.add(4, new WanderAroundFarGoal(this, 0.8));
-		this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
-		this.goalSelector.add(6, new LookAroundGoal(this));
+		// Priority 4: this is the tier-1 ground hauler — per #4 it's meant to be
+		// the unit that has to stop and land-to-charge most often. Sits below
+		// escape/deposit/mine so it never interrupts an active job, only the
+		// idle wander below it.
+		this.goalSelector.add(4, new LandAndChargeGoal(this));
+		this.goalSelector.add(5, new WanderAroundFarGoal(this, 0.8));
+		this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
+		this.goalSelector.add(7, new LookAroundGoal(this));
 	}
 
 	@Override
@@ -94,7 +100,8 @@ public class HarvesterDroneEntity extends ProgramDroneEntity implements CargoHau
 
 	@Override
 	protected float getSoundVolume() {
-		return 0.5f;
+		// Bumped for the "distant menace" pass (see #6).
+		return 0.7f;
 	}
 
 	@Override
