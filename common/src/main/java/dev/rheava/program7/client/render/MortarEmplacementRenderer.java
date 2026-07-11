@@ -11,6 +11,9 @@ public class MortarEmplacementRenderer extends MobEntityRenderer<MortarEmplaceme
 
 	public MortarEmplacementRenderer(EntityRendererFactory.Context context) {
 		super(context, new MortarEmplacementModel(context.getPart(MortarEmplacementModel.LAYER)), 0.45f);
+		// Static emplacement: vanilla's small circular blob shadow reads wrong
+		// under a wide mortar carriage, so drop it to effectively nothing.
+		this.shadowRadius = 0.0f;
 	}
 
 	@Override

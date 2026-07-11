@@ -9,8 +9,9 @@ import net.minecraft.util.Identifier;
 
 public class HeavyAttackDroneRenderer extends MobEntityRenderer<HeavyAttackDroneEntity, HeavyAttackDroneModel> {
 	private static final Identifier TEXTURE = Program7.id("textures/entity/heavy_attack_drone.png");
-	// Tier 3 size bump to the ~2.6 x 2.2 hitbox.
-	private static final float MODEL_SCALE = 1.33f;
+	// Tier 3 size bump — scaled +35% again ("still too small") to the
+	// ~3.5 x 3.0 hitbox; see the matching P7Entities dimensions bump.
+	private static final float MODEL_SCALE = 1.8f;
 
 	public HeavyAttackDroneRenderer(EntityRendererFactory.Context context) {
 		super(context, new HeavyAttackDroneModel(context.getPart(HeavyAttackDroneModel.LAYER)), 0.9f);

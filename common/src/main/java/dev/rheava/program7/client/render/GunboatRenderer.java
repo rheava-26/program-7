@@ -9,9 +9,10 @@ import net.minecraft.util.Identifier;
 
 public class GunboatRenderer extends MobEntityRenderer<GunboatEntity, GunboatModel> {
 	private static final Identifier TEXTURE = Program7.id("textures/entity/gunboat.png");
-	// Tier 3 size bump: this is the giant of the lineup, stretching to the
-	// ~4.5 x 3.0 hitbox with a long hull.
-	private static final float MODEL_SCALE = 1.55f;
+	// Tier 3 size bump — scaled +35% again ("still too small"): this is the
+	// giant of the lineup, stretching to the new ~6.1 x 4.0 hitbox with a
+	// long hull; see the matching P7Entities dimensions bump.
+	private static final float MODEL_SCALE = 2.1f;
 
 	public GunboatRenderer(EntityRendererFactory.Context context) {
 		super(context, new GunboatModel(context.getPart(GunboatModel.LAYER)), 1.3f);

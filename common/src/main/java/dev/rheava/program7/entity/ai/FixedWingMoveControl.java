@@ -30,8 +30,13 @@ public class FixedWingMoveControl extends FlightMoveControl {
 	private static final double MIN_AIRSPEED = 0.5;
 	/** Acceleration applied along yaw whenever airspeed sags below the floor — a fast cruise, not a crawl. */
 	private static final double CRUISE_THRUST = 0.18;
-	/** Hard cap on yaw slew per tick: a wide, physically-plausible banking turn circle, not a snap-to-face. */
-	private static final float MAX_YAW_STEP = 5.5F;
+	/**
+	 * Hard cap on yaw slew per tick: a wide, physically-plausible banking turn
+	 * circle, not a snap-to-face. Halved again from an earlier 5.5 — even
+	 * that read as "whipping around" for a baby fixed-wing UAV, so the bank
+	 * circle is now noticeably lazier/wider.
+	 */
+	private static final float MAX_YAW_STEP = 2.75F;
 
 	public FixedWingMoveControl(MobEntity entity, int maxPitchChange, boolean noGravity) {
 		super(entity, maxPitchChange, noGravity);

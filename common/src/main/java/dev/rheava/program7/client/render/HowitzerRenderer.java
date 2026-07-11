@@ -14,9 +14,10 @@ import net.minecraft.util.Identifier;
  */
 public class HowitzerRenderer extends MobEntityRenderer<HowitzerEntity, HowitzerModel> {
 	private static final Identifier TEXTURE = Program7.id("textures/entity/howitzer.png");
-	// Big ground vehicle, bigger than the IFV's own scale bump — tuned to
-	// roughly fill (not overflow) the 2.9 x 2.6 hitbox.
-	private static final float MODEL_SCALE = 1.6f;
+	// Big ground vehicle, bigger than the IFV's own scale bump — scaled +35%
+	// again ("still too small") to roughly fill the new ~3.9 x 3.5 hitbox;
+	// see the matching P7Entities dimensions bump.
+	private static final float MODEL_SCALE = 2.16f;
 
 	public HowitzerRenderer(EntityRendererFactory.Context context) {
 		super(context, new HowitzerModel(context.getPart(HowitzerModel.LAYER)), 1.7f);

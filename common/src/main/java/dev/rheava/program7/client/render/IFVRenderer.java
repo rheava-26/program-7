@@ -9,9 +9,11 @@ import net.minecraft.util.Identifier;
 
 public class IFVRenderer extends MobEntityRenderer<IFVEntity, IFVModel> {
 	private static final Identifier TEXTURE = Program7.id("textures/entity/ifv.png");
-	// Tier 3 size bump to the ~2.8 x 3.0 hitbox. Uniform for now - the "small
-	// turret relative to hull" look is a later geometry pass, not a scale change.
-	private static final float MODEL_SCALE = 1.55f;
+	// Tier 3 size bump — scaled +35% again ("still too small") to the
+	// ~3.8 x 4.0 hitbox; see the matching P7Entities dimensions bump. Uniform
+	// for now - the "small turret relative to hull" look is a later geometry
+	// pass, not a scale change.
+	private static final float MODEL_SCALE = 2.1f;
 
 	public IFVRenderer(EntityRendererFactory.Context context) {
 		super(context, new IFVModel(context.getPart(IFVModel.LAYER)), 1.0f);

@@ -85,7 +85,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<AutogunTurretEntity>> AUTOGUN_TURRET =
 			ENTITIES.register("autogun_turret",
 					() -> EntityType.Builder.create(AutogunTurretEntity::new, SpawnGroup.MISC)
-							.dimensions(0.8f, 1.35f)
+							.dimensions(1.1f, 1.8f)
 							.maxTrackingRange(10)
 							.build("autogun_turret"));
 
@@ -109,7 +109,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<MediumAttackDroneEntity>> MEDIUM_ATTACK_DRONE =
 			ENTITIES.register("medium_attack_drone",
 					() -> EntityType.Builder.create(MediumAttackDroneEntity::new, SpawnGroup.MISC)
-							.dimensions(0.9f, 0.6f)
+							.dimensions(1.2f, 0.8f)
 							.maxTrackingRange(10)
 							.build("medium_attack_drone"));
 
@@ -157,7 +157,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<AntiAirTurretEntity>> ANTI_AIR_TURRET =
 			ENTITIES.register("anti_air_turret",
 					() -> EntityType.Builder.create(AntiAirTurretEntity::new, SpawnGroup.MISC)
-							.dimensions(0.8f, 1.5f)
+							.dimensions(1.1f, 2.0f)
 							.maxTrackingRange(10)
 							.build("anti_air_turret"));
 
@@ -181,7 +181,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<HeavyAttackDroneEntity>> HEAVY_ATTACK_DRONE =
 			ENTITIES.register("heavy_attack_drone",
 					() -> EntityType.Builder.create(HeavyAttackDroneEntity::new, SpawnGroup.MISC)
-							.dimensions(2.6f, 2.2f)
+							.dimensions(3.5f, 3.0f)
 							.maxTrackingRange(12)
 							.build("heavy_attack_drone"));
 
@@ -189,7 +189,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<IFVEntity>> IFV =
 			ENTITIES.register("ifv",
 					() -> EntityType.Builder.create(IFVEntity::new, SpawnGroup.MISC)
-							.dimensions(2.8f, 3.0f)
+							.dimensions(3.8f, 4.0f)
 							.maxTrackingRange(12)
 							.build("ifv"));
 
@@ -197,7 +197,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<GunboatEntity>> GUNBOAT =
 			ENTITIES.register("gunboat",
 					() -> EntityType.Builder.create(GunboatEntity::new, SpawnGroup.MISC)
-							.dimensions(4.5f, 3.0f)
+							.dimensions(6.1f, 4.0f)
 							.maxTrackingRange(12)
 							.build("gunboat"));
 
@@ -205,7 +205,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<ReconHelicopterEntity>> RECON_HELICOPTER =
 			ENTITIES.register("recon_helicopter",
 					() -> EntityType.Builder.create(ReconHelicopterEntity::new, SpawnGroup.MISC)
-							.dimensions(3.0f, 2.6f)
+							.dimensions(4.0f, 3.5f)
 							.maxTrackingRange(16)
 							.build("recon_helicopter"));
 
@@ -231,7 +231,7 @@ public final class P7Entities {
 	public static final RegistrySupplier<EntityType<HowitzerEntity>> HOWITZER =
 			ENTITIES.register("howitzer",
 					() -> EntityType.Builder.create(HowitzerEntity::new, SpawnGroup.MISC)
-							.dimensions(2.9f, 2.6f)
+							.dimensions(3.9f, 3.5f)
 							.maxTrackingRange(16)
 							.build("howitzer"));
 

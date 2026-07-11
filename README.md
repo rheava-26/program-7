@@ -13,6 +13,24 @@ reverse-engineered and turned against it.
   and the five Program tech tiers
 - **[Roadmap](docs/ROADMAP.md)** — phased implementation plan and status
 
+## Download the latest build
+
+Every push to the development branch is built for both loaders and published
+to a single, always-current **[`dev-latest`
+prerelease](https://github.com/rheava-26/program-7/releases/tag/dev-latest)** —
+that link always points at the newest build, so bookmark it and just re-grab
+the jar whenever you want to update.
+
+- **Fabric:** `program7-fabric-*.jar` — needs
+  [Fabric Loader](https://fabricmc.net/use/),
+  [Fabric API](https://modrinth.com/mod/fabric-api), and
+  [Architectury API](https://modrinth.com/mod/architectury-api).
+- **NeoForge:** `program7-neoforge-*.jar` — needs
+  [NeoForge](https://neoforged.net/) and
+  [Architectury API](https://modrinth.com/mod/architectury-api).
+
+Drop the matching jar (plus its dependencies) into your `mods/` folder.
+
 ## What's in the current build (Phase 0 + Phase 1 core)
 
 - **Drop pod insertion** — 2–3 in-game days in, a pod comes down 300–600

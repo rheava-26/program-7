@@ -102,6 +102,19 @@ public final class DatapadScreen extends Screen {
 		return false;
 	}
 
+	/**
+	 * Vanilla {@link Screen#renderBackground(DrawContext, int, int, float)}
+	 * gaussian-blurs and darkens whatever's behind the screen as of 1.20.3+.
+	 * The datapad is a live HUD overlay the player keeps glancing through
+	 * while still moving around, not a paused menu, so it should stay crisp
+	 * — draw a single light translucent darkening ourselves instead of
+	 * calling {@code super}, which would blur the world behind the panel.
+	 */
+	@Override
+	public void renderBackground(DrawContext context, int mouseX, int mouseY, float deltaTicker) {
+		context.fill(0, 0, this.width, this.height, 0x66000000);
+	}
+
 	@Override
 	public void tick() {
 		// Poll the server for a live read a couple of times a second, so the
@@ -135,11 +148,21 @@ public final class DatapadScreen extends Screen {
 		drawRadar(context, radarX, radarY, mouseX, mouseY);
 
 		context.drawTextWithShadow(this.textRenderer,
-				Text.literal("[esc] disconnect").formatted(Formatting.DARK_GRAY),
+				Text.literal("[esc] / [right-click] disconnect").formatted(Formatting.DARK_GRAY),
 				px + 10, py + PANEL_H - 13, 0xFF56636E);
 
 		beep();
 		super.render(context, mouseX, mouseY, delta);
+	}
+
+	/** Right-click also disconnects, in addition to vanilla's default escape-closes-screen handling. */
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if (button == 1) {
+			this.close();
+			return true;
+		}
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 
 	private void drawRail(DrawContext context, int x, int y, int railRight) {
