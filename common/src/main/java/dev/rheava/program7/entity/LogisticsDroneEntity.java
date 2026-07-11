@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import dev.rheava.program7.entity.ai.AmmoRunGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.SupplyRunGoal;
 import net.minecraft.entity.EntityType;
@@ -50,7 +51,13 @@ public class LogisticsDroneEntity extends ProgramDroneEntity implements CourierU
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new SupplyRunGoal(this));
-		this.goalSelector.add(2, new LookAroundGoal(this));
+		// Only ever picked up when the drone has no build-payment destination
+		// (see AmmoRunGoal#canStart) — a courier mid-delivery is never
+		// diverted onto ammo duty, and a dedicated ammo-runner (spawned
+		// without a mission — see director.BasePad#buildStockpile) falls
+		// straight through to this instead.
+		this.goalSelector.add(2, new AmmoRunGoal(this));
+		this.goalSelector.add(3, new LookAroundGoal(this));
 	}
 
 	@Override

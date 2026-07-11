@@ -7,6 +7,7 @@ import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
+import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -57,7 +58,9 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 		// Priority 0: even a heavy limps off when it's nearly dead rather than
 		// dying in place (see fleeHealthFraction) — only fires while retreating.
 		this.goalSelector.add(0, new RetreatGoal(this));
-		this.goalSelector.add(1, new BurstGunAttackGoal(this, 1.0, 24.0, 4, 50, 3.0f));
+		// Damage 3.0->10.0/shot (gun-feel pass), MEDIUM caliber — a bigger gun
+		// flyer than the light drones, one rung below the gunship's HEAVY belly gun.
+		this.goalSelector.add(1, new BurstGunAttackGoal(this, 1.0, 24.0, 4, 50, 10.0f, RoundClass.MEDIUM));
 		this.goalSelector.add(2, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));

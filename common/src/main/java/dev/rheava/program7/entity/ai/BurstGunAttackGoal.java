@@ -35,11 +35,11 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 	private int cooldown;
 
 	public BurstGunAttackGoal(ProgramDroneEntity shooter, double speed, double range,
-			int burstSize, int burstCooldown, float damagePerShot) {
+			int burstSize, int burstCooldown, float damagePerShot, RoundClass roundClass) {
 		// burstCooldown doubles as the base constructor's fireInterval; it's
 		// only ever read by the base's tick(), which this goal overrides
 		// outright, so the value itself is inert there.
-		super(shooter, speed, range, burstCooldown, damagePerShot);
+		super(shooter, speed, range, burstCooldown, damagePerShot, roundClass);
 		this.speed = speed;
 		this.burstSize = burstSize;
 		this.burstCooldown = burstCooldown;
@@ -72,6 +72,17 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 			return;
 		}
 		this.shooter.getLookControl().lookAt(target, 30.0f, 30.0f);
+
+		if (this.isOutOfAmmo()) {
+			// Dry: hold position and click occasionally instead of firing —
+			// same rule as the base goal, see its tick() for why.
+			if (this.speed > 0) {
+				this.shooter.getNavigation().stop();
+			}
+			this.burstShotsLeft = 0;
+			this.tickDryFireClick();
+			return;
+		}
 
 		double distance = this.shooter.distanceTo(target);
 		boolean canSee = this.shooter.getVisibilityCache().canSee(target);
@@ -106,9 +117,13 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 		if (this.cooldown > 0) {
 			this.cooldown--;
 		} else if (distance <= this.range && sighted) {
-			// Cooldown's clear and the target's in the envelope: rack a new burst.
+			// Cooldown's clear and the target's in the envelope: rack a new
+			// burst — and announce it with the loud opening cue (see the base
+			// goal) so every burst reads as "the gun's opening up," not just
+			// the very first one this goal ever fired.
 			this.burstShotsLeft = this.burstSize;
 			this.intraBurstTimer = 0;
+			this.playOpeningFireCue();
 		}
 	}
 

@@ -4,6 +4,7 @@ import java.util.EnumSet;
 
 import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.entity.ProgramDroneEntity;
+import dev.rheava.program7.entity.ReloadableWeapon;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -55,6 +56,8 @@ public class GunAttackGoal extends Goal {
 	private static final double SUPPRESSIVE_GROUND_BIAS = 0.6;
 	/** Cadence multiplier while suppressing: rounds go out faster, not more accurately. */
 	private static final double SUPPRESSIVE_FIRE_INTERVAL_SCALE = 0.5;
+	/** Minimum gap between "magazine's empty" clicks so a shooter stuck dry doesn't spam it every tick. */
+	private static final int DRY_FIRE_CLICK_INTERVAL_TICKS = 40;
 
 	// shooter/range/damage/fireInterval are protected: subclasses (the
 	// sniper's standoff variant) build their own movement, accuracy, and
@@ -65,6 +68,8 @@ public class GunAttackGoal extends Goal {
 	protected final double range;
 	protected final int fireInterval;
 	protected final float damage;
+	/** How big this weapon's rounds are — see {@link RoundClass} — for knockback/particle/terrain-chip scaling. */
+	protected final RoundClass roundClass;
 	private int cooldown;
 
 	/** Target's last-seen position, kept warm for the suppression-fire window below. */
@@ -73,14 +78,17 @@ public class GunAttackGoal extends Goal {
 	/** Ticks left before suppression fire gives up once line of sight is lost. */
 	private int suppressionTicksLeft;
 	private int whistleCooldown;
+	/** Ticks left before another dry-fire click is allowed while the magazine's empty. */
+	private int dryFireCooldown;
 
 	public GunAttackGoal(ProgramDroneEntity shooter, double speed, double range,
-			int fireInterval, float damage) {
+			int fireInterval, float damage, RoundClass roundClass) {
 		this.shooter = shooter;
 		this.speed = speed;
 		this.range = range;
 		this.fireInterval = fireInterval;
 		this.damage = damage;
+		this.roundClass = roundClass;
 		this.setControls(this.speed > 0
 				? EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK)
 				: EnumSet.of(Goal.Control.LOOK));
@@ -103,6 +111,8 @@ public class GunAttackGoal extends Goal {
 		this.cooldown = 10;
 		this.suppressionTicksLeft = 0;
 		this.whistleCooldown = 0;
+		this.dryFireCooldown = 0;
+		this.playOpeningFireCue();
 	}
 
 	@Override
@@ -125,6 +135,17 @@ public class GunAttackGoal extends Goal {
 		}
 		this.shooter.getLookControl().lookAt(target, 30.0f, 30.0f);
 
+		if (this.isOutOfAmmo()) {
+			// Dry: hold position (a closing-in mount stops advancing on a
+			// target it can't actually shoot at) and click occasionally
+			// instead of firing, rather than silently doing nothing.
+			if (this.speed > 0) {
+				this.shooter.getNavigation().stop();
+			}
+			this.tickDryFireClick();
+			return;
+		}
+
 		double distance = this.shooter.distanceTo(target);
 		boolean canSee = this.shooter.getVisibilityCache().canSee(target);
 		boolean sighted = this.updateSight(target, canSee);
@@ -144,6 +165,22 @@ public class GunAttackGoal extends Goal {
 				this.cooldown = nextCooldown;
 			}
 		}
+	}
+
+	/** Whether this weapon has a finite magazine (see {@link ReloadableWeapon}) that's currently run dry. */
+	protected boolean isOutOfAmmo() {
+		return this.shooter instanceof ReloadableWeapon reloadable && reloadable.needsReload();
+	}
+
+	/** Plays the empty-magazine click on a cooldown so a shooter stuck dry doesn't spam it every tick. */
+	protected void tickDryFireClick() {
+		if (this.dryFireCooldown > 0) {
+			this.dryFireCooldown--;
+			return;
+		}
+		this.dryFireCooldown = DRY_FIRE_CLICK_INTERVAL_TICKS;
+		this.shooter.playSound(P7Sounds.WEAPON_DRY_FIRE.get(), 0.5f,
+				1.2f + this.shooter.getRandom().nextFloat() * 0.15f);
 	}
 
 	/**
@@ -238,6 +275,11 @@ public class GunAttackGoal extends Goal {
 		if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
 			return;
 		}
+		if (this.shooter instanceof MagazineFed magazineFed && !magazineFed.consumeRound()) {
+			// Belt-and-braces: tick()'s isOutOfAmmo() check should already have
+			// kept this from being reached, but if it is, don't fire a free shot.
+			return;
+		}
 		Vec3d muzzle = this.shooter.getEyePos();
 		Vec3d aim = aimCenter;
 
@@ -266,10 +308,24 @@ public class GunAttackGoal extends Goal {
 			point = point.add(step);
 			world.spawnParticles(ParticleTypes.CRIT, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
 		}
+		HitscanImpact.ejectCasing(world, muzzle, this.shooter.getRandom());
 
 		this.playFireSound();
 		if (hit) {
+			if (this.bypassesIframes()) {
+				// Rapid fire: zero the target's post-hit invulnerability timer
+				// so this hit actually lands instead of every other round in a
+				// hose doing nothing — see the gun-feel pass. Paired with a
+				// knockback well below vanilla melee's ~0.4 baseline (below) so
+				// a burst doesn't juggle its target into the air instead of
+				// just hitting hard.
+				target.hurtTime = 0;
+			}
 			target.damage(this.shooter.getDamageSources().mobAttack(this.shooter), this.damage);
+			Vec3d shove = target.getPos().subtract(this.shooter.getPos());
+			if (shove.lengthSquared() > 1.0E-4) {
+				target.takeKnockback(this.roundClass.knockbackStrength(), shove.x, shove.z);
+			}
 		} else if (this.whistleCooldown <= 0 && missOffset.length() < NEAR_MISS_THRESHOLD * spreadScale) {
 			// Close graze: a whistle/crack right past the target's ears.
 			// Suppressive fire scales the threshold up along with the wider
@@ -282,7 +338,32 @@ public class GunAttackGoal extends Goal {
 
 		// Wherever the round actually lands — chews up whatever block or
 		// fluid caught it, hit or miss.
-		HitscanImpact.resolve(world, muzzle, aim, this.range, this.shooter);
+		HitscanImpact.resolve(world, muzzle, aim, this.range, this.shooter, this.roundClass);
+	}
+
+	/**
+	 * Whether this weapon bypasses the target's brief post-hit invulnerability
+	 * window so rapid fire actually stacks damage instead of every other round
+	 * doing nothing. True by default — most Program guns hose rather than
+	 * plink. A single well-spaced heavy shot (the sniper) overrides this to
+	 * {@code false} and keeps normal invulnerability handling instead.
+	 */
+	protected boolean bypassesIframes() {
+		return true;
+	}
+
+	/**
+	 * Loud, low-pitched "the gun's opening up" report played once when this
+	 * goal starts engaging a target — distinct from {@link #playFireSound()}'s
+	 * quieter per-shot tick, per the gun-feel pass ("loud/weighty," not a tiny
+	 * click on every round). Reuses {@link P7Sounds#MORTAR_FIRE} pitched low
+	 * as a placeholder heavy report.
+	 */
+	protected void playOpeningFireCue() {
+		if (this.shooter.getWorld() instanceof ServerWorld world) {
+			ProgramAcoustics.emit(world, this.shooter.getEyePos(), P7Sounds.MORTAR_FIRE.get(),
+					SoundCategory.HOSTILE, 1.3f, 0.7f + this.shooter.getRandom().nextFloat() * 0.1f);
+		}
 	}
 
 	/** Chance of a hit at the given distance. Falls off linearly with range. */

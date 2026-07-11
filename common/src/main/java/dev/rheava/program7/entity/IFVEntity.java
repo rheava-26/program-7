@@ -2,6 +2,7 @@ package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.DeployDronesGoal;
 import dev.rheava.program7.entity.ai.GunAttackGoal;
+import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -52,7 +53,9 @@ public class IFVEntity extends ProgramDroneEntity {
 	protected void initGoals() {
 		// fireInterval 15->7: brings the main gun to ~2.9 rounds/sec so a
 		// straight gunfight with it actually feels sustained (see #1).
-		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 18.0, 7, 4.0f));
+		// Damage 4.0->11.0 (gun-feel pass), MEDIUM caliber autocannon — the
+		// differentiated-rounds pass groups this with the gunboat's deck gun.
+		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 18.0, 7, 11.0f, RoundClass.MEDIUM));
 		this.goalSelector.add(2, new DeployDronesGoal(this));
 		this.goalSelector.add(3, new WanderAroundFarGoal(this, 0.7));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));

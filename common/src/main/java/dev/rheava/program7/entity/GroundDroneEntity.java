@@ -3,6 +3,7 @@ package dev.rheava.program7.entity;
 import dev.rheava.program7.entity.ai.GunAttackGoal;
 import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
 import dev.rheava.program7.entity.ai.PatrolPerimeterGoal;
+import dev.rheava.program7.entity.ai.RoundClass;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -57,7 +58,9 @@ public class GroundDroneEntity extends ProgramDroneEntity {
 	protected void initGoals() {
 		// fireInterval 25->10: perimeter pest control still needs to feel
 		// like real automatic fire, ~2 rounds/sec instead of 0.8 (see #1).
-		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 14.0, 10, 3.5f));
+		// Damage 3.5->10.0 (gun-feel pass: kills a 20 HP hostile in ~2-3
+		// bypassed-iframe hits), LIGHT caliber small arms.
+		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 14.0, 10, 10.0f, RoundClass.LIGHT));
 		this.goalSelector.add(2, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(3, new PatrolPerimeterGoal(this, 0.8, 12));
 		this.goalSelector.add(4, new WanderAroundFarGoal(this, 0.7));

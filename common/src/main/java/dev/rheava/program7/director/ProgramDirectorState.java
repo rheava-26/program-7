@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.advancement.P7Advancements;
+import dev.rheava.program7.block.AssemblerBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.ProbeCoreBlockEntity;
 import dev.rheava.program7.block.StorageDeckBlock;
@@ -57,6 +58,9 @@ public class ProgramDirectorState extends PersistentState {
 	/** Earliest insertion: 2 in-game days, plus up to 1 day of drift. */
 	private static final long MIN_LANDING_DELAY = 48000L;
 	private static final int LANDING_DELAY_DRIFT = 24000;
+	/** Pods/probes land at least this far from the anchoring player — a base within casual walking distance defeats the point. */
+	private static final int LANDING_MIN_DISTANCE = 1000;
+	private static final int LANDING_MAX_DISTANCE = 1600;
 	/**
 	 * Raze the last base and the invasion regroups rather than ending: the
 	 * Program waits this long (4 in-game days, plus up to 2 of drift) before
@@ -240,7 +244,7 @@ public class ProgramDirectorState extends PersistentState {
 			} else if (world.getTime() >= this.landingDeadline && !world.getPlayers().isEmpty()) {
 				ServerPlayerEntity anchor = world.getPlayers()
 						.get(world.getRandom().nextInt(world.getPlayers().size()));
-				this.deployPod(world, anchor, 300, 600);
+				this.deployPod(world, anchor, LANDING_MIN_DISTANCE, LANDING_MAX_DISTANCE);
 			}
 		}
 
@@ -581,6 +585,8 @@ public class ProgramDirectorState extends PersistentState {
 	 */
 	public static void deployProbeAt(ServerWorld world, BlockPos pos) {
 		world.setBlockState(pos, P7Blocks.PROBE_CORE.get().getDefaultState());
+		// Flatten/plate/ring the landing site before anything else goes down.
+		BasePad.build(world, pos);
 		placeAssembler(world, pos);
 		placeLaunchCatapult(world, pos);
 		placeFuelPlant(world, pos);
@@ -600,6 +606,8 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		// Every pod arrives with a stockpile; re-insertions restock the war.
 		POD_STOCKPILE.forEach(state::addResource);
+		// Clear a plated stockpile apron by the core and seed the ammo runners.
+		BasePad.buildStockpile(world, pos, state.getSupplyNetwork());
 		state.markDirty();
 	}
 
@@ -714,18 +722,19 @@ public class ProgramDirectorState extends PersistentState {
 	 * falls back to due north of the core if the terrain doesn't cooperate.
 	 */
 	private static void placeAssembler(ServerWorld world, BlockPos core) {
+		BlockState masterState = P7Blocks.ASSEMBLER.get().getDefaultState();
 		for (Direction direction : Direction.Type.HORIZONTAL) {
 			BlockPos base = core.offset(direction, 3);
 			for (int dy = 2; dy >= -3; dy--) {
 				BlockPos candidate = base.up(dy);
-				if (world.getBlockState(candidate).isReplaceable()
+				if (AssemblerBlock.footprintClear(world, candidate)
 						&& world.getBlockState(candidate.down()).isSolidBlock(world, candidate.down())) {
-					world.setBlockState(candidate, P7Blocks.ASSEMBLER.get().getDefaultState());
+					AssemblerBlock.placeMultiblock(world, candidate, masterState);
 					return;
 				}
 			}
 		}
-		world.setBlockState(core.north(3), P7Blocks.ASSEMBLER.get().getDefaultState());
+		AssemblerBlock.placeMultiblock(world, core.north(3), masterState);
 	}
 
 	/**

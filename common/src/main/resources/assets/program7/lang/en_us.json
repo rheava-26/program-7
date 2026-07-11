@@ -39,6 +39,9 @@
   "block.program7.storage_deck": "Storage Deck",
   "block.program7.fuel_plant": "Fuel Plant",
   "block.program7.metal_scaffold": "Metal Scaffold",
+  "block.program7.plating": "Plating",
+  "block.program7.barrier_post": "Barrier Post",
+  "block.program7.ammo_box": "Ammo Box",
 
   "entity.program7.surveyor_drone": "Surveyor Drone",
   "entity.program7.air_uav": "Air UAV",
@@ -114,5 +117,6 @@
   "subtitles.program7.entity.air_uav.engine_loop": "Engine drones past",
   "subtitles.program7.unit.tank_tracks_loop": "Tracks grind closer",
   "subtitles.program7.entity.gunboat.engine_loop": "Engine throbs",
-  "subtitles.program7.entity.mining_drone.laser": "Mining laser whines"
+  "subtitles.program7.entity.mining_drone.laser": "Mining laser whines",
+  "subtitles.program7.unit.weapon_dry_fire": "Weapon clicks empty"
 }

@@ -15,8 +15,9 @@ public class AntiAirAttackGoal extends GunAttackGoal {
 	/** Flat hit chance regardless of distance — flak, not a sniper falloff. */
 	private static final double FLAK_HIT_CHANCE = 0.65;
 
-	public AntiAirAttackGoal(ProgramDroneEntity shooter, double range, int fireInterval, float damage) {
-		super(shooter, 0.0, range, fireInterval, damage);
+	public AntiAirAttackGoal(ProgramDroneEntity shooter, double range, int fireInterval, float damage,
+			RoundClass roundClass) {
+		super(shooter, 0.0, range, fireInterval, damage, roundClass);
 	}
 
 	@Override

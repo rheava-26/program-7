@@ -51,6 +51,8 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> MORTAR_IMPACT = registerRanged("unit.mortar_impact", 192f);
 	/** Fixed emplacements' contact klaxon, latched once per approach — see #8. */
 	public static final RegistrySupplier<SoundEvent> UNIT_ALARM = registerRanged("unit.alarm", 64f);
+	/** Soft "nothing happened" click when a magazine-fed weapon fires dry — see the reload/magazine pass. */
+	public static final RegistrySupplier<SoundEvent> WEAPON_DRY_FIRE = register("unit.weapon_dry_fire");
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_WORKING = register("block.assembler.working");
 	public static final RegistrySupplier<SoundEvent> ASSEMBLER_COMPLETE = register("block.assembler.complete");
 	public static final RegistrySupplier<SoundEvent> CATAPULT_LAUNCH = registerRanged("block.catapult.launch", 96f);

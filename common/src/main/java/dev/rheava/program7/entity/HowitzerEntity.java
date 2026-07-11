@@ -1,6 +1,7 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.HowitzerAttackGoal;
+import dev.rheava.program7.entity.ai.MagazineFed;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -14,7 +15,9 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 /**
@@ -31,7 +34,12 @@ import net.minecraft.world.World;
  * observer / ranging layer yet — that's a later pass per the artillery doc's
  * build order).
  */
-public class HowitzerEntity extends ProgramDroneEntity {
+public class HowitzerEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
+	private static final int MAGAZINE_CAPACITY = 8;
+	private static final String NBT_ROUNDS = "RoundsRemaining";
+
+	private int roundsRemaining = MAGAZINE_CAPACITY;
+
 	public HowitzerEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
 		this.experiencePoints = 35;
@@ -93,5 +101,48 @@ public class HowitzerEntity extends ProgramDroneEntity {
 	@Override
 	protected ArmorProfile armorProfile() {
 		return ArmorProfile.ARMORED_VEHICLE;
+	}
+
+	@Override
+	public int getRoundsRemaining() {
+		return this.roundsRemaining;
+	}
+
+	@Override
+	public int getMagazineCapacity() {
+		return MAGAZINE_CAPACITY;
+	}
+
+	@Override
+	public void loadRounds(int rounds) {
+		this.roundsRemaining = Math.min(MAGAZINE_CAPACITY, this.roundsRemaining + rounds);
+	}
+
+	@Override
+	public Vec3d getWeaponPos() {
+		return this.getPos();
+	}
+
+	@Override
+	public boolean consumeRound() {
+		if (this.roundsRemaining <= 0) {
+			return false;
+		}
+		this.roundsRemaining--;
+		return true;
+	}
+
+	@Override
+	public void writeCustomDataToNbt(NbtCompound nbt) {
+		super.writeCustomDataToNbt(nbt);
+		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);
+	}
+
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt) {
+		super.readCustomDataFromNbt(nbt);
+		if (nbt.contains(NBT_ROUNDS)) {
+			this.roundsRemaining = nbt.getInt(NBT_ROUNDS);
+		}
 	}
 }

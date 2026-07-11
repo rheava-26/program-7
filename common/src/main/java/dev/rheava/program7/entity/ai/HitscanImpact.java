@@ -6,6 +6,7 @@ import java.util.WeakHashMap;
 
 import dev.rheava.program7.Program7;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.particle.BlockStateParticleEffect;
@@ -17,6 +18,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
 import org.jetbrains.annotations.Nullable;
@@ -38,19 +40,28 @@ import org.jetbrains.annotations.Nullable;
  * no {@link Entity} of its own to hand over).
  */
 public final class HitscanImpact {
-	/** Chip damage added to a block's accumulator for every round that lands on it. */
-	private static final float CHIP_PER_HIT = 1.0f;
 	/**
 	 * Break threshold = {@code THRESHOLD_BASE + blastResistance * THRESHOLD_BLAST_SCALE}.
-	 * Tuned so dirt/sand (blast resistance 0.5) go down in ~2 hits, planks
-	 * (3.0) in ~3, stone/cobblestone (6.0) in ~5, and anything with
-	 * obsidian-or-higher resistance (1200+) needs several hundred rounds —
-	 * effectively immune to small-arms fire.
+	 * Retuned (see the gun-feel/terrain-erosion pass) so small arms barely
+	 * erode terrain instead of shredding a wall in one burst: against dirt/
+	 * sand (blast resistance 0.5, threshold 9.0) a {@link RoundClass#LIGHT}
+	 * turret round takes ~22 hits, {@link RoundClass#MEDIUM} ~16, and
+	 * {@link RoundClass#HEAVY} (the gunship's belly gun) ~12 — the floor the
+	 * design calls for. Stone/cobblestone (6.0, threshold 53.0) needs 70+
+	 * rounds even from the heaviest round class — a full magazine and then
+	 * some — reading as effectively small-arms-immune, and anything with
+	 * obsidian-or-higher resistance (1200+) needs many thousands. Sustained
+	 * explosive/howitzer fire is a different code path entirely and isn't
+	 * gated by this at all.
 	 */
-	private static final float THRESHOLD_BASE = 1.5f;
-	private static final float THRESHOLD_BLAST_SCALE = 0.5f;
+	private static final float THRESHOLD_BASE = 5.0f;
+	private static final float THRESHOLD_BLAST_SCALE = 8.0f;
 	/** Crack overlay stages run 0..9; anything higher isn't a valid stage. */
 	private static final int MAX_CRACK_STAGE = 9;
+	/** Baseline particle count for the block-dust impact puff, before {@link RoundClass#particleCountScale()}. */
+	private static final int BASE_IMPACT_PARTICLE_COUNT = 20;
+	/** Baseline spread for the block-dust impact puff, before {@link RoundClass#particleSpreadScale()}. */
+	private static final double BASE_IMPACT_SPREAD = 0.3;
 
 	/** Per-world, per-position chip accumulation. Weak on the world so a closed/unloaded world doesn't leak. */
 	private static final Map<ServerWorld, Map<BlockPos, Float>> CHIP_DAMAGE = new WeakHashMap<>();
@@ -75,13 +86,15 @@ public final class HitscanImpact {
 	 * @param aimPoint where the shot is aimed, after any miss offset has
 	 *                 already been folded in — i.e. where the tracer actually
 	 *                 travels to
-	 * @param range    the weapon's nominal range, used as a floor for how far
-	 *                 to raycast
-	 * @param shooter  entity to attribute a resulting block break to; may be
-	 *                 {@code null} (e.g. a block-entity turret)
+	 * @param range      the weapon's nominal range, used as a floor for how far
+	 *                   to raycast
+	 * @param shooter    entity to attribute a resulting block break to; may be
+	 *                   {@code null} (e.g. a block-entity turret)
+	 * @param roundClass how big this round is — see {@link RoundClass} —
+	 *                   scaling impact-particle size and terrain-chip weight
 	 */
 	public static void resolve(ServerWorld world, Vec3d origin, Vec3d aimPoint, double range,
-			@Nullable Entity shooter) {
+			@Nullable Entity shooter, RoundClass roundClass) {
 		Vec3d toAim = aimPoint.subtract(origin);
 		double aimDistance = toAim.length();
 		if (aimDistance < 1.0e-4) {
@@ -109,20 +122,62 @@ public final class HitscanImpact {
 		if (!state.getFluidState().isEmpty()) {
 			// Water (or lava) caught the round: a splash, no chip damage —
 			// there's nothing here to break.
+			int splashCount = Math.round(10 * roundClass.particleCountScale());
 			world.spawnParticles(ParticleTypes.SPLASH, hitPos.x, hitPos.y, hitPos.z,
-					10, 0.3, 0.1, 0.3, 0.05);
+					splashCount, 0.3, 0.1, 0.3, 0.05);
 			return;
 		}
 		if (state.isAir()) {
 			return;
 		}
 
-		// A little puff of the block's own material on every impact, hit or miss.
-		world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state),
-				hitPos.x, hitPos.y, hitPos.z, 12, 0.25, 0.25, 0.25, 0.0);
-
-		chipBlock(world, pos, state, shooter);
+		spawnImpactEffects(world, hitPos, state, roundClass);
+		chipBlock(world, pos, state, shooter, roundClass);
 	}
+
+	/**
+	 * The visible "something just got hit" tell: a puff of the block's own
+	 * material, a spark pop, and a wisp of smoke, every one of them scaled up
+	 * for a heavier round class so a gunship's belly gun reads as visibly
+	 * more violent on impact than a turret's pop-gun rounds. Runs on every
+	 * hit, hit or miss on the target, since this only cares about what the
+	 * round actually struck.
+	 */
+	private static void spawnImpactEffects(ServerWorld world, Vec3d hitPos, BlockState state, RoundClass roundClass) {
+		int blockDustCount = Math.round(BASE_IMPACT_PARTICLE_COUNT * roundClass.particleCountScale());
+		double spread = BASE_IMPACT_SPREAD * roundClass.particleSpreadScale();
+		world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state),
+				hitPos.x, hitPos.y, hitPos.z, blockDustCount, spread, spread, spread, 0.03);
+
+		int sparkCount = Math.max(3, Math.round(6 * roundClass.particleCountScale()));
+		world.spawnParticles(ParticleTypes.ELECTRIC_SPARK, hitPos.x, hitPos.y, hitPos.z,
+				sparkCount, spread * 0.5, spread * 0.5, spread * 0.5, 0.08);
+
+		int smokeCount = Math.max(2, Math.round(4 * roundClass.particleCountScale()));
+		world.spawnParticles(ParticleTypes.SMOKE, hitPos.x, hitPos.y, hitPos.z,
+				smokeCount, spread * 0.4, spread * 0.4, spread * 0.4, 0.02);
+	}
+
+	/**
+	 * Ejects a single falling shell casing at the muzzle so a gun that's been
+	 * firing visibly litters brass underneath itself — a cheap particle, not
+	 * a real entity. Uses {@link net.minecraft.particle.ParticleTypes#FALLING_DUST}
+	 * (the same physics-driven "falls, settles, fades" particle vanilla uses
+	 * for suspicious sand) tinted with a copper block state for a warm brass
+	 * read, offset a little to the side to suggest an ejection port rather
+	 * than spawning dead-center on the barrel.
+	 */
+	public static void ejectCasing(ServerWorld world, Vec3d muzzle, Random random) {
+		double sideOffset = (random.nextDouble() - 0.5) * 0.6;
+		double x = muzzle.x + sideOffset;
+		double y = muzzle.y - 0.1;
+		double z = muzzle.z + sideOffset;
+		world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.FALLING_DUST, CASING_PARTICLE_STATE),
+				x, y, z, 1, 0.05, 0.02, 0.05, 0.0);
+	}
+
+	/** Warm copper tint stood in for a brass shell casing — see {@link #ejectCasing}. */
+	private static final BlockState CASING_PARTICLE_STATE = Blocks.RAW_COPPER_BLOCK.getDefaultState();
 
 	/**
 	 * Accumulates chip damage on {@code pos} and breaks it once the
@@ -131,7 +186,8 @@ public final class HitscanImpact {
 	 * blocks (negative hardness, e.g. bedrock) or anything in the Program's
 	 * own {@code program7} namespace.
 	 */
-	private static void chipBlock(ServerWorld world, BlockPos pos, BlockState state, @Nullable Entity shooter) {
+	private static void chipBlock(ServerWorld world, BlockPos pos, BlockState state, @Nullable Entity shooter,
+			RoundClass roundClass) {
 		if (!world.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)) {
 			return;
 		}
@@ -149,7 +205,7 @@ public final class HitscanImpact {
 		Map<BlockPos, Float> chip = CHIP_DAMAGE.computeIfAbsent(world, w -> new HashMap<>());
 		float blastResistance = state.getBlock().getBlastResistance();
 		float threshold = THRESHOLD_BASE + blastResistance * THRESHOLD_BLAST_SCALE;
-		float accumulated = chip.getOrDefault(pos, 0.0f) + CHIP_PER_HIT;
+		float accumulated = chip.getOrDefault(pos, 0.0f) + roundClass.terrainChipWeight();
 
 		// A stable id per position for the crack overlay, offset into
 		// negative space so it doesn't collide with any real entity's own

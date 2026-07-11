@@ -1,7 +1,9 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.GunAttackGoal;
+import dev.rheava.program7.entity.ai.MagazineFed;
 import dev.rheava.program7.entity.ai.NavalMoveControl;
+import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -16,6 +18,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -37,13 +40,17 @@ import net.minecraft.world.World;
  * support-infrastructure phase; for now the gunboat is deployed the same
  * way everything else is.
  */
-public class GunboatEntity extends ProgramDroneEntity {
+public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
 	// Buoyancy: how hard the hull shoves itself back toward the surface per
 	// tick once it's been pushed under.
 	private static final double BUOYANCY_RISE = 0.08;
 	// How much of its vertical speed the hull sheds per tick while riding the
 	// surface — a slow bob settling out, not a cork springing back up.
 	private static final double SURFACE_VERTICAL_DAMPING = 0.5;
+	private static final int MAGAZINE_CAPACITY = 30;
+	private static final String NBT_ROUNDS = "RoundsRemaining";
+
+	private int roundsRemaining = MAGAZINE_CAPACITY;
 
 	public GunboatEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -149,6 +156,49 @@ public class GunboatEntity extends ProgramDroneEntity {
 		return this.getMaxAir();
 	}
 
+	@Override
+	public int getRoundsRemaining() {
+		return this.roundsRemaining;
+	}
+
+	@Override
+	public int getMagazineCapacity() {
+		return MAGAZINE_CAPACITY;
+	}
+
+	@Override
+	public void loadRounds(int rounds) {
+		this.roundsRemaining = Math.min(MAGAZINE_CAPACITY, this.roundsRemaining + rounds);
+	}
+
+	@Override
+	public Vec3d getWeaponPos() {
+		return this.getPos();
+	}
+
+	@Override
+	public boolean consumeRound() {
+		if (this.roundsRemaining <= 0) {
+			return false;
+		}
+		this.roundsRemaining--;
+		return true;
+	}
+
+	@Override
+	public void writeCustomDataToNbt(NbtCompound nbt) {
+		super.writeCustomDataToNbt(nbt);
+		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);
+	}
+
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt) {
+		super.readCustomDataFromNbt(nbt);
+		if (nbt.contains(NBT_ROUNDS)) {
+			this.roundsRemaining = nbt.getInt(NBT_ROUNDS);
+		}
+	}
+
 	/**
 	 * The deck gun: {@link GunAttackGoal}'s hitscan-with-tracer model works
 	 * fine unchanged for a slow-swimming shooter, so this only swaps the
@@ -157,7 +207,11 @@ public class GunboatEntity extends ProgramDroneEntity {
 	 */
 	private static final class DeckGunAttackGoal extends GunAttackGoal {
 		DeckGunAttackGoal(GunboatEntity shooter) {
-			super(shooter, 1.0, 28.0, 30, 6.0f);
+			// Damage 6.0->14.0 (gun-feel pass): a single heavy-caliber round,
+			// MEDIUM class alongside the IFV's autocannon (differentiated-
+			// rounds pass) — clearly harder-hitting than either turret's LIGHT
+			// rounds, clearly a rung below the gunship's HEAVY belly gun.
+			super(shooter, 1.0, 28.0, 30, 14.0f, RoundClass.MEDIUM);
 		}
 
 		@Override

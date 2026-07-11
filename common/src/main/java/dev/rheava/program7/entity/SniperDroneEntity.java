@@ -4,6 +4,7 @@ import dev.rheava.program7.director.SupplyNetwork;
 import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.entity.ai.SniperAttackGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -55,7 +56,9 @@ public class SniperDroneEntity extends ProgramDroneEntity {
 		// Engagement range widened to match GENERIC_FOLLOW_RANGE above (96.0)
 		// so acquiring a target at long range actually translates into fire,
 		// not just tracking — this is the standoff platform's whole point.
-		this.goalSelector.add(1, new SniperAttackGoal(this, 1.0, 90.0, 80, 9.0f));
+		// Damage 9.0->14.0 (gun-feel pass: big single-shot weapon, keeps normal
+		// invulnerability handling — see SniperAttackGoal#bypassesIframes).
+		this.goalSelector.add(1, new SniperAttackGoal(this, 1.0, 90.0, 80, 14.0f, RoundClass.HEAVY));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 16.0f));
 		this.goalSelector.add(5, new LookAroundGoal(this));

@@ -1,5 +1,8 @@
 {
   "variants": {
-    "": { "model": "program7:block/assembler" }
+    "part=master": { "model": "program7:block/assembler" },
+    "part=east": { "model": "program7:block/assembler" },
+    "part=south": { "model": "program7:block/assembler" },
+    "part=southeast": { "model": "program7:block/assembler" }
   }
 }

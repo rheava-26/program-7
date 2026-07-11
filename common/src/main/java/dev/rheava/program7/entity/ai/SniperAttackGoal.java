@@ -22,8 +22,8 @@ public class SniperAttackGoal extends GunAttackGoal {
 	private static final double MIN_HIT_CHANCE = 0.75;
 
 	public SniperAttackGoal(ProgramDroneEntity shooter, double speed, double range,
-			int fireInterval, float damage) {
-		super(shooter, speed, range, fireInterval, damage);
+			int fireInterval, float damage, RoundClass roundClass) {
+		super(shooter, speed, range, fireInterval, damage, roundClass);
 	}
 
 	@Override
@@ -76,6 +76,23 @@ public class SniperAttackGoal extends GunAttackGoal {
 		// Floored version of the base falloff: the whole point of this mount
 		// is that range doesn't save you from it.
 		return Math.max(MIN_HIT_CHANCE, super.hitChance(distance));
+	}
+
+	@Override
+	protected boolean bypassesIframes() {
+		// Big single-shot weapon: unlike the base goal's rapid-fire small
+		// arms, the sniper keeps the target's normal post-hit invulnerability
+		// window intact — it doesn't need to bypass it, it just hits hard
+		// (see the mount's damage tuning) and its fireInterval is already far
+		// longer than that window anyway.
+		return false;
+	}
+
+	@Override
+	protected void playOpeningFireCue() {
+		// No separate "opening up" boom: every one of this mount's rounds is
+		// already its own loud, far-carrying report (see playFireSound()
+		// below), so a second cue on acquisition would just double up.
 	}
 
 	@Override

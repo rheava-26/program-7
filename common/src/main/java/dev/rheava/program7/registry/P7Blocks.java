@@ -3,12 +3,15 @@ package dev.rheava.program7.registry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.block.AmmoBoxBlock;
 import dev.rheava.program7.block.AssemblerBlock;
 import dev.rheava.program7.block.AutogunTurretBlock;
 import dev.rheava.program7.block.AutogunTurretBlockEntity;
+import dev.rheava.program7.block.BarrierPostBlock;
 import dev.rheava.program7.block.DroneWreckBlock;
 import dev.rheava.program7.block.FuelPlantBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
+import dev.rheava.program7.block.PlatingBlock;
 import dev.rheava.program7.block.ProbeCoreBlock;
 import dev.rheava.program7.block.StorageDeckBlock;
 import net.minecraft.block.AbstractBlock;
@@ -111,6 +114,29 @@ public final class P7Blocks {
 					.requiresTool()
 					.sounds(BlockSoundGroup.NETHERITE)
 					.luminance(state -> 5)));
+
+	/** Metal deck plate: the Program's landing-pad / stockpile-apron flooring. */
+	public static final RegistrySupplier<Block> PLATING = BLOCKS.register("plating",
+			() -> new PlatingBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(4.0f, 30.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)));
+
+	/** Mechanical barrier post ringing a fresh landing pad — a re-themed fence. */
+	public static final RegistrySupplier<Block> BARRIER_POST = BLOCKS.register("barrier_post",
+			() -> new BarrierPostBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(4.0f, 30.0f)
+					.sounds(BlockSoundGroup.NETHERITE)));
+
+	/** Stacking ammo crate pile (1-4), sea-pickle style — the physical unit AmmoRunGoal draws down. */
+	public static final RegistrySupplier<Block> AMMO_BOX = BLOCKS.register("ammo_box",
+			() -> new AmmoBoxBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(1.0f)
+					.sounds(BlockSoundGroup.NETHERITE)
+					.nonOpaque()));
 
 	public static void register() {
 		BLOCKS.register();

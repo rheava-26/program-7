@@ -30,6 +30,8 @@ public final class SupplyNetwork {
 	public static final int CYCLE_TICKS = 200;
 	/** The only supply type this slice knows about — depot stock, never a ledger key. */
 	public static final String SUPPLY_FUEL = "fuel";
+	/** Ammo depot type — a base's stockpile apron (see {@code director.BasePad#buildStockpile}). */
+	public static final String SUPPLY_AMMO = "ammo";
 
 	/** Fuel plant provision radius (sphere, center = block pos). */
 	public static final int FUEL_PLANT_RADIUS = 64;
@@ -37,6 +39,23 @@ public final class SupplyNetwork {
 	public static final int FUEL_PLANT_CAPACITY = 240;
 	/** FUEL produced per coal consumed from the ledger, at most once per cycle per depot. */
 	public static final int FUEL_PER_COAL = 8;
+
+	/**
+	 * Ammo stockpile provision radius — deliberately tighter than the fuel
+	 * plant's 64: an ammo run is a physical fetch-and-carry trip (see {@code
+	 * entity.ai.AmmoRunGoal}), not a passive aura, so it only needs to cover
+	 * one base's own footprint.
+	 */
+	public static final int AMMO_STOCKPILE_RADIUS = 48;
+	/**
+	 * Stock cap in "crate" units — one unit per {@code AmmoRunGoal} trip.
+	 * Unlike the fuel plant, this slice has no refill loop (no ledger
+	 * conversion wired up yet): a stockpile runs down over real deliveries
+	 * and isn't replenished automatically. See RISKS/NOTES for the natural
+	 * follow-up (an ammo-plant-style ledger refill, mirroring {@link
+	 * #FUEL_PER_COAL}).
+	 */
+	public static final int AMMO_STOCKPILE_CAPACITY = 32;
 
 	private final List<Depot> depots = new ArrayList<>();
 

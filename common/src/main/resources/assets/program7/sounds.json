@@ -172,5 +172,11 @@
     "sounds": [
       { "name": "minecraft:block.beacon.power_select", "type": "event" }
     ]
+  },
+  "unit.weapon_dry_fire": {
+    "subtitle": "subtitles.program7.unit.weapon_dry_fire",
+    "sounds": [
+      { "name": "minecraft:block.dispenser.fail", "type": "event" }
+    ]
   }
 }

@@ -7,6 +7,7 @@ import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
 import dev.rheava.program7.entity.ai.RetreatGoal;
+import dev.rheava.program7.entity.ai.RoundClass;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -51,7 +52,8 @@ public class MediumAttackDroneEntity extends ProgramDroneEntity {
 		this.goalSelector.add(0, new RetreatGoal(this));
 		// fireInterval 20->8: "keeps strafing and hosing" per the class doc
 		// should read as ~2.5 rounds/sec, not one shot a second (see #1).
-		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 16.0, 8, 3.0f));
+		// Damage 3.0->10.0 (gun-feel pass), LIGHT caliber small arms.
+		this.goalSelector.add(1, new GunAttackGoal(this, 1.0, 16.0, 8, 10.0f, RoundClass.LIGHT));
 		this.goalSelector.add(2, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(3, new HoverWanderGoal(this));
 		this.goalSelector.add(4, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));

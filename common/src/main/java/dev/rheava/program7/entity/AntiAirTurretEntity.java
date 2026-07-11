@@ -1,6 +1,8 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.AntiAirAttackGoal;
+import dev.rheava.program7.entity.ai.MagazineFed;
+import dev.rheava.program7.entity.ai.RoundClass;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -11,6 +13,8 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 /**
@@ -26,9 +30,13 @@ import net.minecraft.world.World;
  * drones exist and "airborne" needs a real altitude check instead of just
  * elytra.
  */
-public class AntiAirTurretEntity extends ProgramDroneEntity {
+public class AntiAirTurretEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
 	/** Matches the flak mount's own engagement range — see {@link #initGoals}. */
 	private static final double ALARM_DETECTION_RANGE = 40.0;
+	private static final int MAGAZINE_CAPACITY = 20;
+	private static final String NBT_ROUNDS = "RoundsRemaining";
+
+	private int roundsRemaining = MAGAZINE_CAPACITY;
 
 	public AntiAirTurretEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -60,7 +68,10 @@ public class AntiAirTurretEntity extends ProgramDroneEntity {
 
 	@Override
 	protected void initGoals() {
-		this.goalSelector.add(1, new AntiAirAttackGoal(this, 40.0, 8, 2.0f));
+		// Damage 2.0->6.0 (gun-feel pass), LIGHT caliber like the autogun
+		// turret it's bolted beside — turrets stay weaker than a mobile gun
+		// of the same barrel size.
+		this.goalSelector.add(1, new AntiAirAttackGoal(this, 40.0, 8, 6.0f, RoundClass.LIGHT));
 		this.goalSelector.add(7, new LookAroundGoal(this));
 
 		this.targetSelector.add(1, new RevengeGoal(this));
@@ -68,6 +79,35 @@ public class AntiAirTurretEntity extends ProgramDroneEntity {
 		// Only elytra users read as airborne for now — see the class javadoc.
 		this.targetSelector.add(3, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false,
 				target -> target instanceof PlayerEntity player && player.isFallFlying()));
+	}
+
+	@Override
+	public int getRoundsRemaining() {
+		return this.roundsRemaining;
+	}
+
+	@Override
+	public int getMagazineCapacity() {
+		return MAGAZINE_CAPACITY;
+	}
+
+	@Override
+	public void loadRounds(int rounds) {
+		this.roundsRemaining = Math.min(MAGAZINE_CAPACITY, this.roundsRemaining + rounds);
+	}
+
+	@Override
+	public Vec3d getWeaponPos() {
+		return this.getPos();
+	}
+
+	@Override
+	public boolean consumeRound() {
+		if (this.roundsRemaining <= 0) {
+			return false;
+		}
+		this.roundsRemaining--;
+		return true;
 	}
 
 	@Override
@@ -89,5 +129,19 @@ public class AntiAirTurretEntity extends ProgramDroneEntity {
 	@Override
 	public boolean isRangedAttacker() {
 		return true;
+	}
+
+	@Override
+	public void writeCustomDataToNbt(NbtCompound nbt) {
+		super.writeCustomDataToNbt(nbt);
+		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);
+	}
+
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt) {
+		super.readCustomDataFromNbt(nbt);
+		if (nbt.contains(NBT_ROUNDS)) {
+			this.roundsRemaining = nbt.getInt(NBT_ROUNDS);
+		}
 	}
 }

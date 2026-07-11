@@ -32,9 +32,12 @@ public class HowitzerAttackGoal extends Goal {
 	private static final double FLIGHT_TICKS = 80.0;
 	/** Max scatter on the impact point, in either direction on each axis. */
 	private static final double MAX_SPREAD = 3.0;
+	/** Minimum gap between "the tube's dry" clicks so a starved battery doesn't spam it every tick. */
+	private static final int DRY_FIRE_CLICK_INTERVAL_TICKS = 40;
 
 	private final HowitzerEntity shooter;
 	private int cooldown;
+	private int dryFireCooldown;
 
 	public HowitzerAttackGoal(HowitzerEntity shooter) {
 		this.shooter = shooter;
@@ -74,8 +77,26 @@ public class HowitzerAttackGoal extends Goal {
 		if (distance < MIN_RANGE || distance > MAX_RANGE || !this.hasClearSky()) {
 			return;
 		}
+		if (!this.shooter.consumeRound()) {
+			// Magazine's dry: click occasionally instead of firing a free
+			// shell, and don't reset the fire cooldown so it retries as soon
+			// as a resupply tops the tube back up.
+			this.tickDryFireClick();
+			return;
+		}
 		this.fire(target);
 		this.cooldown = FIRE_INTERVAL;
+	}
+
+	/** Plays the empty-magazine click on a cooldown so a starved tube doesn't spam it every tick. */
+	private void tickDryFireClick() {
+		if (this.dryFireCooldown > 0) {
+			this.dryFireCooldown--;
+			return;
+		}
+		this.dryFireCooldown = DRY_FIRE_CLICK_INTERVAL_TICKS;
+		this.shooter.playSound(P7Sounds.WEAPON_DRY_FIRE.get(), 0.6f,
+				0.9f + this.shooter.getRandom().nextFloat() * 0.15f);
 	}
 
 	/** The tube needs open air above it to fire — no roofs, no canopy. */

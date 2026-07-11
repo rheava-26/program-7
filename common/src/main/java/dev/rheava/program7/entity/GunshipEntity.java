@@ -4,6 +4,8 @@ import dev.rheava.program7.entity.ai.BurstGunAttackGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
+import dev.rheava.program7.entity.ai.MagazineFed;
+import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -16,7 +18,9 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 /**
@@ -40,7 +44,12 @@ import net.minecraft.world.World;
  * simply doesn't override {@link #fleeHealthFraction()}, so the inherited
  * {@code 0.0f} default holds: no {@code RetreatGoal}, fights to the end.
  */
-public class GunshipEntity extends ProgramDroneEntity {
+public class GunshipEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
+	private static final int MAGAZINE_CAPACITY = 40;
+	private static final String NBT_ROUNDS = "RoundsRemaining";
+
+	private int roundsRemaining = MAGAZINE_CAPACITY;
+
 	public GunshipEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
 		// Mass 8.0 vs. the heavy attack drone's 4.0: half the yaw-rate cap and a
@@ -66,7 +75,9 @@ public class GunshipEntity extends ProgramDroneEntity {
 		// No RetreatGoal/priority-0 flee entry here on purpose: the apex fights
 		// to the end (see class doc). The belly autocannon out-ranges the heavy
 		// attack drone's gun (30 vs. 24) to read as a genuine standoff platform.
-		this.goalSelector.add(0, new BurstGunAttackGoal(this, 0.7, 30.0, 6, 45, 5.0f));
+		// Damage 5.0->17.0/shot (gun-feel + differentiated-rounds pass): HEAVY
+		// caliber, clearly the hardest-hitting round in the arsenal.
+		this.goalSelector.add(0, new BurstGunAttackGoal(this, 0.7, 30.0, 6, 45, 17.0f, RoundClass.HEAVY));
 		this.goalSelector.add(1, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(2, new HoverWanderGoal(this));
 		this.goalSelector.add(3, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));
@@ -115,6 +126,49 @@ public class GunshipEntity extends ProgramDroneEntity {
 	@Override
 	public boolean isRangedAttacker() {
 		return true;
+	}
+
+	@Override
+	public int getRoundsRemaining() {
+		return this.roundsRemaining;
+	}
+
+	@Override
+	public int getMagazineCapacity() {
+		return MAGAZINE_CAPACITY;
+	}
+
+	@Override
+	public void loadRounds(int rounds) {
+		this.roundsRemaining = Math.min(MAGAZINE_CAPACITY, this.roundsRemaining + rounds);
+	}
+
+	@Override
+	public Vec3d getWeaponPos() {
+		return this.getPos();
+	}
+
+	@Override
+	public boolean consumeRound() {
+		if (this.roundsRemaining <= 0) {
+			return false;
+		}
+		this.roundsRemaining--;
+		return true;
+	}
+
+	@Override
+	public void writeCustomDataToNbt(NbtCompound nbt) {
+		super.writeCustomDataToNbt(nbt);
+		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);
+	}
+
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt) {
+		super.readCustomDataFromNbt(nbt);
+		if (nbt.contains(NBT_ROUNDS)) {
+			this.roundsRemaining = nbt.getInt(NBT_ROUNDS);
+		}
 	}
 
 	// isFlier() is intentionally not overridden: ProgramDroneEntity's default
