@@ -23,6 +23,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 /**
  * Shared "where did the round actually land" resolver for every hitscan
@@ -69,11 +70,13 @@ public final class HitscanImpact {
 
 	/**
 	 * The tracer: a thin, soft red streak (the {@code DUST} particle is a small
-	 * rounded glow, not a blocky sparkle) drawn muzzle-to-impact. Packed-int
-	 * color per the 1.20.5+ {@link DustParticleEffect} constructor; scale below
-	 * 1.0 keeps each dot small so the line reads thin.
+	 * rounded glow, not a blocky sparkle) drawn muzzle-to-impact. This Yarn
+	 * mapping's {@link DustParticleEffect} takes a {@link Vector3f} colour
+	 * (0..1 RGB, here ~0xE01818 red); scale below 1.0 keeps each dot small so
+	 * the line reads thin.
 	 */
-	private static final DustParticleEffect TRACER = new DustParticleEffect(0xE01818, 0.6f);
+	private static final DustParticleEffect TRACER =
+			new DustParticleEffect(new Vector3f(0.88f, 0.09f, 0.09f), 0.6f);
 	/** Spacing (blocks) between tracer dots — tight, so the streak looks continuous rather than dotted. */
 	private static final double TRACER_SPACING = 0.4;
 
