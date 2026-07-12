@@ -53,15 +53,15 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 	// How much of its vertical speed the hull sheds per tick while riding the
 	// surface — a slow bob settling out, not a cork springing back up.
 	private static final double SURFACE_VERTICAL_DAMPING = 0.5;
-	private static final int MAGAZINE_CAPACITY = 30;
+	private static final int MAGAZINE_CAPACITY = 48;
 	private static final String NBT_ROUNDS = "RoundsRemaining";
 
 	private int roundsRemaining = MAGAZINE_CAPACITY;
 
 	// Secondary point-defense: two light beam turrets (port + starboard) that
-	// fend off hostile mobs on their own fast cadence and unlimited light ammo
-	// — kept off the deck gun's magazine so mob defense never starves the main
-	// gun. See tickSecondaryTurrets.
+	// fend off hostile mobs on a fast cadence. They draw from the ship's own
+	// magazine — no free ammo — so a boat that's been fending off a swarm runs
+	// its main gun dry too and has to be resupplied. See tickSecondaryTurrets.
 	private static final double SECONDARY_RANGE = 16.0;
 	private static final int SECONDARY_INTERVAL = 12;
 	private static final float SECONDARY_DAMAGE = 5.0f;
@@ -77,7 +77,9 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 120.0)
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.35)
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
+				// Long acquisition so it can lock and bombard from well out — a
+				// standoff artillery platform, not just a close-in gunboat.
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 120.0)
 				.add(EntityAttributes.GENERIC_ARMOR, 16.0)
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0)
 				// No traction on dry land anyway, so climbing a step is moot;
@@ -186,6 +188,10 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 		if (mob == null) {
 			return;
 		}
+		// Draw from the ship's magazine — the secondaries aren't free ammo.
+		if (!this.consumeRound()) {
+			return;
+		}
 		this.secondaryCooldown = SECONDARY_INTERVAL;
 
 		// Muzzle at the beam turret on the side the mob is on.
@@ -286,35 +292,37 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 	}
 
 	/**
-	 * The deck gun. Flat, aimed direct fire ({@link GunAttackGoal}'s
-	 * hitscan-with-tracer model) at targets in sight within {@link
-	 * #DIRECT_RANGE}; beyond that, or at a target ducked behind terrain, it
-	 * lobs gravity-arced shells — the same {@link HowitzerShellEntity} the
-	 * artillery fires — out to {@link #BOMBARD_RANGE}. A naval gun that does
-	 * both direct fire and indirect shore bombardment.
+	 * The deck gun — both modes fire real shells (no hitscan): a flat, fast
+	 * direct shell at targets in sight within {@link #DIRECT_RANGE}, and a
+	 * gravity-arced bombardment shell (the same {@link HowitzerShellEntity} the
+	 * artillery fires) at anything beyond that or ducked behind terrain, out to
+	 * {@link #BOMBARD_RANGE} — several chunks of indirect reach.
 	 */
 	private static final class DeckGunAttackGoal extends GunAttackGoal {
 		/** Flat direct-fire reach; beyond this the gun arcs shells instead. */
-		private static final double DIRECT_RANGE = 28.0;
-		/** Indirect bombardment reach — arcing shells lobbed over terrain. */
-		private static final double BOMBARD_RANGE = 68.0;
+		private static final double DIRECT_RANGE = 40.0;
+		/** Indirect bombardment reach — arcing shells lobbed over terrain (~7 chunks). */
+		private static final double BOMBARD_RANGE = 112.0;
 		/** Slow, heavy cadence between bombardment rounds. */
 		private static final int BOMBARD_INTERVAL = 80;
-		/** Fixed shell flight time for the ballistic solve (same idea as HowitzerAttackGoal). */
-		private static final double FLIGHT_TICKS = 75.0;
+		/** Fixed flight time for the arcing ballistic solve (same idea as HowitzerAttackGoal). */
+		private static final double FLIGHT_TICKS = 90.0;
+		/** Flat direct-fire shell speed, blocks/tick. */
+		private static final double DIRECT_SHELL_SPEED = 2.8;
+		/** HowitzerShellEntity's gravity — used to compensate drop on a flat shot. */
+		private static final double SHELL_GRAVITY = 0.045;
 
 		DeckGunAttackGoal(GunboatEntity shooter) {
-			// Damage 14.0, MEDIUM class (differentiated-rounds pass): a heavy-
-			// caliber round, above the turrets' LIGHT and below the gunship's
-			// HEAVY belly gun.
+			// MEDIUM class, cadence 30 ticks between direct rounds. The shell's
+			// own explosion does the damage now, not a hitscan number.
 			super(shooter, 1.0, DIRECT_RANGE, 30, 14.0f, RoundClass.MEDIUM);
 		}
 
 		@Override
 		protected int engage(LivingEntity target, double distance, boolean canSee) {
-			// In sight and close: flat, aimed direct fire.
+			// In sight and close: a fast, flat direct shell.
 			if (canSee && distance <= DIRECT_RANGE) {
-				this.fire(target, distance);
+				this.fireDirectShell(target);
 				return this.fireInterval;
 			}
 			// Too far, or the target ducked behind terrain: lob an arcing shell
@@ -325,6 +333,30 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 				return BOMBARD_INTERVAL;
 			}
 			return 0;
+		}
+
+		/** A flat, fast direct-fire shell aimed straight at the target, with drop compensation so it lands on the mark. */
+		private void fireDirectShell(LivingEntity target) {
+			if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
+				return;
+			}
+			if (this.shooter instanceof MagazineFed magazineFed && !magazineFed.consumeRound()) {
+				return;
+			}
+			Vec3d muzzle = this.shooter.getEyePos().add(0.0, 0.5, 0.0);
+			Vec3d aim = target.getBoundingBox().getCenter();
+			this.shooter.playSound(P7Sounds.MORTAR_FIRE.get(), 1.6f, 0.95f);
+			world.spawnParticles(ParticleTypes.LARGE_SMOKE, muzzle.x, muzzle.y, muzzle.z, 8, 0.25, 0.1, 0.25, 0.03);
+			HowitzerShellEntity shell = new HowitzerShellEntity(world, this.shooter);
+			shell.setPosition(muzzle.x, muzzle.y, muzzle.z);
+			Vec3d delta = aim.subtract(muzzle);
+			double dist = Math.max(delta.length(), 1.0e-4);
+			double flight = dist / DIRECT_SHELL_SPEED;
+			Vec3d dir = delta.multiply(1.0 / dist);
+			double vyComp = 0.5 * SHELL_GRAVITY * flight;
+			shell.setVelocity(dir.x * DIRECT_SHELL_SPEED, dir.y * DIRECT_SHELL_SPEED + vyComp,
+					dir.z * DIRECT_SHELL_SPEED);
+			world.spawnEntity(shell);
 		}
 
 		/** Launches a gravity-arced shell toward {@code aim} with the same simple ballistic solve the howitzer uses. */
