@@ -145,9 +145,9 @@ public final class P7Blocks {
 	/** General-cargo shipping crate the drones haul non-modded loot in. */
 	public static final RegistrySupplier<Block> CRATE = BLOCKS.register("crate",
 			() -> new CrateBlock(AbstractBlock.Settings.create()
-					.mapColor(MapColor.BROWN)
+					.mapColor(MapColor.GRAY)
 					.strength(1.0f)
-					.sounds(BlockSoundGroup.WOOD)
+					.sounds(BlockSoundGroup.NETHERITE)
 					.nonOpaque()));
 
 	/** Tall autocannon magazine cargo (1-4) — medium-weapon rounds. */
