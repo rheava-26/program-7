@@ -4,6 +4,7 @@ import dev.rheava.program7.director.SupplyNetwork;
 import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
+import dev.rheava.program7.entity.ai.RetreatGoal;
 import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.entity.ai.SniperAttackGoal;
 import net.minecraft.entity.EntityType;
@@ -53,6 +54,12 @@ public class SniperDroneEntity extends ProgramDroneEntity {
 
 	@Override
 	protected void initGoals() {
+		// Priority 0: once the onboard magazine runs dry (or the battery sags to
+		// low charge) SniperAttackGoal's break-off calls beginRetreat, and this
+		// goal is what actually backs the sniper away to rearm before it returns
+		// to its firing line. Only fires while retreating, so it never disturbs
+		// the mount's normal standoff kiting.
+		this.goalSelector.add(0, new RetreatGoal(this));
 		// Engagement range widened to match GENERIC_FOLLOW_RANGE above (96.0)
 		// so acquiring a target at long range actually translates into fire,
 		// not just tracking — this is the standoff platform's whole point.
@@ -89,6 +96,15 @@ public class SniperDroneEntity extends ProgramDroneEntity {
 	@Override
 	public boolean isRangedAttacker() {
 		return true;
+	}
+
+	@Override
+	public int getMagazineSize() {
+		// Onboard magazine (see ProgramDroneEntity#getMagazineSize): a small
+		// 10-round magazine on a big, slow-firing standoff gun — the sniper
+		// backs off to rearm after a handful of aimed shots rather than firing
+		// forever from range.
+		return 10;
 	}
 
 	@Nullable

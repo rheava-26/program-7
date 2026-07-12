@@ -104,6 +104,14 @@ public class HeavyAttackDroneEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	public int getMagazineSize() {
+		// Onboard magazine (see ProgramDroneEntity#getMagazineSize): ~48 rounds
+		// is a dozen 4-shot bursts before this heavy peels off to rearm — a long
+		// belt to match a Tier 3 gun flyer's staying power.
+		return 48;
+	}
+
+	@Override
 	protected float fleeHealthFraction() {
 		// A heavy holds the line far longer than a light strafer — it only
 		// breaks contact once it's nearly wrecked, buying a tense "it's

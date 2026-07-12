@@ -58,6 +58,8 @@ public class GunAttackGoal extends Goal {
 	private static final double SUPPRESSIVE_FIRE_INTERVAL_SCALE = 0.5;
 	/** Minimum gap between "magazine's empty" clicks so a shooter stuck dry doesn't spam it every tick. */
 	private static final int DRY_FIRE_CLICK_INTERVAL_TICKS = 40;
+	/** Ticks a mobile combat drone spends breaking off to rearm/recharge once it runs dry. */
+	private static final int RESUPPLY_BREAKOFF_TICKS = 100;
 
 	// shooter/range/damage/fireInterval are protected: subclasses (the
 	// sniper's standoff variant) build their own movement, accuracy, and
@@ -135,6 +137,15 @@ public class GunAttackGoal extends Goal {
 		}
 		this.shooter.getLookControl().lookAt(target, 30.0f, 30.0f);
 
+		if (this.handleResupplyBreakoff(target)) {
+			// Dry or on a dead battery: hold still this tick while the break-off
+			// hands the drone to its RetreatGoal (see the method below).
+			if (this.speed > 0) {
+				this.shooter.getNavigation().stop();
+			}
+			return;
+		}
+
 		if (this.isOutOfAmmo()) {
 			// Dry: hold position (a closing-in mount stops advancing on a
 			// target it can't actually shoot at) and click occasionally
@@ -170,6 +181,32 @@ public class GunAttackGoal extends Goal {
 	/** Whether this weapon has a finite magazine (see {@link ReloadableWeapon}) that's currently run dry. */
 	protected boolean isOutOfAmmo() {
 		return this.shooter instanceof ReloadableWeapon reloadable && reloadable.needsReload();
+	}
+
+	/**
+	 * Power/ammo break-off gate for a mobile combat drone: a gun drone that
+	 * carries its own onboard magazine (see {@link
+	 * ProgramDroneEntity#getMagazineSize()}) peels off to rearm the moment it
+	 * runs out of ammo <em>or</em> its battery sags to low charge, instead of
+	 * dry-firing in place or fighting on a dead battery. {@link
+	 * ProgramDroneEntity#beginRetreat} hands it to its {@code RetreatGoal},
+	 * and the round trip tops both the magazine and the battery back up on
+	 * return (see {@code ProgramDroneEntity#tickMovement}). Returns whether the
+	 * drone is breaking off — the caller should not fire this tick. A no-op for
+	 * every unit without an onboard magazine (fixed emplacements, fed straight
+	 * from a depot, and unarmed units alike), so their behaviour is untouched.
+	 */
+	protected boolean handleResupplyBreakoff(LivingEntity target) {
+		if (this.shooter.getMagazineSize() <= 0) {
+			return false;
+		}
+		if (this.shooter.hasAmmo() && !this.shooter.isLowCharge()) {
+			return false;
+		}
+		if (!this.shooter.isRetreating()) {
+			this.shooter.beginRetreat(target, RESUPPLY_BREAKOFF_TICKS);
+		}
+		return true;
 	}
 
 	/** Plays the empty-magazine click on a cooldown so a shooter stuck dry doesn't spam it every tick. */
@@ -278,6 +315,12 @@ public class GunAttackGoal extends Goal {
 		if (this.shooter instanceof MagazineFed magazineFed && !magazineFed.consumeRound()) {
 			// Belt-and-braces: tick()'s isOutOfAmmo() check should already have
 			// kept this from being reached, but if it is, don't fire a free shot.
+			return;
+		}
+		if (!this.shooter.consumeDroneRound()) {
+			// Same belt-and-braces for a mobile drone's onboard magazine: the
+			// break-off gate should have caught an empty one, but never fire a
+			// free round if it somehow emptied between the check and the shot.
 			return;
 		}
 		Vec3d muzzle = this.shooter.getEyePos();

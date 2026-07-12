@@ -33,6 +33,26 @@ public class StorageDeckBlockEntity extends BlockEntity {
 		this.markDirty();
 	}
 
+	/**
+	 * Drop a single stack into the first empty slot, without disturbing
+	 * anything already stored. Used when an adjacent {@link CrateBlockEntity}
+	 * unpacks its cargo into the deck. Returns {@code false} if the deck is
+	 * full, so the caller can spill the overflow into the world instead.
+	 */
+	public boolean offer(ItemStack stack) {
+		if (stack.isEmpty()) {
+			return true;
+		}
+		for (int i = 0; i < this.items.size(); i++) {
+			if (this.items.get(i).isEmpty()) {
+				this.items.set(i, stack);
+				this.markDirty();
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** Pull the next stack out of storage. */
 	public ItemStack takeNextStack() {
 		for (int i = 0; i < this.items.size(); i++) {

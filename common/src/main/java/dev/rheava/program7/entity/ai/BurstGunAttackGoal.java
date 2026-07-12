@@ -73,6 +73,16 @@ public class BurstGunAttackGoal extends GunAttackGoal {
 		}
 		this.shooter.getLookControl().lookAt(target, 30.0f, 30.0f);
 
+		if (this.handleResupplyBreakoff(target)) {
+			// Dry or on a dead battery: cut the burst short and hold still while
+			// the break-off hands the drone to its RetreatGoal to rearm.
+			if (this.speed > 0) {
+				this.shooter.getNavigation().stop();
+			}
+			this.burstShotsLeft = 0;
+			return;
+		}
+
 		if (this.isOutOfAmmo()) {
 			// Dry: hold position and click occasionally instead of firing —
 			// same rule as the base goal, see its tick() for why.

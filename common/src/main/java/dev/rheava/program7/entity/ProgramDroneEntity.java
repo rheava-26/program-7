@@ -141,6 +141,19 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	private boolean charging = false;
 	private float chargeDrainAccumulator = 0.0f;
 
+	/**
+	 * Onboard ammunition for a mobile combat drone that carries its own finite
+	 * magazine and must break contact to rearm when it runs dry (see {@link
+	 * #getMagazineSize()} and {@link dev.rheava.program7.entity.ai.GunAttackGoal}).
+	 * {@code -1} is the "not yet initialized" sentinel, resolved lazily to a
+	 * full magazine on first read — "absent from NBT = full", the same rule
+	 * {@link #charge} uses, so old saves don't spawn units that are already
+	 * dry. Meaningless for units whose {@link #getMagazineSize()} is {@code 0}:
+	 * fixed emplacements feed from a depot through their own {@code MagazineFed}
+	 * magazine, and unarmed units have no gun at all.
+	 */
+	private int onboardRounds = -1;
+
 	protected ProgramDroneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
 	}
@@ -176,6 +189,61 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	/** Per-tick battery drain while not charging; heavier tiers override to drain slower or never. */
 	protected float chargeDrainPerTick() {
 		return 0.0125f; // tier-1 default: ~8000 ticks (~6.7 min) to empty
+	}
+
+	/**
+	 * Onboard magazine size for a mobile combat drone that carries its own
+	 * ammunition. {@code 0} — the default — means "no onboard magazine": the
+	 * unit never runs dry from this system, so {@link #hasAmmo()} always reads
+	 * true. Mobile ranged gun drones override this to a positive count so they
+	 * break off to rearm when spent; a fixed emplacement leaves it at 0 and
+	 * tracks its resupply through the separate {@code MagazineFed}/{@code
+	 * ReloadableWeapon} depot contract instead. Public so a firing goal in the
+	 * {@code ai} package can read it across packages.
+	 */
+	public int getMagazineSize() {
+		return 0;
+	}
+
+	/** Rounds currently in this unit's onboard magazine; reads full for a unit that has never fired. */
+	public int getRounds() {
+		if (this.onboardRounds < 0) {
+			this.onboardRounds = this.getMagazineSize();
+		}
+		return this.onboardRounds;
+	}
+
+	/**
+	 * Spends one onboard round if this unit tracks a finite magazine. Returns
+	 * {@code true} if the shot may proceed — either a round was available and
+	 * has been deducted, or this unit has no onboard magazine at all (fixed
+	 * emplacements and unarmed units, which this never gates) — and {@code
+	 * false} only when a tracked magazine is already empty.
+	 */
+	public boolean consumeDroneRound() {
+		if (this.getMagazineSize() <= 0) {
+			return true;
+		}
+		if (this.getRounds() <= 0) {
+			return false;
+		}
+		this.onboardRounds = this.getRounds() - 1;
+		return true;
+	}
+
+	/** Tops the onboard magazine back up to {@link #getMagazineSize()} — the drone has rearmed. */
+	public void refillRounds() {
+		this.onboardRounds = this.getMagazineSize();
+	}
+
+	/**
+	 * Whether this unit still has ammunition to fight with. Units without an
+	 * onboard magazine (the default) always do; a mobile combat drone that
+	 * tracks one reads as dry once its onboard rounds hit zero, which is the
+	 * cue its firing goal uses to break off and rearm.
+	 */
+	public boolean hasAmmo() {
+		return this.getMagazineSize() <= 0 || this.getRounds() > 0;
 	}
 
 	private void tickCharge() {
@@ -463,6 +531,16 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 				this.retreatTicks--;
 				if (this.retreatTicks == 0) {
 					this.retreatFrom = null;
+					if (this.getMagazineSize() > 0) {
+						// A combat drone that broke off to resupply comes back
+						// rearmed and recharged rather than re-engaging on an
+						// empty magazine or a dead battery (see the power/ammo
+						// break-off in GunAttackGoal). Scoped to units that
+						// carry an onboard magazine, so an unarmed unit's flee
+						// is unaffected.
+						this.refillRounds();
+						this.addCharge(MAX_CHARGE);
+					}
 				}
 			}
 			this.tickApproachWhir();
@@ -674,6 +752,9 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			nbt.putInt("UpkeepGrace", this.graceLeft);
 		}
 		nbt.putInt("Charge", this.charge);
+		if (this.onboardRounds >= 0) {
+			nbt.putInt("OnboardRounds", this.onboardRounds);
+		}
 	}
 
 	@Override
@@ -695,6 +776,11 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 		// Absent -> stays at MAX_CHARGE (full), same "absent = full" rule as grace.
 		if (nbt.contains("Charge")) {
 			this.charge = nbt.getInt("Charge");
+		}
+		// Absent -> stays at the -1 sentinel, which getRounds() lazily resolves
+		// to a full magazine on first read — "absent = full", same rule again.
+		if (nbt.contains("OnboardRounds")) {
+			this.onboardRounds = nbt.getInt("OnboardRounds");
 		}
 	}
 

@@ -87,6 +87,14 @@ public class MediumAttackDroneEntity extends ProgramDroneEntity {
 	}
 
 	@Override
+	public int getMagazineSize() {
+		// Onboard magazine (see ProgramDroneEntity#getMagazineSize): ~40 rounds
+		// at this mount's 8-tick cadence is ~16s of sustained fire before the
+		// strafer bugs out to rearm rather than dry-firing on the merge.
+		return 40;
+	}
+
+	@Override
 	protected float fleeHealthFraction() {
 		// A strafer that's lost a third of its plating peels off to reset the
 		// engagement rather than getting shredded in the merge.

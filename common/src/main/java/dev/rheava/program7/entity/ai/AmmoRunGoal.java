@@ -48,6 +48,12 @@ public class AmmoRunGoal extends Goal {
 	/** How far around a stockpile depot's registered position to look for a real ammo box to draw down. */
 	private static final int AMMO_BOX_SEARCH_RADIUS = 3;
 	private static final int ROUNDS_PER_TRIP = 20;
+	/**
+	 * How many ammo-box loads a single drone carries per sortie. Instead of one
+	 * box per round trip, a courier draws down a small batch at the stockpile
+	 * and services several weapons before heading back — fewer, fatter trips.
+	 */
+	private static final int CARRY_CAPACITY = 3;
 	/** Pause at each end of the trip while "handling" the crate — about 0.75s. */
 	private static final int HANDLING_TICKS = 15;
 
@@ -67,6 +73,8 @@ public class AmmoRunGoal extends Goal {
 	private BlockPos stockpilePos;
 	private Phase phase = Phase.TO_STOCKPILE;
 	private int handlingTicks;
+	/** Ammo-box loads currently aboard, drawn at the stockpile and spent one per weapon serviced. */
+	private int carriedLoads;
 
 	public AmmoRunGoal(LogisticsDroneEntity drone) {
 		this.drone = drone;
@@ -112,6 +120,7 @@ public class AmmoRunGoal extends Goal {
 	public void start() {
 		this.phase = Phase.TO_STOCKPILE;
 		this.handlingTicks = 0;
+		this.carriedLoads = 0;
 	}
 
 	@Override
@@ -135,7 +144,17 @@ public class AmmoRunGoal extends Goal {
 				});
 			}
 			case PICKING_UP -> this.tickHandling(() -> {
-				if (this.drawAmmoFromStockpile(world)) {
+				// Draw a batch: up to CARRY_CAPACITY loads, but never more than
+				// there are weapons that actually need topping up right now, so
+				// the drone doesn't debit the depot for ammo it can't deliver.
+				// Bounded below by 1 so it always carries at least the load it
+				// came for.
+				int wanted = Math.max(1, Math.min(CARRY_CAPACITY,
+						countWeaponsNeedingReload(world, this.drone, CARRY_CAPACITY)));
+				while (this.carriedLoads < wanted && this.drawAmmoFromStockpile(world)) {
+					this.carriedLoads++;
+				}
+				if (this.carriedLoads > 0) {
 					this.phase = Phase.TO_WEAPON;
 				} else {
 					// Stockpile ran dry between canStart and now: give up this
@@ -162,6 +181,18 @@ public class AmmoRunGoal extends Goal {
 					world.spawnParticles(ParticleTypes.HAPPY_VILLAGER,
 							this.drone.getX(), this.drone.getY() + 0.5, this.drone.getZ(), 8, 0.3, 0.3, 0.3, 0.02);
 					this.drone.playSound(P7Sounds.DRONE_SCAN_BEEP.get(), 0.7f, 1.4f);
+				}
+				this.carriedLoads--;
+				// Still loaded and another weapon's running dry? Service it on
+				// the same sortie before heading home, instead of one box per
+				// round trip.
+				if (this.carriedLoads > 0) {
+					Entity next = findWeaponNeedingReload(world, this.drone);
+					if (next != null) {
+						this.targetWeapon = next;
+						this.phase = Phase.TO_WEAPON;
+						return;
+					}
 				}
 				this.targetWeapon = null; // done — shouldContinue() ends the goal next tick
 			});
@@ -262,6 +293,23 @@ public class AmmoRunGoal extends Goal {
 			}
 		}
 		return nearest != null ? nearest.pos : null;
+	}
+
+	/**
+	 * Counts weapons within service range that currently {@code needsReload()},
+	 * capped at {@code limit} so the AABB scan can stop early. Used at pickup to
+	 * size the batch a courier draws down to what it can actually deliver.
+	 */
+	private static int countWeaponsNeedingReload(ServerWorld world, Entity searcher, int limit) {
+		Box box = new Box(searcher.getBlockPos()).expand(WEAPON_SEARCH_RADIUS);
+		int count = 0;
+		for (Entity candidate : world.getEntitiesByClass(Entity.class, box,
+				e -> e instanceof ReloadableWeapon rw && rw.needsReload())) {
+			if (++count >= limit) {
+				break;
+			}
+		}
+		return count;
 	}
 
 	@Nullable
