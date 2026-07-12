@@ -1,11 +1,14 @@
 package dev.rheava.program7.entity;
 
+import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.entity.ai.GunAttackGoal;
+import dev.rheava.program7.entity.ai.HitscanImpact;
 import dev.rheava.program7.entity.ai.MagazineFed;
 import dev.rheava.program7.entity.ai.NavalMoveControl;
 import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
@@ -19,6 +22,9 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -51,6 +57,15 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 	private static final String NBT_ROUNDS = "RoundsRemaining";
 
 	private int roundsRemaining = MAGAZINE_CAPACITY;
+
+	// Secondary point-defense: two light beam turrets (port + starboard) that
+	// fend off hostile mobs on their own fast cadence and unlimited light ammo
+	// — kept off the deck gun's magazine so mob defense never starves the main
+	// gun. See tickSecondaryTurrets.
+	private static final double SECONDARY_RANGE = 16.0;
+	private static final int SECONDARY_INTERVAL = 12;
+	private static final float SECONDARY_DAMAGE = 5.0f;
+	private int secondaryCooldown = 0;
 
 	public GunboatEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -137,6 +152,65 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 			// something puts it back in the water.
 			this.getNavigation().stop();
 		}
+
+		if (this.getWorld() instanceof ServerWorld serverWorld) {
+			this.tickSecondaryTurrets(serverWorld);
+		}
+	}
+
+	/**
+	 * Runs the two beam point-defense turrets: on a fast cadence, finds the
+	 * nearest hostile mob in close range and hoses it with a light round from
+	 * whichever beam turret (port/starboard) it's on. Hostile mobs are a
+	 * different class tree from the Program's own units, so this never targets
+	 * friendly drones.
+	 */
+	private void tickSecondaryTurrets(ServerWorld world) {
+		if (this.secondaryCooldown > 0) {
+			this.secondaryCooldown--;
+			return;
+		}
+		// Nearest living hostile mob in range (getEntitiesByClass is the proven
+		// query pattern in this codebase; hostile mobs are a different class
+		// tree from the Program's own units, so friendly drones are never hit).
+		HostileEntity mob = null;
+		double bestSq = SECONDARY_RANGE * SECONDARY_RANGE;
+		for (HostileEntity candidate : world.getEntitiesByClass(HostileEntity.class,
+				this.getBoundingBox().expand(SECONDARY_RANGE), LivingEntity::isAlive)) {
+			double sq = candidate.squaredDistanceTo(this);
+			if (sq < bestSq) {
+				bestSq = sq;
+				mob = candidate;
+			}
+		}
+		if (mob == null) {
+			return;
+		}
+		this.secondaryCooldown = SECONDARY_INTERVAL;
+
+		// Muzzle at the beam turret on the side the mob is on.
+		double yawRad = Math.toRadians(this.getYaw());
+		Vec3d right = new Vec3d(Math.cos(yawRad), 0.0, Math.sin(yawRad));
+		Vec3d toMob = mob.getPos().subtract(this.getPos());
+		double side = toMob.x * right.x + toMob.z * right.z;
+		Vec3d muzzle = this.getPos().add(right.multiply(side >= 0 ? 3.0 : -3.0)).add(0.0, 2.0, 0.0);
+		this.fireSecondary(world, muzzle, mob);
+	}
+
+	private void fireSecondary(ServerWorld world, Vec3d muzzle, LivingEntity mob) {
+		Vec3d aim = mob.getBoundingBox().getCenter();
+		world.spawnParticles(ParticleTypes.SMOKE, muzzle.x, muzzle.y, muzzle.z, 1, 0.05, 0.05, 0.05, 0.01);
+		HitscanImpact.drawTracer(world, muzzle, aim);
+		ProgramAcoustics.emit(world, muzzle, P7Sounds.GUN_FIRE.get(), SoundCategory.HOSTILE, 0.8f, 1.3f);
+		// Light round: bypass the post-hit invulnerability window with low
+		// knockback, same treatment the autogun turret uses.
+		mob.timeUntilRegen = 0;
+		mob.damage(world.getDamageSources().mobAttack(this), SECONDARY_DAMAGE);
+		Vec3d shove = this.getPos().subtract(mob.getPos());
+		if (shove.lengthSquared() > 1.0e-4) {
+			mob.takeKnockback(RoundClass.LIGHT.knockbackStrength(), shove.x, shove.z);
+		}
+		HitscanImpact.resolve(world, muzzle, aim, SECONDARY_RANGE, this, RoundClass.LIGHT);
 	}
 
 	@Override
@@ -212,18 +286,64 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 	}
 
 	/**
-	 * The deck gun: {@link GunAttackGoal}'s hitscan-with-tracer model works
-	 * fine unchanged for a slow-swimming shooter, so this only swaps the
-	 * report for something that sounds like it's firing a real gun instead
-	 * of small arms.
+	 * The deck gun. Flat, aimed direct fire ({@link GunAttackGoal}'s
+	 * hitscan-with-tracer model) at targets in sight within {@link
+	 * #DIRECT_RANGE}; beyond that, or at a target ducked behind terrain, it
+	 * lobs gravity-arced shells — the same {@link HowitzerShellEntity} the
+	 * artillery fires — out to {@link #BOMBARD_RANGE}. A naval gun that does
+	 * both direct fire and indirect shore bombardment.
 	 */
 	private static final class DeckGunAttackGoal extends GunAttackGoal {
+		/** Flat direct-fire reach; beyond this the gun arcs shells instead. */
+		private static final double DIRECT_RANGE = 28.0;
+		/** Indirect bombardment reach — arcing shells lobbed over terrain. */
+		private static final double BOMBARD_RANGE = 68.0;
+		/** Slow, heavy cadence between bombardment rounds. */
+		private static final int BOMBARD_INTERVAL = 80;
+		/** Fixed shell flight time for the ballistic solve (same idea as HowitzerAttackGoal). */
+		private static final double FLIGHT_TICKS = 75.0;
+
 		DeckGunAttackGoal(GunboatEntity shooter) {
-			// Damage 6.0->14.0 (gun-feel pass): a single heavy-caliber round,
-			// MEDIUM class alongside the IFV's autocannon (differentiated-
-			// rounds pass) — clearly harder-hitting than either turret's LIGHT
-			// rounds, clearly a rung below the gunship's HEAVY belly gun.
-			super(shooter, 1.0, 28.0, 30, 14.0f, RoundClass.MEDIUM);
+			// Damage 14.0, MEDIUM class (differentiated-rounds pass): a heavy-
+			// caliber round, above the turrets' LIGHT and below the gunship's
+			// HEAVY belly gun.
+			super(shooter, 1.0, DIRECT_RANGE, 30, 14.0f, RoundClass.MEDIUM);
+		}
+
+		@Override
+		protected int engage(LivingEntity target, double distance, boolean canSee) {
+			// In sight and close: flat, aimed direct fire.
+			if (canSee && distance <= DIRECT_RANGE) {
+				this.fire(target, distance);
+				return this.fireInterval;
+			}
+			// Too far, or the target ducked behind terrain: lob an arcing shell
+			// at it (or the last spot it was seen) — indirect bombardment.
+			Vec3d aim = canSee ? target.getBoundingBox().getCenter() : this.getLastSeenPos();
+			if (aim != null && distance <= BOMBARD_RANGE) {
+				this.fireArcingShell(aim);
+				return BOMBARD_INTERVAL;
+			}
+			return 0;
+		}
+
+		/** Launches a gravity-arced shell toward {@code aim} with the same simple ballistic solve the howitzer uses. */
+		private void fireArcingShell(Vec3d aim) {
+			if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
+				return;
+			}
+			if (this.shooter instanceof MagazineFed magazineFed && !magazineFed.consumeRound()) {
+				return;
+			}
+			Vec3d muzzle = this.shooter.getEyePos().add(0.0, 1.0, 0.0);
+			this.shooter.playSound(P7Sounds.MORTAR_FIRE.get(), 2.0f, 0.7f);
+			world.spawnParticles(ParticleTypes.LARGE_SMOKE, muzzle.x, muzzle.y, muzzle.z, 10, 0.3, 0.15, 0.3, 0.03);
+			HowitzerShellEntity shell = new HowitzerShellEntity(world, this.shooter);
+			shell.setPosition(muzzle.x, muzzle.y, muzzle.z);
+			double dx = aim.x - muzzle.x;
+			double dz = aim.z - muzzle.z;
+			shell.setVelocity(dx / FLIGHT_TICKS, 2.1, dz / FLIGHT_TICKS);
+			world.spawnEntity(shell);
 		}
 
 		@Override
