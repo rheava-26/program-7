@@ -75,6 +75,18 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 		return false;
 	}
 
+	/**
+	 * Solid deck: other entities collide with the gunboat's bounding box
+	 * instead of passing through it, so a player can climb up and stand on it
+	 * like a moving platform. Note the hitbox is a single square AABB, so this
+	 * is the central deck footprint, not the full bow-to-stern length — true
+	 * end-to-end walkability would need a multipart collision setup.
+	 */
+	@Override
+	public boolean isCollidable() {
+		return true;
+	}
+
 	@Override
 	protected EntityNavigation createNavigation(World world) {
 		SwimNavigation navigation = new SwimNavigation(this, world);
