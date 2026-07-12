@@ -52,8 +52,9 @@ public class HowitzerEntity extends ProgramDroneEntity implements ReloadableWeap
 				// close distance, just to waddle between firing positions.
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.16)
 				// Big standoff acquisition range so it can lock a target well
-				// outside its own gun range and start walking fire onto it.
-				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 72.0)
+				// outside its own gun range and start walking fire onto it —
+				// sits just past the gun's ~112-block reach (see HowitzerAttackGoal).
+				.add(EntityAttributes.GENERIC_FOLLOW_RANGE, 120.0)
 				.add(EntityAttributes.GENERIC_STEP_HEIGHT, 1.5)
 				.add(EntityAttributes.GENERIC_ARMOR, 16.0)
 				.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);

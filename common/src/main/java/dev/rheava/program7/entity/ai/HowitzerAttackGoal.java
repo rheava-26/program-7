@@ -26,10 +26,16 @@ import net.minecraft.util.math.Vec3d;
 public class HowitzerAttackGoal extends Goal {
 	/** ~5.5s between rounds at 20 ticks/sec — slow, heavy cadence. */
 	private static final int FIRE_INTERVAL = 110;
-	private static final double MIN_RANGE = 16.0;
-	private static final double MAX_RANGE = 56.0;
-	/** Ticks the shell takes to reach the top of its arc and come back down — longer than the mortar's for the extra range. */
-	private static final double FLIGHT_TICKS = 80.0;
+	/** Artillery standoff: it won't waste heavy rounds on something in its lap. */
+	private static final double MIN_RANGE = 24.0;
+	/** Long reach — well beyond several chunks (~7). Paired with the howitzer's
+	 *  raised follow range so it can actually acquire a target this far out. */
+	private static final double MAX_RANGE = 112.0;
+	/** Airtime of the shell — matched to the launch arc below (~2*vy/gravity)
+	 *  so the horizontal-speed backfill lands the round on the target. */
+	private static final double FLIGHT_TICKS = 108.0;
+	/** Vertical launch speed: a higher arc than the mortar for the extra reach. */
+	private static final double LAUNCH_VELOCITY_Y = 2.5;
 	/** Max scatter on the impact point, in either direction on each axis. */
 	private static final double MAX_SPREAD = 3.0;
 	/** Minimum gap between "the tube's dry" clicks so a starved battery doesn't spam it every tick. */
@@ -134,7 +140,7 @@ public class HowitzerAttackGoal extends Goal {
 		// backfill the horizontal speed needed to cover the distance in that time.
 		double dx = aim.x - tube.x;
 		double dz = aim.z - tube.z;
-		shell.setVelocity(dx / FLIGHT_TICKS, 2.1, dz / FLIGHT_TICKS);
+		shell.setVelocity(dx / FLIGHT_TICKS, LAUNCH_VELOCITY_Y, dz / FLIGHT_TICKS);
 		world.spawnEntity(shell);
 	}
 }
