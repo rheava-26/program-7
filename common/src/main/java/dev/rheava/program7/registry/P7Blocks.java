@@ -4,11 +4,15 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.block.AmmoBoxBlock;
+import dev.rheava.program7.block.ArtilleryShellBlock;
 import dev.rheava.program7.block.AssemblerBlock;
+import dev.rheava.program7.block.AutocannonMagazineBlock;
 import dev.rheava.program7.block.AutogunTurretBlock;
 import dev.rheava.program7.block.AutogunTurretBlockEntity;
 import dev.rheava.program7.block.BarrierPostBlock;
+import dev.rheava.program7.block.CrateBlock;
 import dev.rheava.program7.block.DroneWreckBlock;
+import dev.rheava.program7.block.PowerCellBlock;
 import dev.rheava.program7.block.FuelPlantBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.PlatingBlock;
@@ -136,6 +140,41 @@ public final class P7Blocks {
 					.mapColor(MapColor.GRAY)
 					.strength(1.0f)
 					.sounds(BlockSoundGroup.NETHERITE)
+					.nonOpaque()));
+
+	/** General-cargo shipping crate the drones haul non-modded loot in. */
+	public static final RegistrySupplier<Block> CRATE = BLOCKS.register("crate",
+			() -> new CrateBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.BROWN)
+					.strength(1.0f)
+					.sounds(BlockSoundGroup.WOOD)
+					.nonOpaque()));
+
+	/** Tall autocannon magazine cargo (1-4) — medium-weapon rounds. */
+	public static final RegistrySupplier<Block> AUTOCANNON_MAGAZINE = BLOCKS.register("autocannon_magazine",
+			() -> new AutocannonMagazineBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(1.0f)
+					.sounds(BlockSoundGroup.NETHERITE)
+					.luminance(state -> 4)
+					.nonOpaque()));
+
+	/** Large single artillery shell cargo (1-4) — howitzer / deck-gun rounds. */
+	public static final RegistrySupplier<Block> ARTILLERY_SHELL = BLOCKS.register("artillery_shell",
+			() -> new ArtilleryShellBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GOLD)
+					.strength(1.0f)
+					.sounds(BlockSoundGroup.NETHERITE)
+					.luminance(state -> 4)
+					.nonOpaque()));
+
+	/** Power cell / battery cargo (1-4) — the charge drones need alongside ammo. */
+	public static final RegistrySupplier<Block> POWER_CELL = BLOCKS.register("power_cell",
+			() -> new PowerCellBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.BLACK)
+					.strength(1.0f)
+					.sounds(BlockSoundGroup.NETHERITE)
+					.luminance(state -> 6)
 					.nonOpaque()));
 
 	public static void register() {

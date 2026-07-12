@@ -1,8 +1,16 @@
 {
   "variants": {
-    "count=1": { "model": "program7:block/ammo_box_1" },
-    "count=2": { "model": "program7:block/ammo_box_2" },
-    "count=3": { "model": "program7:block/ammo_box_3" },
-    "count=4": { "model": "program7:block/ammo_box_4" }
+    "count=1": {
+      "model": "program7:block/ammo_box_1"
+    },
+    "count=2": {
+      "model": "program7:block/ammo_box_2"
+    },
+    "count=3": {
+      "model": "program7:block/ammo_box_3"
+    },
+    "count=4": {
+      "model": "program7:block/ammo_box_4"
+    }
   }
 }

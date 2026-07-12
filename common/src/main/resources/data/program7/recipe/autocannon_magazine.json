@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["ig", "ig", "ig"],
+  "key": {
+    "i": { "item": "minecraft:iron_ingot" },
+    "g": { "item": "minecraft:gunpowder" }
+  },
+  "result": { "id": "program7:autocannon_magazine", "count": 1 }
+}

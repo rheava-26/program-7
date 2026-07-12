@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "count=1": {
+      "model": "program7:block/artillery_shell_1"
+    },
+    "count=2": {
+      "model": "program7:block/artillery_shell_2"
+    },
+    "count=3": {
+      "model": "program7:block/artillery_shell_3"
+    },
+    "count=4": {
+      "model": "program7:block/artillery_shell_4"
+    }
+  }
+}

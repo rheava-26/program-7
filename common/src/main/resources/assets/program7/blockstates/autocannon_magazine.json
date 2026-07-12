@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "count=1": {
+      "model": "program7:block/autocannon_magazine_1"
+    },
+    "count=2": {
+      "model": "program7:block/autocannon_magazine_2"
+    },
+    "count=3": {
+      "model": "program7:block/autocannon_magazine_3"
+    },
+    "count=4": {
+      "model": "program7:block/autocannon_magazine_4"
+    }
+  }
+}

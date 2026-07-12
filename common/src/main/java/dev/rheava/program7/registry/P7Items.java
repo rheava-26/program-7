@@ -65,6 +65,14 @@ public final class P7Items {
 			() -> new BlockItem(P7Blocks.BARRIER_POST.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> AMMO_BOX = ITEMS.register("ammo_box",
 			() -> new BlockItem(P7Blocks.AMMO_BOX.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> CRATE = ITEMS.register("crate",
+			() -> new BlockItem(P7Blocks.CRATE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> AUTOCANNON_MAGAZINE = ITEMS.register("autocannon_magazine",
+			() -> new BlockItem(P7Blocks.AUTOCANNON_MAGAZINE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> ARTILLERY_SHELL = ITEMS.register("artillery_shell",
+			() -> new BlockItem(P7Blocks.ARTILLERY_SHELL.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> POWER_CELL = ITEMS.register("power_cell",
+			() -> new BlockItem(P7Blocks.POWER_CELL.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> SURVEYOR_DRONE_SPAWN_EGG = ITEMS.register("surveyor_drone_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.SURVEYOR_DRONE, 0x23272b, 0x27e2d3,

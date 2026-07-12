@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["nnn", "ngn", "nnn"],
+  "key": {
+    "n": { "item": "minecraft:iron_nugget" },
+    "g": { "item": "minecraft:gunpowder" }
+  },
+  "result": { "id": "program7:ammo_box", "count": 2 }
+}

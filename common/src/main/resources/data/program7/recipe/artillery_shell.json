@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [" i ", "igi", "ggg"],
+  "key": {
+    "i": { "item": "minecraft:iron_ingot" },
+    "g": { "item": "minecraft:gunpowder" }
+  },
+  "result": { "id": "program7:artillery_shell", "count": 1 }
+}

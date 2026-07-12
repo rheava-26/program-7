@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "count=1": {
+      "model": "program7:block/crate_1"
+    },
+    "count=2": {
+      "model": "program7:block/crate_2"
+    },
+    "count=3": {
+      "model": "program7:block/crate_3"
+    },
+    "count=4": {
+      "model": "program7:block/crate_4"
+    }
+  }
+}

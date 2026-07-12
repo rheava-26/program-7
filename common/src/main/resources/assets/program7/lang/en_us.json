@@ -42,6 +42,10 @@
   "block.program7.plating": "Plating",
   "block.program7.barrier_post": "Barrier Post",
   "block.program7.ammo_box": "Ammo Box",
+  "block.program7.crate": "Supply Crate",
+  "block.program7.autocannon_magazine": "Autocannon Magazine",
+  "block.program7.artillery_shell": "Artillery Shell",
+  "block.program7.power_cell": "Power Cell",
 
   "entity.program7.surveyor_drone": "Surveyor Drone",
   "entity.program7.air_uav": "Air UAV",
