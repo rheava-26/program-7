@@ -292,7 +292,13 @@ public final class FireMissionManager {
 		while (iterator.hasNext()) {
 			Map.Entry<UUID, FireMission> entry = iterator.next();
 			Entity shooter = world.getEntity(entry.getKey());
-			if (!(shooter instanceof HowitzerEntity howitzer) || !howitzer.isAlive()) {
+			// A loaded, confirmed-dead tube: its mission is truly over, drop it.
+			// A null lookup means the howitzer's chunk is merely unloaded, NOT
+			// that it's gone — keeping the mission is the whole reason it's
+			// persisted in NBT (a barrage has to survive a restart or the tube's
+			// chunk unloading). Those fall through to the idle TTL below, which
+			// ages out a genuinely abandoned mission on its own.
+			if (shooter instanceof HowitzerEntity howitzer && !howitzer.isAlive()) {
 				iterator.remove();
 				changed = true;
 				continue;

@@ -101,6 +101,13 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	private int retreatTicks = 0;
 	@Nullable
 	private LivingEntity retreatFrom;
+	/**
+	 * Whether the current break-off is a resupply run (out of ammo/low charge)
+	 * that earns a rearm+recharge on its return, as opposed to a get-hit flee.
+	 * Set by the resupply break-off path only; a damage flee leaves it false so
+	 * shooting a drone below its threshold no longer refuels it for free.
+	 */
+	private boolean retreatEarnsResupply = false;
 	/** Set when a mace blow shatters this (unarmored) airframe; read by {@link #onDeath}. */
 	private boolean maceShattered = false;
 	/** Ticks left before the next approach-whir cue is allowed to play. */
@@ -330,8 +337,19 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	 * rolling its own flee timer.
 	 */
 	public void beginRetreat(@Nullable LivingEntity threat, int ticks) {
+		this.beginRetreat(threat, ticks, false);
+	}
+
+	/**
+	 * As {@link #beginRetreat(LivingEntity, int)}, but {@code earnsResupply}
+	 * marks this as an out-of-ammo/low-charge break-off that comes back rearmed
+	 * and recharged (see {@code tickMovement}). A plain flee (getting hurt)
+	 * passes {@code false} so it grants no free resupply.
+	 */
+	public void beginRetreat(@Nullable LivingEntity threat, int ticks, boolean earnsResupply) {
 		this.retreatFrom = threat;
 		this.retreatTicks = ticks;
+		this.retreatEarnsResupply = earnsResupply;
 	}
 
 	public boolean isRetreating() {
@@ -563,16 +581,18 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 				this.retreatTicks--;
 				if (this.retreatTicks == 0) {
 					this.retreatFrom = null;
-					if (this.getMagazineSize() > 0) {
-						// A combat drone that broke off to resupply comes back
+					if (this.retreatEarnsResupply && this.getMagazineSize() > 0) {
+						// A combat drone that broke off *to resupply* comes back
 						// rearmed and recharged rather than re-engaging on an
 						// empty magazine or a dead battery (see the power/ammo
-						// break-off in GunAttackGoal). Scoped to units that
-						// carry an onboard magazine, so an unarmed unit's flee
-						// is unaffected.
+						// break-off in GunAttackGoal). A plain get-hit flee does
+						// NOT earn this — otherwise shooting a drone below its
+						// flee threshold would refuel it for free — nor does an
+						// unarmed unit's flee (no onboard magazine).
 						this.refillRounds();
 						this.addCharge(MAX_CHARGE);
 					}
+					this.retreatEarnsResupply = false;
 				}
 			}
 			this.tickApproachWhir();

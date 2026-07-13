@@ -50,11 +50,17 @@ public class HowitzerAttackGoal extends Goal {
 	/** Long reach — well beyond several chunks (~7). Paired with the howitzer's
 	 *  raised follow range so it can actually acquire a target this far out. */
 	private static final double MAX_RANGE = 112.0;
-	/** Airtime of the shell — matched to the launch arc below (~2*vy/gravity)
-	 *  so the horizontal-speed backfill lands the round on the target. */
-	private static final double FLIGHT_TICKS = 108.0;
 	/** Vertical launch speed: a higher arc than the mortar for the extra reach. */
 	private static final double LAUNCH_VELOCITY_Y = 2.5;
+	/** The shell is a {@link HowitzerShellEntity} ({@code ThrownEntity}): it
+	 *  loses 1% of its speed to drag every tick and falls under this gravity —
+	 *  the exact values the shell itself uses. The ballistic solve below mirrors
+	 *  them so the round actually lands on the aim point instead of far short. */
+	private static final double SHELL_DRAG = 0.99;
+	private static final double SHELL_GRAVITY = 0.045;
+	/** Safety cap on the trajectory sim so a target the arc can't reach (far
+	 *  above the tube) can't spin the solve forever. */
+	private static final int MAX_FLIGHT_TICKS = 600;
 	/** Minimum gap between "the tube's dry" clicks so a starved battery doesn't spam it every tick. */
 	private static final int DRY_FIRE_CLICK_INTERVAL_TICKS = 40;
 
@@ -198,11 +204,34 @@ public class HowitzerAttackGoal extends Goal {
 		HowitzerShellEntity shell = new HowitzerShellEntity(world, this.shooter);
 		shell.setPosition(tube.x, tube.y, tube.z);
 
-		// Same simple ballistic solve as the mortar: fixed launch/flight time,
-		// backfill the horizontal speed needed to cover the distance in that time.
+		// Drag-aware ballistic solve. A naive dx/flightTicks backfill assumes a
+		// constant horizontal speed, but the shell bleeds SHELL_DRAG each tick,
+		// so that lands the round far short (worse the farther it flies). Instead
+		// simulate the vertical arc from the muzzle down to the target's height
+		// to get the true airtime, accumulating the horizontal decay sum
+		// (1 + d + d^2 + ...) over exactly those ticks; the launch speed that
+		// actually covers dx is then dx / thatSum. The sim mirrors ThrownEntity's
+		// integration order: move by the current velocity, then apply drag, then
+		// gravity.
 		double dx = aim.x - tube.x;
 		double dz = aim.z - tube.z;
-		shell.setVelocity(dx / FLIGHT_TICKS, LAUNCH_VELOCITY_Y, dz / FLIGHT_TICKS);
+		double targetRelY = aim.y - tube.y;
+		double vy = LAUNCH_VELOCITY_Y;
+		double y = 0.0;
+		double decaySum = 0.0;
+		double factor = 1.0;
+		for (int k = 0; k < MAX_FLIGHT_TICKS; k++) {
+			decaySum += factor;
+			y += vy;
+			vy = vy * SHELL_DRAG - SHELL_GRAVITY;
+			factor *= SHELL_DRAG;
+			if (vy < 0.0 && y <= targetRelY) {
+				break;
+			}
+		}
+		double vx = decaySum > 1.0E-6 ? dx / decaySum : 0.0;
+		double vz = decaySum > 1.0E-6 ? dz / decaySum : 0.0;
+		shell.setVelocity(vx, LAUNCH_VELOCITY_Y, vz);
 		world.spawnEntity(shell);
 	}
 }

@@ -204,7 +204,7 @@ public class GunAttackGoal extends Goal {
 			return false;
 		}
 		if (!this.shooter.isRetreating()) {
-			this.shooter.beginRetreat(target, RESUPPLY_BREAKOFF_TICKS);
+			this.shooter.beginRetreat(target, RESUPPLY_BREAKOFF_TICKS, true);
 		}
 		return true;
 	}
