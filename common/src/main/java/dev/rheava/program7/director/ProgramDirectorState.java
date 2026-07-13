@@ -219,6 +219,8 @@ public class ProgramDirectorState extends PersistentState {
 	private final VirtualFleet virtualFleet = new VirtualFleet();
 	/** Fuel depots + per-cycle upkeep draw for the supply-lines first slice (see SUPPLY_LINES_SPEC.md §6). */
 	private final SupplyNetwork supplyNetwork = new SupplyNetwork();
+	/** Indirect-fire missions end to end (see {@link FireMissionManager} / ARTILLERY_AND_INDIRECT_FIRE.md §8). */
+	private final FireMissionManager fireMissionManager = new FireMissionManager();
 	/**
 	 * The resource ledger. The Program spends this to field units and (in
 	 * later phases) refills it by actually mining. An empty ledger means no
@@ -339,6 +341,10 @@ public class ProgramDirectorState extends PersistentState {
 		}
 
 		if (this.supplyNetwork.tick(world, this)) {
+			this.markDirty();
+		}
+
+		if (this.fireMissionManager.tick(world, this)) {
 			this.markDirty();
 		}
 	}
@@ -1144,6 +1150,10 @@ public class ProgramDirectorState extends PersistentState {
 		return this.supplyNetwork;
 	}
 
+	public FireMissionManager getFireMissionManager() {
+		return this.fireMissionManager;
+	}
+
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		nbt.putInt("GlobalThreat", this.globalThreat);
@@ -1209,6 +1219,7 @@ public class ProgramDirectorState extends PersistentState {
 
 		nbt.put("VirtualFleet", this.virtualFleet.toNbt(registryLookup));
 		nbt.put("SupplyNetwork", this.supplyNetwork.toNbt());
+		nbt.put("FireMissions", this.fireMissionManager.toNbt());
 		return nbt;
 	}
 
@@ -1283,6 +1294,9 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		if (nbt.contains("SupplyNetwork")) {
 			state.supplyNetwork.readNbt(nbt.getCompound("SupplyNetwork"));
+		}
+		if (nbt.contains("FireMissions")) {
+			state.fireMissionManager.readNbt(nbt.getCompound("FireMissions"));
 		}
 		return state;
 	}

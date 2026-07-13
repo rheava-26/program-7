@@ -2,6 +2,9 @@ package dev.rheava.program7.entity.ai;
 
 import java.util.EnumSet;
 
+import dev.rheava.program7.director.FireMissionManager;
+import dev.rheava.program7.director.FireMissionManager.FireMission;
+import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.entity.HowitzerEntity;
 import dev.rheava.program7.entity.HowitzerShellEntity;
 import dev.rheava.program7.registry.P7Sounds;
@@ -19,9 +22,25 @@ import net.minecraft.util.math.Vec3d;
  * slower to cycle. Where the mortar answers in a steady patter, the howitzer
  * answers with a handful of heavy rounds spread across a whole fight.
  *
- * <p>Self-contained for this pass: it self-targets and self-observes exactly
- * like the mortar. The {@code FireMissionManager}/observer/ranging layer from
- * the artillery doc is a later pass.
+ * <p>This is the first (and this pass, only) client of the Director-side
+ * {@link FireMissionManager} (see {@code ARTILLERY_AND_INDIRECT_FIRE.md} §8).
+ * Two firing modes share one loop:
+ *
+ * <ul>
+ *   <li><b>Self-observed</b> — it has its own line-of-sight {@code getTarget()}
+ *       (a mortar-on-a-ridge). Each tick it publishes that live target to the
+ *       manager as the top-priority eyes-on designation and fires on it.</li>
+ *   <li><b>Assigned</b> — it has no target of its own, so it fires on the
+ *       {@link FireMission} the manager has handed it: a recon unit's live
+ *       relay, a counter-battery origin, or a hot dwell cell (§2 acquisition).
+ *       This is the "no line of sight of its own" indirect shot.</li>
+ * </ul>
+ *
+ * <p>Accuracy (§3) and the ranging walk-in (§2 step 3) both come from the
+ * manager: the flat {@code MAX_SPREAD} of the self-contained pass is gone,
+ * replaced by {@link FireMissionManager#currentSpread} (a range floor that
+ * grows with chunk distance, tightened by spotting and ranging) and advanced
+ * one step per shot via {@link FireMissionManager#onShotFired}.
  */
 public class HowitzerAttackGoal extends Goal {
 	/** ~5.5s between rounds at 20 ticks/sec — slow, heavy cadence. */
@@ -36,8 +55,6 @@ public class HowitzerAttackGoal extends Goal {
 	private static final double FLIGHT_TICKS = 108.0;
 	/** Vertical launch speed: a higher arc than the mortar for the extra reach. */
 	private static final double LAUNCH_VELOCITY_Y = 2.5;
-	/** Max scatter on the impact point, in either direction on each axis. */
-	private static final double MAX_SPREAD = 3.0;
 	/** Minimum gap between "the tube's dry" clicks so a starved battery doesn't spam it every tick. */
 	private static final int DRY_FIRE_CLICK_INTERVAL_TICKS = 40;
 
@@ -53,7 +70,12 @@ public class HowitzerAttackGoal extends Goal {
 	@Override
 	public boolean canStart() {
 		LivingEntity target = this.shooter.getTarget();
-		return target != null && target.isAlive();
+		if (target != null && target.isAlive()) {
+			return true;
+		}
+		// No eyes of its own — but the manager may still have a mission assigned
+		// (an observer relay, counter-battery, or dwell cell) for this tube.
+		return this.assignedTarget() != null;
 	}
 
 	@Override
@@ -68,18 +90,41 @@ public class HowitzerAttackGoal extends Goal {
 
 	@Override
 	public void tick() {
-		LivingEntity target = this.shooter.getTarget();
-		if (target == null) {
+		if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
 			return;
 		}
-		this.shooter.getLookControl().lookAt(target, 30.0f, 30.0f);
+		FireMissionManager manager = ProgramDirectorState.get(world).getFireMissionManager();
+		long now = world.getTime();
+
+		// Resolve where we're firing and drive the mission: a live line-of-sight
+		// target self-designates (top priority, eyes-on) every tick; otherwise
+		// the manager's standing assignment supplies the aim point.
+		LivingEntity target = this.shooter.getTarget();
+		FireMission mission;
+		Vec3d aimBase;
+		if (target != null && target.isAlive()) {
+			mission = manager.updateSelfObserved(this.shooter, target, now);
+			aimBase = target.getPos();
+			this.shooter.getLookControl().lookAt(target, 30.0f, 30.0f);
+		} else {
+			mission = manager.missionFor(this.shooter);
+			Vec3d assigned = mission == null ? null : mission.targetPos();
+			if (assigned == null) {
+				return;
+			}
+			aimBase = assigned;
+			this.shooter.getLookControl().lookAt(aimBase.x, aimBase.y, aimBase.z);
+		}
 
 		if (this.cooldown > 0) {
 			this.cooldown--;
 			return;
 		}
 
-		double distance = this.shooter.distanceTo(target);
+		Vec3d tubePos = this.shooter.getPos();
+		double dx = aimBase.x - tubePos.x;
+		double dz = aimBase.z - tubePos.z;
+		double distance = Math.sqrt(dx * dx + dz * dz);
 		if (distance < MIN_RANGE || distance > MAX_RANGE || !this.hasClearSky()) {
 			return;
 		}
@@ -90,8 +135,23 @@ public class HowitzerAttackGoal extends Goal {
 			this.tickDryFireClick();
 			return;
 		}
-		this.fire(target);
+		double spread = manager.currentSpread(mission, tubePos);
+		this.fire(world, aimBase, spread);
+		manager.onShotFired(mission);
 		this.cooldown = FIRE_INTERVAL;
+	}
+
+	/**
+	 * The manager's assigned aim point for this tube, or null if it has no
+	 * standing mission with a target — used by {@link #canStart} so the goal
+	 * runs for a purely indirect (no line-of-sight) fire mission.
+	 */
+	private Vec3d assignedTarget() {
+		if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
+			return null;
+		}
+		FireMission mission = ProgramDirectorState.get(world).getFireMissionManager().missionFor(this.shooter);
+		return mission == null ? null : mission.targetPos();
 	}
 
 	/** Plays the empty-magazine click on a cooldown so a starved tube doesn't spam it every tick. */
@@ -116,10 +176,12 @@ public class HowitzerAttackGoal extends Goal {
 		return true;
 	}
 
-	private void fire(LivingEntity target) {
-		if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
-			return;
-		}
+	/**
+	 * Lob one shell at {@code aimBase}, scattered inside the mission's current
+	 * error radius. Close, well-spotted, ranged-in fire lands tight; long or
+	 * unobserved fire scatters wide (§3).
+	 */
+	private void fire(ServerWorld world, Vec3d aimBase, double spread) {
 		Vec3d tube = this.shooter.getPos().add(0.0, 2.6, 0.0);
 
 		// Deeper, louder report than the mortar's — a bigger tube going off.
@@ -127,11 +189,11 @@ public class HowitzerAttackGoal extends Goal {
 		world.spawnParticles(ParticleTypes.LARGE_SMOKE, tube.x, tube.y, tube.z, 10, 0.3, 0.15, 0.3, 0.03);
 		world.spawnParticles(ParticleTypes.CLOUD, tube.x, tube.y, tube.z, 6, 0.25, 0.1, 0.25, 0.02);
 
-		// Aim isn't perfect: scatter the impact point a few blocks.
-		Vec3d aim = target.getPos().add(
-				(this.shooter.getRandom().nextDouble() * 2.0 - 1.0) * MAX_SPREAD,
+		// Aim isn't perfect: scatter the impact point inside the CEP radius.
+		Vec3d aim = aimBase.add(
+				(this.shooter.getRandom().nextDouble() * 2.0 - 1.0) * spread,
 				0.0,
-				(this.shooter.getRandom().nextDouble() * 2.0 - 1.0) * MAX_SPREAD);
+				(this.shooter.getRandom().nextDouble() * 2.0 - 1.0) * spread);
 
 		HowitzerShellEntity shell = new HowitzerShellEntity(world, this.shooter);
 		shell.setPosition(tube.x, tube.y, tube.z);

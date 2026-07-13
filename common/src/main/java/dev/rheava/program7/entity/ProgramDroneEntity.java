@@ -5,6 +5,7 @@ import java.util.List;
 
 import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.DroneWreckBlock;
+import dev.rheava.program7.director.FireMissionManager;
 import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.director.SupplyNetwork;
 import dev.rheava.program7.director.UpkeepProfile;
@@ -363,6 +364,12 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			LivingEntity attacker = source.getAttacker() instanceof LivingEntity living ? living : null;
 			ItemStack weapon = attacker != null ? attacker.getMainHandStack() : ItemStack.EMPTY;
 			boolean mace = weapon.getItem() instanceof MaceItem;
+
+			// Counter-battery (ARTILLERY_AND_INDIRECT_FIRE.md §2 acquisition #3):
+			// a ranged hit from a far-off player publishes that shooter's
+			// position to the Director's fire-mission layer as a candidate the
+			// artillery can answer, even with no observer of its own.
+			this.reportCounterBattery(source, attacker);
 			if (attacker != null) {
 				if (this.isFlier()
 						&& (weapon.getItem() instanceof SwordItem || weapon.getItem() instanceof AxeItem)) {
@@ -430,6 +437,31 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			}
 		}
 		return took;
+	}
+
+	/**
+	 * Reuses this unit's projectile inspection to feed the Director's
+	 * {@link dev.rheava.program7.director.FireMissionManager}: a projectile hit
+	 * from a player standing well beyond
+	 * {@link dev.rheava.program7.director.FireMissionManager#COUNTER_BATTERY_MIN_DISTANCE}
+	 * records that shooter's position as a counter-battery fire candidate. A hit
+	 * from up close is just a firefight — direct-fire units handle it, so no
+	 * shell is called down on it.
+	 */
+	private void reportCounterBattery(DamageSource source, @Nullable LivingEntity attacker) {
+		if (!(this.getWorld() instanceof ServerWorld serverWorld)
+				|| !(attacker instanceof PlayerEntity player) || player.isSpectator()) {
+			return;
+		}
+		if (!source.isIn(DamageTypeTags.IS_PROJECTILE)) {
+			return;
+		}
+		if (this.squaredDistanceTo(player)
+				< FireMissionManager.COUNTER_BATTERY_MIN_DISTANCE * FireMissionManager.COUNTER_BATTERY_MIN_DISTANCE) {
+			return;
+		}
+		ProgramDirectorState.get(serverWorld).getFireMissionManager()
+				.reportCounterBattery(player.getUuid(), player.getPos(), serverWorld.getTime());
 	}
 
 	/**

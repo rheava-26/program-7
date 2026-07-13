@@ -203,6 +203,21 @@ public final class DatapadScreen extends Screen {
 				? "— not located"
 				: compass(h.baseYaw()) + "  ~" + h.baseDistance() + "m";
 		context.drawTextWithShadow(this.textRenderer, Text.literal(baseText), x, line + 10, VALUE);
+		line += 26;
+
+		// Inbound-artillery telegraph (§5/§9): only shown when a shell is in the
+		// air toward the player, and blinked so it reads as an alarm, not a stat.
+		DatapadSnapshotPayload.Incoming inc = this.snapshot.incoming();
+		if (inc.present()) {
+			boolean blink = (Util.getMeasuringTimeMs() / 400L) % 2L == 0L;
+			context.drawTextWithShadow(this.textRenderer,
+					Text.literal("⚠ INCOMING FIRE").formatted(Formatting.BOLD)
+							.formatted(blink ? Formatting.RED : Formatting.GOLD),
+					x, line, blink ? 0xFFFF2020 : 0xFFE8A32E);
+			context.drawTextWithShadow(this.textRenderer,
+					Text.literal("from " + compass(inc.bearing()) + "  ·  ~" + inc.etaSeconds() + "s"),
+					x, line + 10, VALUE);
+		}
 	}
 
 	private void drawRadar(DrawContext context, int rx, int ry, int mouseX, int mouseY) {

@@ -7,6 +7,7 @@ import dev.architectury.networking.NetworkManager;
 import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.entity.AirUAVEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
+import dev.rheava.program7.entity.HowitzerShellEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumMiningDroneEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
@@ -39,6 +40,10 @@ import net.minecraft.util.math.MathHelper;
 public class DatapadItem extends Item {
 	/** Radar reach: everything within this many blocks of the player is plotted (~7 chunks). */
 	private static final double RADAR_RANGE = 112.0;
+	/** How far out to look for an inbound shell — past the gun's own reach to catch one still climbing. */
+	private static final double WARN_DETECT_RADIUS = 160.0;
+	/** A shell whose flight path closes to within this of the player counts as inbound "at" them. */
+	private static final double WARN_NEAR_RADIUS = 16.0;
 
 	public DatapadItem(Item.Settings settings) {
 		super(settings);
@@ -94,7 +99,59 @@ public class DatapadItem extends Item {
 				state.currentTierEstimate(),
 				baseYaw,
 				baseDistance);
-		return new DatapadSnapshotPayload(header, contacts);
+		return new DatapadSnapshotPayload(header, contacts, incomingFor(player));
+	}
+
+	/**
+	 * The §5/§9 inbound-artillery telegraph: scan for a howitzer shell in the
+	 * air whose flight path closes to within {@link #WARN_NEAR_RADIUS} of the
+	 * player, and report the most imminent one as a rough bearing (the direction
+	 * it's coming from) and an ETA in seconds. Closest-horizontal-approach math
+	 * on the shell's own velocity, so it fires the warning while the round is
+	 * still climbing — the datapad half of the whistle the player already hears.
+	 */
+	private static DatapadSnapshotPayload.Incoming incomingFor(ServerPlayerEntity player) {
+		ServerWorld world = player.getServerWorld();
+		List<HowitzerShellEntity> shells = world.getEntitiesByClass(HowitzerShellEntity.class,
+				player.getBoundingBox().expand(WARN_DETECT_RADIUS), e -> true);
+
+		HowitzerShellEntity soonest = null;
+		double soonestTicks = Double.MAX_VALUE;
+		for (HowitzerShellEntity shell : shells) {
+			double vx = shell.getVelocity().x;
+			double vz = shell.getVelocity().z;
+			double speedSq = vx * vx + vz * vz;
+			if (speedSq < 1.0e-4) {
+				continue;
+			}
+			// Time of closest horizontal approach of the shell to the player.
+			double px = shell.getX() - player.getX();
+			double pz = shell.getZ() - player.getZ();
+			double t = -(px * vx + pz * vz) / speedSq;
+			if (t < 0.0) {
+				continue;
+			}
+			double missX = px + vx * t;
+			double missZ = pz + vz * t;
+			double missSq = missX * missX + missZ * missZ;
+			if (missSq > WARN_NEAR_RADIUS * WARN_NEAR_RADIUS) {
+				continue;
+			}
+			if (t < soonestTicks) {
+				soonestTicks = t;
+				soonest = shell;
+			}
+		}
+
+		if (soonest == null) {
+			return DatapadSnapshotPayload.Incoming.NONE;
+		}
+		// Bearing toward where the round currently is — the direction it's inbound from.
+		double dx = soonest.getX() - player.getX();
+		double dz = soonest.getZ() - player.getZ();
+		float bearing = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(dx, -dz)));
+		int etaSeconds = Math.max(0, (int) Math.ceil(soonestTicks / 20.0));
+		return new DatapadSnapshotPayload.Incoming(bearing, etaSeconds);
 	}
 
 	/**

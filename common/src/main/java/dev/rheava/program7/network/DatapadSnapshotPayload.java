@@ -14,12 +14,15 @@ import net.minecraft.network.packet.CustomPayload;
  * v2 radar screen ({@code DatapadScreen}) instead of the old chat readout.
  *
  * <p>Split into a compact {@link Header} of scalar readouts (posture, heat,
- * fleet estimate, escalation tier, nearest-base bearing) plus a list of
+ * fleet estimate, escalation tier, nearest-base bearing), a list of
  * {@link Contact} blips — each a Program unit within datapad range, given as
  * an offset from the player so the client can plot it on the chunk grid, its
- * alert stage (does it know about you yet?), and a coarse type guess.
+ * alert stage (does it know about you yet?), and a coarse type guess — and an
+ * {@link Incoming} artillery warning (the acoustic-intelligence hook from
+ * ARTILLERY_AND_INDIRECT_FIRE.md §5/§9: a shell is in the air toward you).
  */
-public record DatapadSnapshotPayload(Header header, List<Contact> contacts) implements CustomPayload {
+public record DatapadSnapshotPayload(Header header, List<Contact> contacts, Incoming incoming)
+		implements CustomPayload {
 	public static final CustomPayload.Id<DatapadSnapshotPayload> ID =
 			new CustomPayload.Id<>(Program7.id("datapad_snapshot"));
 
@@ -61,9 +64,32 @@ public record DatapadSnapshotPayload(Header header, List<Contact> contacts) impl
 				Contact::new);
 	}
 
+	/**
+	 * The incoming-artillery warning down the datapad's status rail. A shell in
+	 * the air whose flight path passes near the player surfaces here so the
+	 * player gets the §5 fairness telegraph on the readout as well as by ear.
+	 *
+	 * @param bearing    world yaw (deg) the round is inbound <em>from</em>, or NaN if nothing is inbound
+	 * @param etaSeconds rough seconds until it lands nearby, or -1 if nothing is inbound
+	 */
+	public record Incoming(float bearing, int etaSeconds) {
+		/** The "all clear" sentinel: no shell in the air toward the player. */
+		public static final Incoming NONE = new Incoming(Float.NaN, -1);
+
+		public static final PacketCodec<RegistryByteBuf, Incoming> CODEC = PacketCodec.tuple(
+				PacketCodecs.FLOAT, Incoming::bearing,
+				PacketCodecs.VAR_INT, Incoming::etaSeconds,
+				Incoming::new);
+
+		public boolean present() {
+			return this.etaSeconds >= 0 && !Float.isNaN(this.bearing);
+		}
+	}
+
 	public static final PacketCodec<RegistryByteBuf, DatapadSnapshotPayload> CODEC = PacketCodec.tuple(
 			Header.CODEC, DatapadSnapshotPayload::header,
 			Contact.CODEC.collect(PacketCodecs.toList()), DatapadSnapshotPayload::contacts,
+			Incoming.CODEC, DatapadSnapshotPayload::incoming,
 			DatapadSnapshotPayload::new);
 
 	@Override
