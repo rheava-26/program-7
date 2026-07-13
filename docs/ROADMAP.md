@@ -19,6 +19,8 @@ Phases are ordered so every phase ships something playable, and the Director
 > counter-logistics + the psionic research building), `EXPANSION_PLAN.md`
 > (datapad v2, virtualization/LOD, acoustic intelligence, material tree), and
 > the gunship silhouette in `UNITS.md`. These reshape Phases 2–4 below.
+> For the current build state and the full outstanding-work list (the session
+> handoff), see BACKLOG.md.
 
 ## Phase 0 — Foundation ✅
 
