@@ -161,6 +161,12 @@ public class HowitzerEntity extends ProgramDroneEntity implements ReloadableWeap
 	}
 
 	@Override
+	public float indirectSaturationWeight() {
+		// Matches HowitzerShellEntity's own saturationWeight.
+		return 2.0f;
+	}
+
+	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);

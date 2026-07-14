@@ -340,6 +340,12 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 		return 3.4f;
 	}
 
+	@Override
+	public float indirectSaturationWeight() {
+		// Same shell as the howitzer — same saturationWeight.
+		return 2.0f;
+	}
+
 	/**
 	 * The deck gun — both modes fire real shells (no hitscan): a flat, fast
 	 * direct shell at targets in sight within {@link #DIRECT_RANGE}, and a

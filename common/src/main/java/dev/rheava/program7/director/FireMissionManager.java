@@ -236,6 +236,13 @@ public final class FireMissionManager {
 				continue;
 			}
 			mission.offscreenCooldown = OFFSCREEN_FIRE_INTERVAL;
+			// A shot just went out for this mission — refresh the idle clock so
+			// a sustained off-screen barrage doesn't get pruned by the same
+			// MISSION_DROP_TICKS TTL that governs a silent, abandoned mission
+			// (see finding: OFFSCREEN_FIRE_INTERVAL == MISSION_DROP_TICKS meant
+			// a mission fired exactly one off-screen shot before being aged
+			// out on the very next scan).
+			mission.lastTouchTick = now;
 			this.resolveStatisticalShot(world, director, mission);
 			changed = true;
 		}
@@ -269,7 +276,11 @@ public final class FireMissionManager {
 					? World.ExplosionSourceType.MOB
 					: World.ExplosionSourceType.NONE;
 			world.createExplosion(null, impact.x, impact.y, impact.z, mission.impactPower, sourceType);
-			director.getTerrainSaturation().recordImpact(world, impactBlock, mission.impactPower);
+			// The erosion accumulator wants the shell's saturation weight
+			// (1.0-2.0), not its explosion power (2.0-3.4) — a real shell's
+			// AbstractShellEntity#onImpact passes its own saturationWeight()
+			// here too (see finding #5); the two numbers are unrelated.
+			director.getTerrainSaturation().recordImpact(world, impactBlock, mission.saturationWeight);
 		}
 
 		this.onShotFired(mission);
@@ -359,6 +370,16 @@ public final class FireMissionManager {
 		if (tubes.isEmpty() || designations.isEmpty()) {
 			return false;
 		}
+		// Live battery key/position for every tube seen this pass — lets
+		// findBatteryMate merge two tubes assigned in the very same scan
+		// (mateBatteryKeyCache/mateBatteryPosCache only cover tubes that
+		// already had a mission as of the *previous* pruneMissions pass, so
+		// on their own they miss two brand-new tubes merging together right
+		// now; see finding #2).
+		Map<UUID, Tube> liveTubes = new HashMap<>();
+		for (Tube tube : tubes) {
+			liveTubes.put(tube.mob().getUuid(), tube);
+		}
 		boolean changed = false;
 		for (Tube tube : tubes) {
 			LivingEntity own = tube.mob().getTarget();
@@ -386,9 +407,10 @@ public final class FireMissionManager {
 			if (best != null) {
 				FireMission mission = this.missions.get(tube.mob().getUuid());
 				if (mission == null) {
-					FireMission batteryMate = this.findBatteryMate(tube, best, now);
+					FireMission batteryMate = this.findBatteryMate(tube, best, now, liveTubes);
 					mission = batteryMate != null ? batteryMate
-							: new FireMission(tube.spec().indirectBaseSpread(), tube.spec().indirectImpactPower());
+							: new FireMission(tube.spec().indirectBaseSpread(), tube.spec().indirectImpactPower(),
+									tube.spec().indirectSaturationWeight());
 					this.missions.put(tube.mob().getUuid(), mission);
 				}
 				this.applyDesignation(mission, best, now);
@@ -404,14 +426,16 @@ public final class FireMissionManager {
 	 * IndirectFireUnit#battery()} key and within {@link #BATTERY_RADIUS} of
 	 * {@code tube} — if found, its mission is returned so the new tube joins
 	 * the same battery instead of starting its own independent ranging
-	 * walk-in. The battery key/position lookup rides {@link
-	 * #mateBatteryKeyCache}/{@link #mateBatteryPosCache}, small per-scan
-	 * caches rebuilt every {@link #pruneMissions} pass (one scan interval,
-	 * ~1s, behind live) so this doesn't need to re-resolve every mission's
-	 * owning entity from the world on every assignment.
+	 * walk-in. The battery key/position lookup prefers {@code liveTubes} (the
+	 * tubes actually seen this scan pass, so two tubes assigned in the very
+	 * same pass still merge) and falls back to {@link #mateBatteryKeyCache}/
+	 * {@link #mateBatteryPosCache} — small per-scan caches rebuilt every
+	 * {@link #pruneMissions} pass (one scan interval, ~1s, behind live) — for
+	 * a candidate mission whose tube isn't in this pass's tube list (e.g. it
+	 * unloaded since).
 	 */
 	@Nullable
-	private FireMission findBatteryMate(Tube tube, Designation designation, long now) {
+	private FireMission findBatteryMate(Tube tube, Designation designation, long now, Map<UUID, Tube> liveTubes) {
 		String key = tube.spec().battery();
 		if (key == null) {
 			return null;
@@ -427,10 +451,12 @@ public final class FireMissionManager {
 			if (now - candidate.lastTouchTick > MISSION_STALE_TICKS) {
 				continue;
 			}
-			if (!key.equals(this.mateBatteryKeyCache.get(entry.getKey()))) {
+			Tube liveMate = liveTubes.get(entry.getKey());
+			String mateKey = liveMate != null ? liveMate.spec().battery() : this.mateBatteryKeyCache.get(entry.getKey());
+			if (!key.equals(mateKey)) {
 				continue;
 			}
-			Vec3d matePos = this.mateBatteryPosCache.get(entry.getKey());
+			Vec3d matePos = liveMate != null ? liveMate.mob().getPos() : this.mateBatteryPosCache.get(entry.getKey());
 			if (matePos == null || matePos.distanceTo(tube.mob().getPos()) > BATTERY_RADIUS) {
 				continue;
 			}
@@ -446,8 +472,29 @@ public final class FireMissionManager {
 	private final Map<UUID, String> mateBatteryKeyCache = new HashMap<>();
 	private final Map<UUID, Vec3d> mateBatteryPosCache = new HashMap<>();
 
-	/** Point a mission at a fresh designation, resetting the walk-in when the spotting state flips or the target has moved. */
+	/**
+	 * Point a mission at a fresh designation, resetting the walk-in when the
+	 * spotting state flips or the target has moved.
+	 *
+	 * <p>Shared-battery guard (§4 finding #4): a self-observing tube calls
+	 * this every tick via {@link #updateSelfObserved}, while a battery-mate
+	 * that itself has no line of sight gets re-pointed at the same shared
+	 * {@link FireMission} once per {@link #SCAN_INTERVAL} through {@link
+	 * #assignMissions} — possibly with a lower-priority, unspotted
+	 * designation (counter-battery/dwell). Applying that lower-priority
+	 * write unconditionally would flip {@code observed} true→false→true and
+	 * re-anchor the target every scan, permanently resetting the walk-in
+	 * even though a mate has real eyes on. A lower-priority designation
+	 * arriving while the mission is currently observed <em>and</em> was
+	 * touched more recently than a full scan interval ago (i.e. something is
+	 * touching it every tick, not just once a scan — only self-observation
+	 * does that) is superseded rather than applied.
+	 */
 	private void applyDesignation(FireMission mission, Designation designation, long now) {
+		if (mission.observed && designation.priority() < mission.priority
+				&& now - mission.lastTouchTick < SCAN_INTERVAL) {
+			return;
+		}
 		if (mission.observed != designation.spotted()) {
 			mission.rangingProgress = 1;
 		}
@@ -513,7 +560,8 @@ public final class FireMissionManager {
 	public <T extends MobEntity & IndirectFireUnit> FireMission updateSelfObserved(T shooter, LivingEntity target,
 			long now) {
 		FireMission mission = this.missions.computeIfAbsent(shooter.getUuid(),
-				id -> new FireMission(shooter.indirectBaseSpread(), shooter.indirectImpactPower()));
+				id -> new FireMission(shooter.indirectBaseSpread(), shooter.indirectImpactPower(),
+						shooter.indirectSaturationWeight()));
 		this.applyDesignation(mission,
 				new Designation(target.getPos(), target.getUuid(), true, PRIORITY_OBSERVER), now);
 		return mission;
@@ -686,12 +734,15 @@ public final class FireMissionManager {
 		private double baseSpread;
 		/** Roughly how big a bang this mission's munition makes — set from {@link IndirectFireUnit#indirectImpactPower()}; used only by off-screen statistical resolution, which has no real shell entity to ask. */
 		private float impactPower;
-		/** Ticks until the next off-screen statistical shot, decremented only while this mission's tube is unloaded (see {@link #resolveOffscreenMissions}). */
+		/** How much this mission's munition feeds {@code TerrainSaturation} per hit — set from {@link IndirectFireUnit#indirectSaturationWeight()}; used only by off-screen statistical resolution (see {@link #resolveStatisticalShot}), which has no real shell entity's own {@code saturationWeight()} to ask. */
+		private float saturationWeight;
+		/** Ticks until the next off-screen statistical shot, decremented only while this mission's tube is unloaded (see {@link #resolveOffscreenMissions}). Persisted so a restart mid-barrage doesn't reset the clock and prune the mission before its first off-screen shot (see class doc). */
 		private int offscreenCooldown = OFFSCREEN_FIRE_INTERVAL;
 
-		private FireMission(double baseSpread, float impactPower) {
+		private FireMission(double baseSpread, float impactPower, float saturationWeight) {
 			this.baseSpread = baseSpread;
 			this.impactPower = impactPower;
+			this.saturationWeight = saturationWeight;
 		}
 
 		@Nullable
@@ -753,12 +804,21 @@ public final class FireMissionManager {
 			tag.putLong("LastTouch", this.lastTouchTick);
 			tag.putDouble("BaseSpread", this.baseSpread);
 			tag.putFloat("ImpactPower", this.impactPower);
+			tag.putFloat("SaturationWeight", this.saturationWeight);
+			tag.putInt("OffscreenCooldown", this.offscreenCooldown);
 			return tag;
 		}
 
 		private static FireMission fromNbt(NbtCompound tag) {
 			FireMission mission = new FireMission(tag.contains("BaseSpread") ? tag.getDouble("BaseSpread") : 1.0,
-					tag.contains("ImpactPower") ? tag.getFloat("ImpactPower") : 2.0f);
+					tag.contains("ImpactPower") ? tag.getFloat("ImpactPower") : 2.0f,
+					tag.contains("SaturationWeight") ? tag.getFloat("SaturationWeight") : 1.0f);
+			// Persisted so a restart mid-barrage resumes the off-screen fire
+			// clock where it left off rather than snapping back to a full
+			// OFFSCREEN_FIRE_INTERVAL — see the field doc and finding #1.
+			mission.offscreenCooldown = tag.contains("OffscreenCooldown")
+					? tag.getInt("OffscreenCooldown")
+					: OFFSCREEN_FIRE_INTERVAL;
 			if (tag.containsUuid("Target")) {
 				mission.targetPlayerId = tag.getUuid("Target");
 			}

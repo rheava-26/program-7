@@ -47,6 +47,21 @@ public interface IndirectFireUnit {
 	}
 
 	/**
+	 * How much this type's munition feeds {@code TerrainSaturation}'s erosion
+	 * accumulator per hit — handed to {@code TerrainSaturation#recordImpact}
+	 * by {@code FireMissionManager}'s off-screen statistical resolution (doc
+	 * §7), which has no real shell entity to ask. Mirrors the munition's own
+	 * {@code AbstractShellEntity#saturationWeight}, not {@link
+	 * #indirectImpactPower()} — the two are unrelated numbers (blast radius
+	 * vs. erosion weight) that happen to both describe "how big this shell
+	 * is." {@code 1.0} by default, matching {@code AbstractShellEntity}'s own
+	 * default.
+	 */
+	default float indirectSaturationWeight() {
+		return 1.0f;
+	}
+
+	/**
 	 * The battery-grouping key: tubes with equal, non-null keys standing near
 	 * each other (see {@code FireMissionManager}'s battery radius) share a
 	 * single {@code FireMission} so their ranging walks in together and their

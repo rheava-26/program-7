@@ -156,6 +156,12 @@ public class MissileLauncherEntity extends ProgramDroneEntity
 	}
 
 	@Override
+	public float indirectSaturationWeight() {
+		// Matches GuidedMissileEntity's own saturationWeight.
+		return 2.0f;
+	}
+
+	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);
