@@ -23,6 +23,7 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 - **Datapad inbound-fire warning generalized**: `DatapadItem.incomingFor` now scans for any `AbstractShellEntity` (not just `HowitzerShellEntity`), so the ETA/bearing warning will pick up every new munition family below once they exist.
 - **MLRS / rocket artillery** (`MlrsLauncherEntity` + `MlrsRocketEntity` + `MlrsAttackGoal`): mobile Tier 3-4 rocket artillery, a `FireMissionManager` client with a wide `indirectBaseSpread` (3x the howitzer's) and `battery()` opted out (mobile pieces fire alone per the doc's platform split). Fires a 6-rocket ripple staggered 4 ticks apart, each independently scattered inside a widened spread, then a long reload — the doc's "stutter of launches... wall of impacts arriving together." Registered end to end (entity/attributes, spawn egg, lang, loot table); model/renderer **reuse the howitzer chassis and howitzer-shell geometry as a placeholder** (documented in the model classes) rather than a bespoke rocket-rack/finned-rocket silhouette — a real art pass is still open.
 - **Guided missiles** (`MissileLauncherEntity` + `GuidedMissileEntity` + `MissileAttackGoal`): Tier 4-5 mobile precision artillery — the doc's "deliberate inversion of unguided rockets." Fires a near-flat, low-gravity missile that steers its own velocity toward a live target each tick within a limited turn rate (`GuidedMissileEntity.steerToward`), but **only when the firing mission was currently spotted** (`FireMission.targetPlayerId()`, a new getter) — an unobserved mission still fires the missile dumb at the stale point, so losing the observer degrades a missile exactly like every cheaper tube. Tiny 4-round magazine, ~20s reload, opts out of battery sharing (rare and expensive, fires alone). Same placeholder-geometry approach as the MLRS (reuses the howitzer chassis + howitzer-shell model), registered end to end.
+- **Naval bombardment**: `GunboatEntity` now implements `IndirectFireUnit` and gets a new `NavalBombardmentGoal` (lower priority than its existing `DeckGunAttackGoal`, so it only actually starts when the deck gun has no line-of-sight target of its own — the `LOOK`-control conflict does the arbitration). Fires the same `HowitzerShellEntity` the deck gun's self-observed arc mode already uses, through the full `FireMissionManager` loop (ranging, CEP, battery-opt-out since it's a mobile hull that "reposition[s] along the coast"). **Bonus fix while in this file**: `DeckGunAttackGoal.fireArcingShell`'s own self-observed mode also had the naive `dx / FLIGHT_TICKS` ballistic backfill (the same flaw the mortar had) — switched to the shared `BallisticSolver` too, so both the manager-assigned and self-observed naval bombardment paths land correctly at range.
 
 ## Shipped this session
 
@@ -49,7 +50,7 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 
 - Terrain saturation / erosion accumulator (repeated impacts degrade the ground).
 - Off-screen statistical resolution: resolve fire missions abstractly in unloaded chunks (no player near).
-- Additional artillery types: naval bombardment (ship guns), close air support.
+- Additional artillery types: close air support.
 
 ### Other long-standing items
 

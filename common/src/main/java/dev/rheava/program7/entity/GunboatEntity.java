@@ -1,9 +1,11 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.audio.ProgramAcoustics;
+import dev.rheava.program7.entity.ai.BallisticSolver;
 import dev.rheava.program7.entity.ai.GunAttackGoal;
 import dev.rheava.program7.entity.ai.HitscanImpact;
 import dev.rheava.program7.entity.ai.MagazineFed;
+import dev.rheava.program7.entity.ai.NavalBombardmentGoal;
 import dev.rheava.program7.entity.ai.NavalMoveControl;
 import dev.rheava.program7.entity.ai.RoundClass;
 import dev.rheava.program7.registry.P7Sounds;
@@ -45,8 +47,17 @@ import net.minecraft.world.World;
  * builds these arrives later with the rest of the Program's
  * support-infrastructure phase; for now the gunboat is deployed the same
  * way everything else is.
+ *
+ * <p>Per the artillery doc's §4 naval bombardment row, the deck gun's own
+ * arcing mode ({@code DeckGunAttackGoal.fireArcingShell}, self-observed
+ * only) is joined by {@link NavalBombardmentGoal}: a lower-priority {@link
+ * dev.rheava.program7.director.FireMissionManager} client that takes over
+ * the exact same arcing reach whenever the hull has no line-of-sight target
+ * of its own, so an inland observer can feed the ship a target and the deck
+ * gun bombards a shore position it can't see — "ties the boats into land
+ * sieges instead of leaving them at the shoreline."
  */
-public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
+public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed, IndirectFireUnit {
 	// Buoyancy: how hard the hull shoves itself back toward the surface per
 	// tick once it's been pushed under.
 	private static final double BUOYANCY_RISE = 0.08;
@@ -55,6 +66,9 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 	private static final double SURFACE_VERTICAL_DAMPING = 0.5;
 	private static final int MAGAZINE_CAPACITY = 48;
 	private static final String NBT_ROUNDS = "RoundsRemaining";
+	/** Mirrors {@code DeckGunAttackGoal.DIRECT_RANGE}/{@code BOMBARD_RANGE} — below this the gun is direct-fire territory, not the manager's to assign. */
+	private static final double INDIRECT_MIN_RANGE = 40.0;
+	private static final double INDIRECT_MAX_RANGE = 112.0;
 
 	private int roundsRemaining = MAGAZINE_CAPACITY;
 
@@ -117,6 +131,12 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(1, new DeckGunAttackGoal(this));
+		// Lower priority than the deck gun's own self-observed engagement: the
+		// control-flag conflict (both want LOOK) means this only actually
+		// starts when DeckGunAttackGoal.canStart() is false — i.e. the hull
+		// has no line-of-sight target of its own, exactly the "fire on
+		// whatever the manager assigned" case (see class doc).
+		this.goalSelector.add(2, new NavalBombardmentGoal(this));
 		this.goalSelector.add(4, new SwimAroundGoal(this, 1.0, 60));
 		this.goalSelector.add(5, new LookAroundGoal(this));
 
@@ -291,6 +311,29 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 		}
 	}
 
+	@Override
+	public double indirectMinRange() {
+		return INDIRECT_MIN_RANGE;
+	}
+
+	@Override
+	public double indirectMaxRange() {
+		return INDIRECT_MAX_RANGE;
+	}
+
+	@Override
+	public double indirectBaseSpread() {
+		// Same rifle-grade precision as the howitzer — it fires the identical
+		// heavy shell, just from the water.
+		return 1.0;
+	}
+
+	@Override
+	public String battery() {
+		// Mobile hull, free to reposition along the coast (doc §4): fires alone.
+		return null;
+	}
+
 	/**
 	 * The deck gun — both modes fire real shells (no hitscan): a flat, fast
 	 * direct shell at targets in sight within {@link #DIRECT_RANGE}, and a
@@ -305,8 +348,8 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 		private static final double BOMBARD_RANGE = 112.0;
 		/** Slow, heavy cadence between bombardment rounds. */
 		private static final int BOMBARD_INTERVAL = 80;
-		/** Fixed flight time for the arcing ballistic solve (same idea as HowitzerAttackGoal). */
-		private static final double FLIGHT_TICKS = 90.0;
+		/** Vertical launch speed for the arcing ballistic solve (same idea as HowitzerAttackGoal). */
+		private static final double ARC_LAUNCH_VELOCITY_Y = 2.1;
 		/** Flat direct-fire shell speed, blocks/tick. */
 		private static final double DIRECT_SHELL_SPEED = 2.8;
 		/** HowitzerShellEntity's gravity — used to compensate drop on a flat shot. */
@@ -359,7 +402,7 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 			world.spawnEntity(shell);
 		}
 
-		/** Launches a gravity-arced shell toward {@code aim} with the same simple ballistic solve the howitzer uses. */
+		/** Launches a gravity-arced shell toward {@code aim} with the same drag-aware ballistic solve the howitzer uses. */
 		private void fireArcingShell(Vec3d aim) {
 			if (!(this.shooter.getWorld() instanceof ServerWorld world)) {
 				return;
@@ -372,9 +415,8 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 			world.spawnParticles(ParticleTypes.LARGE_SMOKE, muzzle.x, muzzle.y, muzzle.z, 10, 0.3, 0.15, 0.3, 0.03);
 			HowitzerShellEntity shell = new HowitzerShellEntity(world, this.shooter);
 			shell.setPosition(muzzle.x, muzzle.y, muzzle.z);
-			double dx = aim.x - muzzle.x;
-			double dz = aim.z - muzzle.z;
-			shell.setVelocity(dx / FLIGHT_TICKS, 2.1, dz / FLIGHT_TICKS);
+			Vec3d launch = BallisticSolver.solve(muzzle, aim, ARC_LAUNCH_VELOCITY_Y, SHELL_GRAVITY);
+			shell.setVelocity(launch.x, launch.y, launch.z);
 			world.spawnEntity(shell);
 		}
 
