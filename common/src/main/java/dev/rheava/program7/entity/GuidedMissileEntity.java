@@ -7,6 +7,7 @@ import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -36,6 +37,8 @@ public class GuidedMissileEntity extends AbstractShellEntity {
 	private static final double TURN_RATE = 0.06;
 	private static final double MIN_SPEED = 1.4;
 
+	private static final String NBT_GUIDANCE_TARGET = "GuidanceTarget";
+
 	@Nullable
 	private UUID guidanceTargetId;
 
@@ -50,6 +53,27 @@ public class GuidedMissileEntity extends AbstractShellEntity {
 	/** Set right after spawning by the firing goal, when (and only when) the mission that launched it was currently spotted by an observer. */
 	public void setGuidanceTarget(@Nullable UUID targetId) {
 		this.guidanceTargetId = targetId;
+	}
+
+	/**
+	 * Persists the live guidance target so a missile mid-flight when its
+	 * chunk unloads (or the server restarts) keeps homing instead of
+	 * silently flying dumb from then on (finding #7).
+	 */
+	@Override
+	protected void writeCustomDataToNbt(NbtCompound nbt) {
+		super.writeCustomDataToNbt(nbt);
+		if (this.guidanceTargetId != null) {
+			nbt.putUuid(NBT_GUIDANCE_TARGET, this.guidanceTargetId);
+		}
+	}
+
+	@Override
+	protected void readCustomDataFromNbt(NbtCompound nbt) {
+		super.readCustomDataFromNbt(nbt);
+		if (nbt.containsUuid(NBT_GUIDANCE_TARGET)) {
+			this.guidanceTargetId = nbt.getUuid(NBT_GUIDANCE_TARGET);
+		}
 	}
 
 	@Override
