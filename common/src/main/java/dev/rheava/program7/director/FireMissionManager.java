@@ -588,6 +588,18 @@ public final class FireMissionManager {
 			return this.targetPos;
 		}
 
+		/**
+		 * The live target player's UUID, if this mission currently has one —
+		 * the guided-missile family (see {@code MissileAttackGoal}) resolves
+		 * this against the world to home in on the actual entity rather than
+		 * a fixed point, when the mission is currently spotted (see {@link
+		 * #isObserved()}).
+		 */
+		@Nullable
+		public UUID targetPlayerId() {
+			return this.targetPlayerId;
+		}
+
 		public boolean isObserved() {
 			return this.observed;
 		}

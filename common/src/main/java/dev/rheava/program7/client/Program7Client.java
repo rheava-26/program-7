@@ -15,6 +15,8 @@ import dev.rheava.program7.client.render.AutogunTurretRenderer;
 import dev.rheava.program7.client.render.BatteryCenterModel;
 import dev.rheava.program7.client.render.BatteryCenterRenderer;
 import dev.rheava.program7.client.render.DropPodRenderer;
+import dev.rheava.program7.client.render.GuidedMissileModel;
+import dev.rheava.program7.client.render.GuidedMissileRenderer;
 import dev.rheava.program7.client.render.GunboatModel;
 import dev.rheava.program7.client.render.GunboatRenderer;
 import dev.rheava.program7.client.render.GunshipModel;
@@ -37,6 +39,8 @@ import dev.rheava.program7.client.render.MediumAttackDroneModel;
 import dev.rheava.program7.client.render.MediumAttackDroneRenderer;
 import dev.rheava.program7.client.render.MediumMiningDroneModel;
 import dev.rheava.program7.client.render.MediumMiningDroneRenderer;
+import dev.rheava.program7.client.render.MissileLauncherModel;
+import dev.rheava.program7.client.render.MissileLauncherRenderer;
 import dev.rheava.program7.client.render.MlrsLauncherModel;
 import dev.rheava.program7.client.render.MlrsLauncherRenderer;
 import dev.rheava.program7.client.render.MlrsRocketModel;
@@ -119,6 +123,10 @@ public final class Program7Client {
 				MlrsLauncherModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(MlrsRocketModel.LAYER,
 				MlrsRocketModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(MissileLauncherModel.LAYER,
+				MissileLauncherModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(GuidedMissileModel.LAYER,
+				GuidedMissileModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
@@ -147,6 +155,8 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.HOWITZER_SHELL, HowitzerShellRenderer::new);
 		EntityRendererRegistry.register(P7Entities.MLRS_LAUNCHER, MlrsLauncherRenderer::new);
 		EntityRendererRegistry.register(P7Entities.MLRS_ROCKET, MlrsRocketRenderer::new);
+		EntityRendererRegistry.register(P7Entities.MISSILE_LAUNCHER, MissileLauncherRenderer::new);
+		EntityRendererRegistry.register(P7Entities.GUIDED_MISSILE, GuidedMissileRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,

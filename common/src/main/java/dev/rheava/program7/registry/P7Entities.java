@@ -11,6 +11,7 @@ import dev.rheava.program7.entity.AutogunTurretEntity;
 import dev.rheava.program7.entity.BatteryCenterEntity;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
+import dev.rheava.program7.entity.GuidedMissileEntity;
 import dev.rheava.program7.entity.GunboatEntity;
 import dev.rheava.program7.entity.GunshipEntity;
 import dev.rheava.program7.entity.HowitzerEntity;
@@ -21,6 +22,7 @@ import dev.rheava.program7.entity.IFVEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumAttackDroneEntity;
 import dev.rheava.program7.entity.MediumMiningDroneEntity;
+import dev.rheava.program7.entity.MissileLauncherEntity;
 import dev.rheava.program7.entity.MlrsLauncherEntity;
 import dev.rheava.program7.entity.MlrsRocketEntity;
 import dev.rheava.program7.entity.MortarEmplacementEntity;
@@ -261,6 +263,22 @@ public final class P7Entities {
 							.maxTrackingRange(48)
 							.build("mlrs_rocket"));
 
+	/** Tier 4-5 mobile precision artillery: a handful of guided missiles that beat the range accuracy floor everything else is stuck under. */
+	public static final RegistrySupplier<EntityType<MissileLauncherEntity>> MISSILE_LAUNCHER =
+			ENTITIES.register("missile_launcher",
+					() -> EntityType.Builder.create(MissileLauncherEntity::new, SpawnGroup.MISC)
+							.dimensions(3.9f, 3.5f)
+							.maxTrackingRange(16)
+							.build("missile_launcher"));
+
+	/** A homing, limited-turn-rate guided missile. */
+	public static final RegistrySupplier<EntityType<GuidedMissileEntity>> GUIDED_MISSILE =
+			ENTITIES.register("guided_missile",
+					() -> EntityType.Builder.<GuidedMissileEntity>create(GuidedMissileEntity::new, SpawnGroup.MISC)
+							.dimensions(0.4f, 0.4f)
+							.maxTrackingRange(64)
+							.build("guided_missile"));
+
 	public static void register() {
 		ENTITIES.register();
 
@@ -292,6 +310,7 @@ public final class P7Entities {
 		EntityAttributeRegistry.register(GUNSHIP, GunshipEntity::createGunshipAttributes);
 		EntityAttributeRegistry.register(HOWITZER, HowitzerEntity::createHowitzerAttributes);
 		EntityAttributeRegistry.register(MLRS_LAUNCHER, MlrsLauncherEntity::createMlrsLauncherAttributes);
+		EntityAttributeRegistry.register(MISSILE_LAUNCHER, MissileLauncherEntity::createMissileLauncherAttributes);
 	}
 
 	private P7Entities() {

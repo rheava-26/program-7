@@ -22,6 +22,7 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 - **Battery fire**: `FireMissionManager` shares one `FireMission` object across same-`battery()`-key tubes within 32 blocks targeting the same player, so several howitzers (or mortars) parked near each other range in together and fire for effect denser than any one tube alone. NOTE: battery-sharing is a live-scan optimization only — a world restart flattens shared missions back to independent per-tube copies, which the next scan re-shares if they're still on the same target. Not yet exercised by any in-game battery placement (no wave/dispatch code groups tubes together); proven by the mechanism, not by content.
 - **Datapad inbound-fire warning generalized**: `DatapadItem.incomingFor` now scans for any `AbstractShellEntity` (not just `HowitzerShellEntity`), so the ETA/bearing warning will pick up every new munition family below once they exist.
 - **MLRS / rocket artillery** (`MlrsLauncherEntity` + `MlrsRocketEntity` + `MlrsAttackGoal`): mobile Tier 3-4 rocket artillery, a `FireMissionManager` client with a wide `indirectBaseSpread` (3x the howitzer's) and `battery()` opted out (mobile pieces fire alone per the doc's platform split). Fires a 6-rocket ripple staggered 4 ticks apart, each independently scattered inside a widened spread, then a long reload — the doc's "stutter of launches... wall of impacts arriving together." Registered end to end (entity/attributes, spawn egg, lang, loot table); model/renderer **reuse the howitzer chassis and howitzer-shell geometry as a placeholder** (documented in the model classes) rather than a bespoke rocket-rack/finned-rocket silhouette — a real art pass is still open.
+- **Guided missiles** (`MissileLauncherEntity` + `GuidedMissileEntity` + `MissileAttackGoal`): Tier 4-5 mobile precision artillery — the doc's "deliberate inversion of unguided rockets." Fires a near-flat, low-gravity missile that steers its own velocity toward a live target each tick within a limited turn rate (`GuidedMissileEntity.steerToward`), but **only when the firing mission was currently spotted** (`FireMission.targetPlayerId()`, a new getter) — an unobserved mission still fires the missile dumb at the stale point, so losing the observer degrades a missile exactly like every cheaper tube. Tiny 4-round magazine, ~20s reload, opts out of battery sharing (rare and expensive, fires alone). Same placeholder-geometry approach as the MLRS (reuses the howitzer chassis + howitzer-shell model), registered end to end.
 
 ## Shipped this session
 
@@ -48,7 +49,7 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 
 - Terrain saturation / erosion accumulator (repeated impacts degrade the ground).
 - Off-screen statistical resolution: resolve fire missions abstractly in unloaded chunks (no player near).
-- Additional artillery types: naval bombardment (ship guns), guided missiles, close air support.
+- Additional artillery types: naval bombardment (ship guns), close air support.
 
 ### Other long-standing items
 

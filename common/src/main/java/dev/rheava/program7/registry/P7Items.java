@@ -151,6 +151,10 @@ public final class P7Items {
 	public static final RegistrySupplier<Item> MLRS_LAUNCHER_SPAWN_EGG = ITEMS.register("mlrs_launcher_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.MLRS_LAUNCHER, 0x23272b, 0xb0562c,
 					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> MISSILE_LAUNCHER_SPAWN_EGG =
+			ITEMS.register("missile_launcher_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.MISSILE_LAUNCHER, 0x23272b, 0xd9364a,
+							new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();
