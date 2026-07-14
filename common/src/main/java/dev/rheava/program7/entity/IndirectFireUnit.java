@@ -34,6 +34,19 @@ public interface IndirectFireUnit {
 	double indirectBaseSpread();
 
 	/**
+	 * Roughly how big a bang this type's shell makes — handed to {@code
+	 * World#createExplosion} by {@code FireMissionManager}'s off-screen
+	 * statistical resolution (doc §7), which has no real shell entity to ask.
+	 * Matches the munition's own {@code AbstractShellEntity} subclass's
+	 * explosion power closely enough that a barrage the player isn't
+	 * standing near still reads as roughly the right size if its target
+	 * chunk happens to be loaded. {@code 2.0} by default.
+	 */
+	default float indirectImpactPower() {
+		return 2.0f;
+	}
+
+	/**
 	 * The battery-grouping key: tubes with equal, non-null keys standing near
 	 * each other (see {@code FireMissionManager}'s battery radius) share a
 	 * single {@code FireMission} so their ranging walks in together and their

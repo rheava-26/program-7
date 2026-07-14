@@ -150,6 +150,12 @@ public class MissileLauncherEntity extends ProgramDroneEntity
 	}
 
 	@Override
+	public float indirectImpactPower() {
+		// Matches GuidedMissileEntity's own explosion power.
+		return 3.0f;
+	}
+
+	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);

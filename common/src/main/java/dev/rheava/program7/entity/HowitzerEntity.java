@@ -155,6 +155,12 @@ public class HowitzerEntity extends ProgramDroneEntity implements ReloadableWeap
 	}
 
 	@Override
+	public float indirectImpactPower() {
+		// Matches HowitzerShellEntity's own explosion power.
+		return 3.4f;
+	}
+
+	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
 		nbt.putInt(NBT_ROUNDS, this.roundsRemaining);

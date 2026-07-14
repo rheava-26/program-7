@@ -334,6 +334,12 @@ public class GunboatEntity extends ProgramDroneEntity implements ReloadableWeapo
 		return null;
 	}
 
+	@Override
+	public float indirectImpactPower() {
+		// Fires the same HowitzerShellEntity the deck gun's own arc mode uses.
+		return 3.4f;
+	}
+
 	/**
 	 * The deck gun — both modes fire real shells (no hitscan): a flat, fast
 	 * direct shell at targets in sight within {@link #DIRECT_RANGE}, and a

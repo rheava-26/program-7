@@ -9,12 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import dev.rheava.program7.Program7;
+import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.entity.AirUAVEntity;
 import dev.rheava.program7.entity.IndirectFireUnit;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.entity.ReconHelicopterEntity;
 import dev.rheava.program7.entity.ScoutCarEntity;
 import dev.rheava.program7.entity.SurveyorDroneEntity;
+import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -24,8 +27,12 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -51,10 +58,15 @@ import org.jetbrains.annotations.Nullable;
  * shot advances the shared ranging progress, so a battery walks fire in
  * faster and fires for effect together, denser than any one tube alone.
  *
- * <p>Only in-loaded-chunk fire is handled here — off-screen statistical
- * resolution (doc §7) is a later pass. Active missions and the dwell grid
- * persist in NBT so a restart mid-barrage resolves rather than dropping shells
- * into the void, the same discipline as {@link VirtualFleet}.
+ * <p>A mission whose tube is loaded fires through its own attack goal
+ * (real shell entity, real magazine); one whose tube has unloaded is picked
+ * up here instead by {@link #resolveOffscreenMissions} (doc §7 "off-screen
+ * statistical resolution") — no real projectile, just a rolled impact,
+ * optional real damage if the target chunk happens to be loaded, and always
+ * an acoustic report, so a distant war keeps making noise even with nobody
+ * standing at either end of it. Active missions and the dwell grid persist
+ * in NBT so a restart mid-barrage resolves rather than dropping shells into
+ * the void, the same discipline as {@link VirtualFleet}.
  */
 public final class FireMissionManager {
 	/** Reassess external target sources / missions on this cadence (~1s). Self-observed fire is refreshed live from the goal every tick. */
@@ -79,6 +91,19 @@ public final class FireMissionManager {
 	private static final int MISSION_STALE_TICKS = 60;
 	/** No refresh for this long → the mission is dropped entirely. */
 	private static final int MISSION_DROP_TICKS = 200;
+
+	// ---- Off-screen statistical resolution (§7): a mission whose tube isn't loaded still fires, on a coarse generic cadence, without a real shell entity. ----
+	/** How often (ticks) an off-screen mission rolls a statistical shot — coarser than any real tube's own cadence, since this is background simulation, not the main event. */
+	private static final int OFFSCREEN_FIRE_INTERVAL = 200;
+	// Off-screen impact audio reuses P7Sounds.MORTAR_IMPACT's own registered
+	// fixed audible range (192 blocks, see P7Sounds) via ProgramAcoustics —
+	// no separate radius constant needed here.
+	//
+	// Off-screen shooter-position estimate fallback: the target itself, since
+	// an unloaded tube's exact position isn't tracked once its entity unloads.
+	// Range/spotting terms in currentSpread degrade to "just the base spread"
+	// when shooter and target coincide, which is an acceptable simplification
+	// for a barrage the player isn't anywhere near anyway.
 
 	// ---- Counter-battery (§2 acquisition #3): a far-off projectile hit publishes its shooter's position as a short-lived candidate. ----
 	/** A hit closer than this isn't counter-battery — it's just a fight, handled by direct fire. */
@@ -166,8 +191,88 @@ public final class FireMissionManager {
 		}
 
 		changed |= this.assignMissions(tubes, designations, now);
+		changed |= this.resolveOffscreenMissions(world, director, now);
 		changed |= this.pruneMissions(world, now);
 		return changed;
+	}
+
+	/**
+	 * The doc's §7 off-screen statistical resolution: a mission whose tube's
+	 * chunk isn't currently loaded can't rely on its attack goal ticking (AI
+	 * only runs on loaded entities), so it would otherwise just sit there
+	 * doing nothing until a player wanders back into range. Instead, on a
+	 * coarse generic cadence (no real magazine to check — the tube entity
+	 * itself isn't loaded to ask), roll a shot statistically: work out an
+	 * impact point from the mission's own CEP, apply real block/entity
+	 * damage if the target's chunk happens to be loaded (typically because a
+	 * <em>different</em> player is standing there even though the gun itself
+	 * is far off), and always broadcast the report so a distant player can
+	 * hear "a barrage over the horizon" even with neither chunk loaded.
+	 *
+	 * <p><b>Known simplification (v1):</b> unlike a loaded tube, this never
+	 * debits the tube's own onboard magazine (inaccessible on an unloaded
+	 * entity) — an off-screen mission fires for free rather than truly
+	 * starving out. It also doesn't defer/replay damage once an unloaded
+	 * target chunk later loads (the doc's "applies... if and when that area
+	 * loads"); a shot rolled while the target is unloaded is simply a report
+	 * with no physical effect. Both are documented gaps, not silent bugs.
+	 */
+	private boolean resolveOffscreenMissions(ServerWorld world, ProgramDirectorState director, long now) {
+		if (this.missions.isEmpty()) {
+			return false;
+		}
+		boolean changed = false;
+		for (Map.Entry<UUID, FireMission> entry : this.missions.entrySet()) {
+			if (world.getEntity(entry.getKey()) != null) {
+				// Loaded — its own attack goal handles real firing.
+				continue;
+			}
+			FireMission mission = entry.getValue();
+			if (mission.targetPos == null) {
+				continue;
+			}
+			mission.offscreenCooldown -= SCAN_INTERVAL;
+			if (mission.offscreenCooldown > 0) {
+				continue;
+			}
+			mission.offscreenCooldown = OFFSCREEN_FIRE_INTERVAL;
+			this.resolveStatisticalShot(world, director, mission);
+			changed = true;
+		}
+		return changed;
+	}
+
+	/**
+	 * Rolls one off-screen shot for {@code mission}: a scattered impact point
+	 * around its target (the shooter's exact position isn't tracked once its
+	 * entity unloads, so the spread math degrades to "just the mission's own
+	 * CEP" rather than a true range-scaled figure — an acceptable
+	 * simplification for a barrage the player isn't anywhere near). Real
+	 * damage only lands if the impact's chunk is loaded; the audio always
+	 * broadcasts.
+	 */
+	private void resolveStatisticalShot(ServerWorld world, ProgramDirectorState director, FireMission mission) {
+		Vec3d target = mission.targetPos;
+		double spread = this.currentSpread(mission, target);
+		Vec3d impact = target.add(
+				(world.getRandom().nextDouble() * 2.0 - 1.0) * spread,
+				0.0,
+				(world.getRandom().nextDouble() * 2.0 - 1.0) * spread);
+
+		ProgramAcoustics.emit(world, impact, P7Sounds.MORTAR_IMPACT.get(), SoundCategory.HOSTILE, 1.6f, 0.7f);
+
+		BlockPos impactBlock = BlockPos.ofFloored(impact);
+		boolean chunkLoaded = world.getChunk(impactBlock.getX() >> 4, impactBlock.getZ() >> 4,
+				ChunkStatus.FULL, false) != null;
+		if (chunkLoaded) {
+			World.ExplosionSourceType sourceType = Program7.CONFIG.terrainDestruction
+					? World.ExplosionSourceType.MOB
+					: World.ExplosionSourceType.NONE;
+			world.createExplosion(null, impact.x, impact.y, impact.z, mission.impactPower, sourceType);
+			director.getTerrainSaturation().recordImpact(world, impactBlock, mission.impactPower);
+		}
+
+		this.onShotFired(mission);
 	}
 
 	/** The recon layer the doc points at — anything carrying the AlertState ramp as a spotter, not a tube itself. */
@@ -282,7 +387,8 @@ public final class FireMissionManager {
 				FireMission mission = this.missions.get(tube.mob().getUuid());
 				if (mission == null) {
 					FireMission batteryMate = this.findBatteryMate(tube, best, now);
-					mission = batteryMate != null ? batteryMate : new FireMission(tube.spec().indirectBaseSpread());
+					mission = batteryMate != null ? batteryMate
+							: new FireMission(tube.spec().indirectBaseSpread(), tube.spec().indirectImpactPower());
 					this.missions.put(tube.mob().getUuid(), mission);
 				}
 				this.applyDesignation(mission, best, now);
@@ -407,7 +513,7 @@ public final class FireMissionManager {
 	public <T extends MobEntity & IndirectFireUnit> FireMission updateSelfObserved(T shooter, LivingEntity target,
 			long now) {
 		FireMission mission = this.missions.computeIfAbsent(shooter.getUuid(),
-				id -> new FireMission(shooter.indirectBaseSpread()));
+				id -> new FireMission(shooter.indirectBaseSpread(), shooter.indirectImpactPower()));
 		this.applyDesignation(mission,
 				new Designation(target.getPos(), target.getUuid(), true, PRIORITY_OBSERVER), now);
 		return mission;
@@ -578,9 +684,14 @@ public final class FireMissionManager {
 		private long lastTouchTick;
 		/** This mission's signature CEP (§3) — set from the owning tube's {@link IndirectFireUnit#indirectBaseSpread()} when the mission is created. */
 		private double baseSpread;
+		/** Roughly how big a bang this mission's munition makes — set from {@link IndirectFireUnit#indirectImpactPower()}; used only by off-screen statistical resolution, which has no real shell entity to ask. */
+		private float impactPower;
+		/** Ticks until the next off-screen statistical shot, decremented only while this mission's tube is unloaded (see {@link #resolveOffscreenMissions}). */
+		private int offscreenCooldown = OFFSCREEN_FIRE_INTERVAL;
 
-		private FireMission(double baseSpread) {
+		private FireMission(double baseSpread, float impactPower) {
 			this.baseSpread = baseSpread;
+			this.impactPower = impactPower;
 		}
 
 		@Nullable
@@ -641,11 +752,13 @@ public final class FireMissionManager {
 			tag.putInt("Priority", this.priority);
 			tag.putLong("LastTouch", this.lastTouchTick);
 			tag.putDouble("BaseSpread", this.baseSpread);
+			tag.putFloat("ImpactPower", this.impactPower);
 			return tag;
 		}
 
 		private static FireMission fromNbt(NbtCompound tag) {
-			FireMission mission = new FireMission(tag.contains("BaseSpread") ? tag.getDouble("BaseSpread") : 1.0);
+			FireMission mission = new FireMission(tag.contains("BaseSpread") ? tag.getDouble("BaseSpread") : 1.0,
+					tag.contains("ImpactPower") ? tag.getFloat("ImpactPower") : 2.0f);
 			if (tag.containsUuid("Target")) {
 				mission.targetPlayerId = tag.getUuid("Target");
 			}
