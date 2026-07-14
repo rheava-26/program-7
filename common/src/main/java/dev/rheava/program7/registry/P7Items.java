@@ -47,6 +47,8 @@ public final class P7Items {
 
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> PSIONIC_RESEARCH_ITEM = ITEMS.register("psionic_research",
+			() -> new BlockItem(P7Blocks.PSIONIC_RESEARCH.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> ASSEMBLER = ITEMS.register("assembler",
 			() -> new BlockItem(P7Blocks.ASSEMBLER.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> LAUNCH_CATAPULT = ITEMS.register("launch_catapult",

@@ -17,6 +17,7 @@ import dev.rheava.program7.block.FuelPlantBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.PlatingBlock;
 import dev.rheava.program7.block.ProbeCoreBlock;
+import dev.rheava.program7.block.PsionicResearchBlock;
 import dev.rheava.program7.block.StorageDeckBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -176,6 +177,20 @@ public final class P7Blocks {
 					.sounds(BlockSoundGroup.NETHERITE)
 					.luminance(state -> 6)
 					.nonOpaque()));
+
+	/**
+	 * The single strategic choke point behind every Tier 4+ capability — the
+	 * psionic research building (see {@link
+	 * dev.rheava.program7.director.ResearchTree}). Tuned between the assembler
+	 * and the probe core: a real siege target, not a drive-by kill.
+	 */
+	public static final RegistrySupplier<Block> PSIONIC_RESEARCH = BLOCKS.register("psionic_research",
+			() -> new PsionicResearchBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(14.0f, 350.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)
+					.luminance(state -> 9)));
 
 	public static void register() {
 		BLOCKS.register();
