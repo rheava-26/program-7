@@ -2,6 +2,7 @@ package dev.rheava.program7.entity;
 
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.audio.ProgramAcoustics;
+import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -12,7 +13,9 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
@@ -117,6 +120,17 @@ public abstract class AbstractShellEntity extends ThrownEntity {
 				? World.ExplosionSourceType.MOB
 				: World.ExplosionSourceType.NONE;
 		world.createExplosion(this, this.getX(), this.getY(), this.getZ(), this.explosionPower(), sourceType);
+
+		// The doc's §5a bombardment-saturation accumulator: restrained
+		// per-round terrain damage on its own (the explosion above already
+		// handled that), but every impact still feeds the cumulative-erosion
+		// grid so sustained fire on the same spot eventually grinds it down.
+		BlockPos impactPos = hitResult instanceof BlockHitResult blockHit
+				? blockHit.getBlockPos()
+				: this.getBlockPos();
+		ProgramDirectorState.get(world).getTerrainSaturation()
+				.recordImpact(world, impactPos, this.saturationWeight());
+
 		this.discard();
 	}
 
@@ -131,6 +145,18 @@ public abstract class AbstractShellEntity extends ThrownEntity {
 	 */
 	protected boolean usesTerrainDestruction() {
 		return false;
+	}
+
+	/**
+	 * How much this munition's impact feeds the {@link
+	 * dev.rheava.program7.director.TerrainSaturation} accumulator — heavier
+	 * munitions (howitzer, missile) count for more, per the doc's "heavier
+	 * munitions add more saturation per hit, so a wall-breaker howitzer
+	 * cracks a fort in a handful of rounds while a mortar would take a real
+	 * pounding." {@code 1.0} by default.
+	 */
+	protected float saturationWeight() {
+		return 1.0f;
 	}
 
 	protected abstract SoundEvent impactSound();

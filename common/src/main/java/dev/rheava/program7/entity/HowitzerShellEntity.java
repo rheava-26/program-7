@@ -61,6 +61,12 @@ public class HowitzerShellEntity extends AbstractShellEntity {
 	}
 
 	@Override
+	protected float saturationWeight() {
+		// The wall-breaker: cracks a fort in a handful of rounds (doc §5a).
+		return 2.0f;
+	}
+
+	@Override
 	protected SoundEvent impactSound() {
 		return P7Sounds.MORTAR_IMPACT.get();
 	}

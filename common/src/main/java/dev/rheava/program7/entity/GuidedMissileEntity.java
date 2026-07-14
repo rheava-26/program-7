@@ -125,6 +125,12 @@ public class GuidedMissileEntity extends AbstractShellEntity {
 	}
 
 	@Override
+	protected float saturationWeight() {
+		// Expensive and precise — when it's aimed at fortification it hits hard.
+		return 2.0f;
+	}
+
+	@Override
 	protected SoundEvent impactSound() {
 		return P7Sounds.MORTAR_IMPACT.get();
 	}

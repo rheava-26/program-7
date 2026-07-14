@@ -221,6 +221,8 @@ public class ProgramDirectorState extends PersistentState {
 	private final SupplyNetwork supplyNetwork = new SupplyNetwork();
 	/** Indirect-fire missions end to end (see {@link FireMissionManager} / ARTILLERY_AND_INDIRECT_FIRE.md §8). */
 	private final FireMissionManager fireMissionManager = new FireMissionManager();
+	/** The bombardment-saturation / terrain-erosion accumulator (see {@link TerrainSaturation} / ARTILLERY_AND_INDIRECT_FIRE.md §5a). */
+	private final TerrainSaturation terrainSaturation = new TerrainSaturation();
 	/**
 	 * The resource ledger. The Program spends this to field units and (in
 	 * later phases) refills it by actually mining. An empty ledger means no
@@ -345,6 +347,10 @@ public class ProgramDirectorState extends PersistentState {
 		}
 
 		if (this.fireMissionManager.tick(world, this)) {
+			this.markDirty();
+		}
+
+		if (this.terrainSaturation.tick(world)) {
 			this.markDirty();
 		}
 	}
@@ -1154,6 +1160,10 @@ public class ProgramDirectorState extends PersistentState {
 		return this.fireMissionManager;
 	}
 
+	public TerrainSaturation getTerrainSaturation() {
+		return this.terrainSaturation;
+	}
+
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		nbt.putInt("GlobalThreat", this.globalThreat);
@@ -1220,6 +1230,7 @@ public class ProgramDirectorState extends PersistentState {
 		nbt.put("VirtualFleet", this.virtualFleet.toNbt(registryLookup));
 		nbt.put("SupplyNetwork", this.supplyNetwork.toNbt());
 		nbt.put("FireMissions", this.fireMissionManager.toNbt());
+		nbt.put("TerrainSaturation", this.terrainSaturation.toNbt());
 		return nbt;
 	}
 
@@ -1297,6 +1308,9 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		if (nbt.contains("FireMissions")) {
 			state.fireMissionManager.readNbt(nbt.getCompound("FireMissions"));
+		}
+		if (nbt.contains("TerrainSaturation")) {
+			state.terrainSaturation.readNbt(nbt.getCompound("TerrainSaturation"));
 		}
 		return state;
 	}
