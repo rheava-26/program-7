@@ -19,6 +19,17 @@ import net.minecraft.world.World;
  * class carries the persisted state those hooks read and write, and is what
  * {@link dev.rheava.program7.director.ResearchTree#tick} polls each cycle
  * before attempting a feed step.
+ *
+ * <p><b>{@code hp} is dead state (finding #10), same as in {@link
+ * ProbeCoreBlockEntity} it was copied from</b> — see that class's own doc
+ * comment: "scaffolding for a future damage mechanic... nothing in this
+ * phase decrements it beyond the passive regen." Neither building has an
+ * actual damage-dealing hook anywhere in the codebase today (only {@link
+ * #markDamaged} exists, which stamps {@code lastDamagedTick} for the
+ * under-attack window but never touches {@code hp}), so wiring real damage
+ * in here alone — without also deciding what should deal it for both
+ * buildings — is a bigger design task than this pass, not a small fix.
+ * Tracked in {@code BACKLOG.md}.
  */
 public class PsionicResearchBlockEntity extends BlockEntity {
 	public static final int MAX_HP = 300;
