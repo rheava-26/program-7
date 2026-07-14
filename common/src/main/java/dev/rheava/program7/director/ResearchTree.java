@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.chunk.ChunkStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -50,6 +51,14 @@ public final class ResearchTree {
 	/** Search radius band (blocks) around a core site for a building placement site. */
 	private static final int SITE_MIN_DISTANCE = 12;
 	private static final int SITE_MAX_DISTANCE = 28;
+	/**
+	 * Ticks between placement attempts while unplaced. Without this,
+	 * {@link #tryPlaceBuilding} — and the up-to-8 force-loaded chunks {@link
+	 * #pickBuildingSite} tries per call — would run every single tick with
+	 * no candidate validating (e.g. a coastal core surrounded by water),
+	 * an indefinite TPS drain (see finding #3).
+	 */
+	private static final int PLACEMENT_RETRY_TICKS = 200;
 
 	/** The doc's §3 node lifecycle: unmet prerequisites → researchable → the single one actually accruing progress → done. */
 	public enum NodeStatus {
@@ -59,6 +68,8 @@ public final class ResearchTree {
 	private NodeStatus nodeStatus = NodeStatus.LOCKED;
 	private int focusProgress;
 	private int feedCooldown;
+	/** Ticks left before the next {@link #tryPlaceBuilding} attempt is allowed; see {@link #PLACEMENT_RETRY_TICKS}. */
+	private int placementCooldown;
 	@Nullable
 	private BlockPos buildingPos;
 
@@ -79,7 +90,30 @@ public final class ResearchTree {
 		}
 
 		if (this.buildingPos == null) {
+			if (this.nodeStatus == NodeStatus.UNLOCKED) {
+				// Nothing left to research (v1 single-node) — don't keep
+				// re-raising a building for a node that's already done
+				// (finding #9; doc §5 wants a queued delay before any
+				// rebuild, not an instant one, and here there's nothing left
+				// to queue at all).
+				return changed;
+			}
+			if (this.placementCooldown > 0) {
+				this.placementCooldown--;
+				return changed;
+			}
+			this.placementCooldown = PLACEMENT_RETRY_TICKS;
 			return this.tryPlaceBuilding(world, director) || changed;
+		}
+
+		int buildingChunkX = this.buildingPos.getX() >> 4;
+		int buildingChunkZ = this.buildingPos.getZ() >> 4;
+		if (world.getChunk(buildingChunkX, buildingChunkZ, ChunkStatus.FULL, false) == null) {
+			// Chunk not loaded — skip this tick rather than forcing a
+			// synchronous load just to poll the building (finding #3b: a
+			// non-creating getBlockEntity would otherwise force-load the
+			// chunk as a hidden per-tick chunkloader).
+			return changed;
 		}
 
 		if (!(world.getBlockEntity(this.buildingPos) instanceof PsionicResearchBlockEntity building)) {
@@ -217,6 +251,7 @@ public final class ResearchTree {
 		tag.putString("NodeStatus", this.nodeStatus.name());
 		tag.putInt("FocusProgress", this.focusProgress);
 		tag.putInt("FeedCooldown", this.feedCooldown);
+		tag.putInt("PlacementCooldown", this.placementCooldown);
 		if (this.buildingPos != null) {
 			tag.putIntArray("BuildingPos",
 					new int[] {this.buildingPos.getX(), this.buildingPos.getY(), this.buildingPos.getZ()});
@@ -235,6 +270,7 @@ public final class ResearchTree {
 		}
 		this.focusProgress = nbt.getInt("FocusProgress");
 		this.feedCooldown = nbt.getInt("FeedCooldown");
+		this.placementCooldown = nbt.getInt("PlacementCooldown");
 		this.buildingPos = null;
 		if (nbt.contains("BuildingPos")) {
 			int[] pos = nbt.getIntArray("BuildingPos");
