@@ -21,6 +21,8 @@ import dev.rheava.program7.entity.IFVEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumAttackDroneEntity;
 import dev.rheava.program7.entity.MediumMiningDroneEntity;
+import dev.rheava.program7.entity.MlrsLauncherEntity;
+import dev.rheava.program7.entity.MlrsRocketEntity;
 import dev.rheava.program7.entity.MortarEmplacementEntity;
 import dev.rheava.program7.entity.MortarShellEntity;
 import dev.rheava.program7.entity.ReconHelicopterEntity;
@@ -243,6 +245,22 @@ public final class P7Entities {
 							.maxTrackingRange(48)
 							.build("howitzer_shell"));
 
+	/** Tier 3-4 mobile rocket artillery: ripples several unguided rockets rather than lobbing one precise shell. */
+	public static final RegistrySupplier<EntityType<MlrsLauncherEntity>> MLRS_LAUNCHER =
+			ENTITIES.register("mlrs_launcher",
+					() -> EntityType.Builder.create(MlrsLauncherEntity::new, SpawnGroup.MISC)
+							.dimensions(3.9f, 3.5f)
+							.maxTrackingRange(16)
+							.build("mlrs_launcher"));
+
+	/** One rocket out of an MLRS ripple. */
+	public static final RegistrySupplier<EntityType<MlrsRocketEntity>> MLRS_ROCKET =
+			ENTITIES.register("mlrs_rocket",
+					() -> EntityType.Builder.<MlrsRocketEntity>create(MlrsRocketEntity::new, SpawnGroup.MISC)
+							.dimensions(0.4f, 0.4f)
+							.maxTrackingRange(48)
+							.build("mlrs_rocket"));
+
 	public static void register() {
 		ENTITIES.register();
 
@@ -273,6 +291,7 @@ public final class P7Entities {
 		EntityAttributeRegistry.register(BATTERY_CENTER, BatteryCenterEntity::createBatteryCenterAttributes);
 		EntityAttributeRegistry.register(GUNSHIP, GunshipEntity::createGunshipAttributes);
 		EntityAttributeRegistry.register(HOWITZER, HowitzerEntity::createHowitzerAttributes);
+		EntityAttributeRegistry.register(MLRS_LAUNCHER, MlrsLauncherEntity::createMlrsLauncherAttributes);
 	}
 
 	private P7Entities() {

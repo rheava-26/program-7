@@ -30,6 +30,7 @@
   "item.program7.battery_center_spawn_egg": "Mobile Battery Center Spawn Egg",
   "item.program7.gunship_spawn_egg": "Gunship Spawn Egg",
   "item.program7.howitzer_spawn_egg": "Howitzer Spawn Egg",
+  "item.program7.mlrs_launcher_spawn_egg": "MLRS Launcher Spawn Egg",
 
   "block.program7.probe_core": "Probe Core",
   "block.program7.drone_wreck": "Drone Wreck",
@@ -72,6 +73,8 @@
   "entity.program7.gunship": "Gunship",
   "entity.program7.howitzer": "Howitzer",
   "entity.program7.howitzer_shell": "Howitzer Shell",
+  "entity.program7.mlrs_launcher": "MLRS Launcher",
+  "entity.program7.mlrs_rocket": "MLRS Rocket",
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 

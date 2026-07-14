@@ -21,6 +21,7 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 - **`IndirectFireUnit` interface** (`entity`): marks any `MobEntity` as a `FireMissionManager` client (`indirectMinRange`/`indirectMaxRange`/`indirectBaseSpread`/`battery()`). `HowitzerEntity` and `MortarEmplacementEntity` both implement it now; `FireMissionManager`'s scan pass and `updateSelfObserved`/`missionFor` are generic over it instead of hardcoded to `HowitzerEntity`, so the mortar is now a full manager client (self-observed + assigned, ranging walk-in, CEP) — not just the howitzer.
 - **Battery fire**: `FireMissionManager` shares one `FireMission` object across same-`battery()`-key tubes within 32 blocks targeting the same player, so several howitzers (or mortars) parked near each other range in together and fire for effect denser than any one tube alone. NOTE: battery-sharing is a live-scan optimization only — a world restart flattens shared missions back to independent per-tube copies, which the next scan re-shares if they're still on the same target. Not yet exercised by any in-game battery placement (no wave/dispatch code groups tubes together); proven by the mechanism, not by content.
 - **Datapad inbound-fire warning generalized**: `DatapadItem.incomingFor` now scans for any `AbstractShellEntity` (not just `HowitzerShellEntity`), so the ETA/bearing warning will pick up every new munition family below once they exist.
+- **MLRS / rocket artillery** (`MlrsLauncherEntity` + `MlrsRocketEntity` + `MlrsAttackGoal`): mobile Tier 3-4 rocket artillery, a `FireMissionManager` client with a wide `indirectBaseSpread` (3x the howitzer's) and `battery()` opted out (mobile pieces fire alone per the doc's platform split). Fires a 6-rocket ripple staggered 4 ticks apart, each independently scattered inside a widened spread, then a long reload — the doc's "stutter of launches... wall of impacts arriving together." Registered end to end (entity/attributes, spawn egg, lang, loot table); model/renderer **reuse the howitzer chassis and howitzer-shell geometry as a placeholder** (documented in the model classes) rather than a bespoke rocket-rack/finned-rocket silhouette — a real art pass is still open.
 
 ## Shipped this session
 
@@ -47,7 +48,7 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 
 - Terrain saturation / erosion accumulator (repeated impacts degrade the ground).
 - Off-screen statistical resolution: resolve fire missions abstractly in unloaded chunks (no player near).
-- Additional artillery types: naval bombardment (ship guns), MLRS / rocket artillery, guided missiles, close air support.
+- Additional artillery types: naval bombardment (ship guns), guided missiles, close air support.
 
 ### Other long-standing items
 

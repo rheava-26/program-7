@@ -148,6 +148,9 @@ public final class P7Items {
 	public static final RegistrySupplier<Item> HOWITZER_SPAWN_EGG = ITEMS.register("howitzer_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.HOWITZER, 0x23272b, 0x53592e,
 					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> MLRS_LAUNCHER_SPAWN_EGG = ITEMS.register("mlrs_launcher_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.MLRS_LAUNCHER, 0x23272b, 0xb0562c,
+					new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();
