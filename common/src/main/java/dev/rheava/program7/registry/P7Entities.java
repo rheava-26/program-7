@@ -9,6 +9,7 @@ import dev.rheava.program7.entity.AntiAirTurretEntity;
 import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.AutogunTurretEntity;
 import dev.rheava.program7.entity.BatteryCenterEntity;
+import dev.rheava.program7.entity.BombEntity;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
 import dev.rheava.program7.entity.GuidedMissileEntity;
@@ -254,6 +255,14 @@ public final class P7Entities {
 							.dimensions(3.9f, 3.5f)
 							.maxTrackingRange(16)
 							.build("mlrs_launcher"));
+
+	/** One bomb out of a CAS aircraft's stick. */
+	public static final RegistrySupplier<EntityType<BombEntity>> BOMB =
+			ENTITIES.register("bomb",
+					() -> EntityType.Builder.<BombEntity>create(BombEntity::new, SpawnGroup.MISC)
+							.dimensions(0.5f, 0.5f)
+							.maxTrackingRange(48)
+							.build("bomb"));
 
 	/** One rocket out of an MLRS ripple. */
 	public static final RegistrySupplier<EntityType<MlrsRocketEntity>> MLRS_ROCKET =

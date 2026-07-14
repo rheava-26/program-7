@@ -78,6 +78,7 @@
   "entity.program7.mlrs_rocket": "MLRS Rocket",
   "entity.program7.missile_launcher": "Missile Launcher",
   "entity.program7.guided_missile": "Guided Missile",
+  "entity.program7.bomb": "Bomb",
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 

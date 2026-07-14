@@ -14,6 +14,8 @@ import dev.rheava.program7.client.render.AutogunTurretModel;
 import dev.rheava.program7.client.render.AutogunTurretRenderer;
 import dev.rheava.program7.client.render.BatteryCenterModel;
 import dev.rheava.program7.client.render.BatteryCenterRenderer;
+import dev.rheava.program7.client.render.BombModel;
+import dev.rheava.program7.client.render.BombRenderer;
 import dev.rheava.program7.client.render.DropPodRenderer;
 import dev.rheava.program7.client.render.GuidedMissileModel;
 import dev.rheava.program7.client.render.GuidedMissileRenderer;
@@ -127,6 +129,8 @@ public final class Program7Client {
 				MissileLauncherModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(GuidedMissileModel.LAYER,
 				GuidedMissileModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(BombModel.LAYER,
+				BombModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
@@ -157,6 +161,7 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.MLRS_ROCKET, MlrsRocketRenderer::new);
 		EntityRendererRegistry.register(P7Entities.MISSILE_LAUNCHER, MissileLauncherRenderer::new);
 		EntityRendererRegistry.register(P7Entities.GUIDED_MISSILE, GuidedMissileRenderer::new);
+		EntityRendererRegistry.register(P7Entities.BOMB, BombRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,
