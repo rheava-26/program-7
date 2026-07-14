@@ -52,6 +52,12 @@ public class NavalBombardmentGoal extends Goal {
 
 	@Override
 	public boolean canStart() {
+		if (this.shooter.isScrambled()) {
+			// Matches GunAttackGoal.canStart()'s own scramble gate — without
+			// this, scrambling a gunboat just swapped its DeckGunAttackGoal
+			// off for this goal instead of actually silencing it (finding #6).
+			return false;
+		}
 		LivingEntity target = this.shooter.getTarget();
 		if (target != null && target.isAlive()) {
 			return true;

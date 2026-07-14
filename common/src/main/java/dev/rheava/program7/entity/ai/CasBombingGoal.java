@@ -62,6 +62,13 @@ public class CasBombingGoal extends Goal {
 
 	@Override
 	public boolean canStart() {
+		if (this.shooter.isScrambled()) {
+			// Matches GunAttackGoal.canStart()'s own scramble gate — the
+			// belly cannon's BurstGunAttackGoal already stops firing while
+			// scrambled; without this the gunship kept flying bombing runs
+			// instead of actually going quiet (finding #6).
+			return false;
+		}
 		if (this.shooter.getTarget() != null && this.shooter.getTarget().isAlive()) {
 			// The belly cannon owns any live target — CAS only answers
 			// purely indirect designations (see class doc).
@@ -72,12 +79,32 @@ public class CasBombingGoal extends Goal {
 
 	@Override
 	public boolean shouldContinue() {
+		if (this.shooter.isScrambled()) {
+			// Cut a run short rather than letting an in-progress stick
+			// finish once scrambled — "silenced" should mean silenced.
+			return false;
+		}
 		return this.bombsLeft > 0 || this.canStart();
 	}
 
 	@Override
 	public boolean shouldRunEveryTick() {
 		return true;
+	}
+
+	/**
+	 * Resets the in-progress run's state when this goal is preempted mid-stick
+	 * (e.g. a live target grabs the belly cannon, or the gunship scrambles) —
+	 * without this, {@link #bombsLeft}/{@link #stickAim}/{@link #runMission}
+	 * would survive and the next run would resume mid-stick with a stale aim
+	 * point and mission reference instead of starting clean (finding #8).
+	 */
+	@Override
+	public void stop() {
+		this.bombsLeft = 0;
+		this.stickAim = null;
+		this.runMission = null;
+		this.shooter.getNavigation().stop();
 	}
 
 	@Override
