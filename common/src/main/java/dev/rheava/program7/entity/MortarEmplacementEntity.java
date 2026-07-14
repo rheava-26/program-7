@@ -23,9 +23,13 @@ import net.minecraft.world.World;
  * it that (a roof, a canopy, a wall built up and over) is real counterplay.
  * The shell's whistle on the way down is the only warning you get.
  */
-public class MortarEmplacementEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
+public class MortarEmplacementEntity extends ProgramDroneEntity
+		implements ReloadableWeapon, MagazineFed, IndirectFireUnit {
 	private static final int MAGAZINE_CAPACITY = 6;
 	private static final String NBT_ROUNDS = "RoundsRemaining";
+	/** Mirrors {@link MortarAttackGoal}'s own range window — the single source of truth for {@link dev.rheava.program7.director.FireMissionManager}. */
+	private static final double MIN_RANGE = 8.0;
+	private static final double MAX_RANGE = 40.0;
 
 	private int roundsRemaining = MAGAZINE_CAPACITY;
 
@@ -106,6 +110,23 @@ public class MortarEmplacementEntity extends ProgramDroneEntity implements Reloa
 		}
 		this.roundsRemaining--;
 		return true;
+	}
+
+	@Override
+	public double indirectMinRange() {
+		return MIN_RANGE;
+	}
+
+	@Override
+	public double indirectMaxRange() {
+		return MAX_RANGE;
+	}
+
+	@Override
+	public double indirectBaseSpread() {
+		// A touch tighter than the howitzer at its own much shorter range —
+		// the cheap, simple reference implementation, not the precision piece.
+		return 0.8;
 	}
 
 	@Override

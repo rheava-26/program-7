@@ -1,27 +1,19 @@
 package dev.rheava.program7.entity;
 
-import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.registry.P7Entities;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.projectile.thrown.ThrownEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
 
 /**
- * The mortar's shell: a slow arcing lob, not a straight-line shot. It is not
- * a living thing — {@link ThrownEntity} rather than {@code ProgramDroneEntity}
- * fits since a shell has no health, no AI, and no wreck; it either flies or
- * it has already gone off. It smokes the whole way up, whistles the whole
- * way down (the incoming warning is the point), and detonates on whatever it
- * touches first.
+ * The mortar's shell: a slow arcing lob, not a straight-line shot. It smokes
+ * the whole way up, whistles the whole way down (the incoming warning is the
+ * point), and detonates on whatever it touches first — damage-only, no block
+ * interaction, unlike the howitzer's wall-breaking round.
  */
-public class MortarShellEntity extends ThrownEntity {
+public class MortarShellEntity extends AbstractShellEntity {
 	/** Heavier arc than a snowball/egg: this thing is meant to come down hard. */
 	private static final double GRAVITY = 0.06;
 	private static final float EXPLOSION_POWER = 1.8f;
@@ -35,37 +27,37 @@ public class MortarShellEntity extends ThrownEntity {
 	}
 
 	@Override
-	protected void initDataTracker(DataTracker.Builder builder) {
-		// No synced payload beyond position/velocity — nothing to track.
-	}
-
-	@Override
-	protected double getGravity() {
+	protected double shellGravity() {
 		return GRAVITY;
 	}
 
 	@Override
-	public void tick() {
-		super.tick();
-		if (this.getWorld() instanceof ServerWorld world) {
-			world.spawnParticles(ParticleTypes.SMOKE, this.getX(), this.getY(), this.getZ(),
-					1, 0.0, 0.0, 0.0, 0.0);
-			// Whistling only starts once it's arced over and is coming down —
-			// that falling whistle is the player's warning to move.
-			if (this.getVelocity().y < 0.0 && this.age % 10 == 0) {
-				this.playSound(P7Sounds.MORTAR_WHISTLE.get(), 1.2f, 1.0f);
-			}
-		}
+	protected float whistleVolume() {
+		return 1.2f;
 	}
 
 	@Override
-	protected void onCollision(HitResult hitResult) {
-		if (this.getWorld() instanceof ServerWorld world) {
-			ProgramAcoustics.emit(world, this.getPos(), P7Sounds.MORTAR_IMPACT.get(),
-					SoundCategory.HOSTILE, 1.0f, 1.0f);
-			world.createExplosion(this, this.getX(), this.getY(), this.getZ(),
-					EXPLOSION_POWER, World.ExplosionSourceType.NONE);
-			this.discard();
-		}
+	protected float whistlePitch() {
+		return 1.0f;
+	}
+
+	@Override
+	protected float explosionPower() {
+		return EXPLOSION_POWER;
+	}
+
+	@Override
+	protected SoundEvent impactSound() {
+		return P7Sounds.MORTAR_IMPACT.get();
+	}
+
+	@Override
+	protected float impactVolume() {
+		return 1.0f;
+	}
+
+	@Override
+	protected float impactPitch() {
+		return 1.0f;
 	}
 }

@@ -29,14 +29,18 @@ import net.minecraft.world.World;
  * the fight and mostly just holds ground doing it, taking only a slow
  * reposition between salvos rather than chasing anything down.
  *
- * <p>This pass is a self-contained bombardment unit, same shape as the
- * mortar: it self-targets and self-observes (no {@code FireMissionManager} /
- * observer / ranging layer yet — that's a later pass per the artillery doc's
- * build order).
+ * <p>A client of the Director-side {@code FireMissionManager} (see {@link
+ * dev.rheava.program7.entity.ai.HowitzerAttackGoal}): self-observed when it
+ * has its own line-of-sight target, otherwise firing on whatever mission the
+ * manager assigns — an observer relay, counter-battery, a hot dwell cell, or
+ * a shared battery mission alongside another howitzer nearby.
  */
-public class HowitzerEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
+public class HowitzerEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed, IndirectFireUnit {
 	private static final int MAGAZINE_CAPACITY = 8;
 	private static final String NBT_ROUNDS = "RoundsRemaining";
+	/** Mirrors {@link HowitzerAttackGoal}'s own standoff window — the single source of truth for {@link dev.rheava.program7.director.FireMissionManager}. */
+	private static final double MIN_RANGE = 24.0;
+	private static final double MAX_RANGE = 112.0;
 
 	private int roundsRemaining = MAGAZINE_CAPACITY;
 
@@ -131,6 +135,23 @@ public class HowitzerEntity extends ProgramDroneEntity implements ReloadableWeap
 		}
 		this.roundsRemaining--;
 		return true;
+	}
+
+	@Override
+	public double indirectMinRange() {
+		return MIN_RANGE;
+	}
+
+	@Override
+	public double indirectMaxRange() {
+		return MAX_RANGE;
+	}
+
+	@Override
+	public double indirectBaseSpread() {
+		// The howitzer is the doc's baseline "rifle" precision — every other
+		// type's spread is tuned relative to this one.
+		return 1.0;
 	}
 
 	@Override

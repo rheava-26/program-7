@@ -5,9 +5,9 @@ import java.util.List;
 
 import dev.architectury.networking.NetworkManager;
 import dev.rheava.program7.director.ProgramDirectorState;
+import dev.rheava.program7.entity.AbstractShellEntity;
 import dev.rheava.program7.entity.AirUAVEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
-import dev.rheava.program7.entity.HowitzerShellEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumMiningDroneEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
@@ -103,21 +103,23 @@ public class DatapadItem extends Item {
 	}
 
 	/**
-	 * The §5/§9 inbound-artillery telegraph: scan for a howitzer shell in the
-	 * air whose flight path closes to within {@link #WARN_NEAR_RADIUS} of the
-	 * player, and report the most imminent one as a rough bearing (the direction
-	 * it's coming from) and an ETA in seconds. Closest-horizontal-approach math
-	 * on the shell's own velocity, so it fires the warning while the round is
-	 * still climbing — the datapad half of the whistle the player already hears.
+	 * The §5/§9 inbound-artillery telegraph: scan for any indirect-fire
+	 * munition (every {@link AbstractShellEntity} subclass — howitzer, mortar,
+	 * rocket, missile, naval, bomb) in the air whose flight path closes to
+	 * within {@link #WARN_NEAR_RADIUS} of the player, and report the most
+	 * imminent one as a rough bearing (the direction it's coming from) and an
+	 * ETA in seconds. Closest-horizontal-approach math on the shell's own
+	 * velocity, so it fires the warning while the round is still climbing —
+	 * the datapad half of the whistle the player already hears.
 	 */
 	private static DatapadSnapshotPayload.Incoming incomingFor(ServerPlayerEntity player) {
 		ServerWorld world = player.getServerWorld();
-		List<HowitzerShellEntity> shells = world.getEntitiesByClass(HowitzerShellEntity.class,
+		List<AbstractShellEntity> shells = world.getEntitiesByClass(AbstractShellEntity.class,
 				player.getBoundingBox().expand(WARN_DETECT_RADIUS), e -> true);
 
-		HowitzerShellEntity soonest = null;
+		AbstractShellEntity soonest = null;
 		double soonestTicks = Double.MAX_VALUE;
-		for (HowitzerShellEntity shell : shells) {
+		for (AbstractShellEntity shell : shells) {
 			double vx = shell.getVelocity().x;
 			double vz = shell.getVelocity().z;
 			double speedSq = vx * vx + vz * vz;

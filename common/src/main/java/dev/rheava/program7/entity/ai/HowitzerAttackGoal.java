@@ -22,9 +22,9 @@ import net.minecraft.util.math.Vec3d;
  * slower to cycle. Where the mortar answers in a steady patter, the howitzer
  * answers with a handful of heavy rounds spread across a whole fight.
  *
- * <p>This is the first (and this pass, only) client of the Director-side
- * {@link FireMissionManager} (see {@code ARTILLERY_AND_INDIRECT_FIRE.md} §8).
- * Two firing modes share one loop:
+ * <p>This is a client of the Director-side {@link FireMissionManager} (see
+ * {@code ARTILLERY_AND_INDIRECT_FIRE.md} §8), same as {@link
+ * MortarAttackGoal}. Two firing modes share one loop:
  *
  * <ul>
  *   <li><b>Self-observed</b> — it has its own line-of-sight {@code getTarget()}
@@ -32,35 +32,23 @@ import net.minecraft.util.math.Vec3d;
  *       manager as the top-priority eyes-on designation and fires on it.</li>
  *   <li><b>Assigned</b> — it has no target of its own, so it fires on the
  *       {@link FireMission} the manager has handed it: a recon unit's live
- *       relay, a counter-battery origin, or a hot dwell cell (§2 acquisition).
- *       This is the "no line of sight of its own" indirect shot.</li>
+ *       relay, a counter-battery origin, a hot dwell cell, or a shared battery
+ *       mission (§2 acquisition / §4 battery fire).</li>
  * </ul>
  *
  * <p>Accuracy (§3) and the ranging walk-in (§2 step 3) both come from the
- * manager: the flat {@code MAX_SPREAD} of the self-contained pass is gone,
- * replaced by {@link FireMissionManager#currentSpread} (a range floor that
- * grows with chunk distance, tightened by spotting and ranging) and advanced
- * one step per shot via {@link FireMissionManager#onShotFired}.
+ * manager: {@link FireMissionManager#currentSpread} (a range floor that grows
+ * with chunk distance, tightened by spotting and ranging) advanced one step
+ * per shot via {@link FireMissionManager#onShotFired}. The ballistic solve
+ * itself is {@link BallisticSolver}, shared with every other artillery type.
  */
 public class HowitzerAttackGoal extends Goal {
 	/** ~5.5s between rounds at 20 ticks/sec — slow, heavy cadence. */
 	private static final int FIRE_INTERVAL = 110;
-	/** Artillery standoff: it won't waste heavy rounds on something in its lap. */
-	private static final double MIN_RANGE = 24.0;
-	/** Long reach — well beyond several chunks (~7). Paired with the howitzer's
-	 *  raised follow range so it can actually acquire a target this far out. */
-	private static final double MAX_RANGE = 112.0;
 	/** Vertical launch speed: a higher arc than the mortar for the extra reach. */
 	private static final double LAUNCH_VELOCITY_Y = 2.5;
-	/** The shell is a {@link HowitzerShellEntity} ({@code ThrownEntity}): it
-	 *  loses 1% of its speed to drag every tick and falls under this gravity —
-	 *  the exact values the shell itself uses. The ballistic solve below mirrors
-	 *  them so the round actually lands on the aim point instead of far short. */
-	private static final double SHELL_DRAG = 0.99;
+	/** The shell is a {@link HowitzerShellEntity}: the ballistic solve mirrors its own gravity so the round lands on the aim point instead of far short. */
 	private static final double SHELL_GRAVITY = 0.045;
-	/** Safety cap on the trajectory sim so a target the arc can't reach (far
-	 *  above the tube) can't spin the solve forever. */
-	private static final int MAX_FLIGHT_TICKS = 600;
 	/** Minimum gap between "the tube's dry" clicks so a starved battery doesn't spam it every tick. */
 	private static final int DRY_FIRE_CLICK_INTERVAL_TICKS = 40;
 
@@ -80,7 +68,7 @@ public class HowitzerAttackGoal extends Goal {
 			return true;
 		}
 		// No eyes of its own — but the manager may still have a mission assigned
-		// (an observer relay, counter-battery, or dwell cell) for this tube.
+		// (an observer relay, counter-battery, dwell cell, or battery mate) for this tube.
 		return this.assignedTarget() != null;
 	}
 
@@ -131,7 +119,8 @@ public class HowitzerAttackGoal extends Goal {
 		double dx = aimBase.x - tubePos.x;
 		double dz = aimBase.z - tubePos.z;
 		double distance = Math.sqrt(dx * dx + dz * dz);
-		if (distance < MIN_RANGE || distance > MAX_RANGE || !this.hasClearSky()) {
+		if (distance < this.shooter.indirectMinRange() || distance > this.shooter.indirectMaxRange()
+				|| !this.hasClearSky()) {
 			return;
 		}
 		if (!this.shooter.consumeRound()) {
@@ -204,34 +193,8 @@ public class HowitzerAttackGoal extends Goal {
 		HowitzerShellEntity shell = new HowitzerShellEntity(world, this.shooter);
 		shell.setPosition(tube.x, tube.y, tube.z);
 
-		// Drag-aware ballistic solve. A naive dx/flightTicks backfill assumes a
-		// constant horizontal speed, but the shell bleeds SHELL_DRAG each tick,
-		// so that lands the round far short (worse the farther it flies). Instead
-		// simulate the vertical arc from the muzzle down to the target's height
-		// to get the true airtime, accumulating the horizontal decay sum
-		// (1 + d + d^2 + ...) over exactly those ticks; the launch speed that
-		// actually covers dx is then dx / thatSum. The sim mirrors ThrownEntity's
-		// integration order: move by the current velocity, then apply drag, then
-		// gravity.
-		double dx = aim.x - tube.x;
-		double dz = aim.z - tube.z;
-		double targetRelY = aim.y - tube.y;
-		double vy = LAUNCH_VELOCITY_Y;
-		double y = 0.0;
-		double decaySum = 0.0;
-		double factor = 1.0;
-		for (int k = 0; k < MAX_FLIGHT_TICKS; k++) {
-			decaySum += factor;
-			y += vy;
-			vy = vy * SHELL_DRAG - SHELL_GRAVITY;
-			factor *= SHELL_DRAG;
-			if (vy < 0.0 && y <= targetRelY) {
-				break;
-			}
-		}
-		double vx = decaySum > 1.0E-6 ? dx / decaySum : 0.0;
-		double vz = decaySum > 1.0E-6 ? dz / decaySum : 0.0;
-		shell.setVelocity(vx, LAUNCH_VELOCITY_Y, vz);
+		Vec3d launch = BallisticSolver.solve(tube, aim, LAUNCH_VELOCITY_Y, SHELL_GRAVITY);
+		shell.setVelocity(launch.x, launch.y, launch.z);
 		world.spawnEntity(shell);
 	}
 }

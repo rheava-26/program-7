@@ -4,14 +4,23 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 
 ## Current branch / state
 
-- Working branch: `claude/minecraft-fabric-mod-gb9ys2`
-- All work is CI-green. CI is **compile-only** — gradle can't run in this environment, so there is no runtime verification.
+- Working branch: `claude/backlog-review-jg7xm6`
+- CI is **compile-only** — gradle can't run in this environment, so there is no runtime verification; changes below are hand-reasoned for compile correctness but unverified at runtime.
 - Recent commits (newest first):
+  - shared shell base (`AbstractShellEntity`) + drag-aware `BallisticSolver` shared by howitzer and mortar + `IndirectFireUnit`-generalized `FireMissionManager` with battery fire (see "Shipped this session" below)
   - `7b61ab9` — review fixes: drag-aware howitzer ballistics, mission persistence on unloaded chunk, no free rearm on a damage-flee
   - `e8e4791` — stand up the Director `FireMissionManager`, wire the howitzer as its first client
   - `2ccbb54` — detailed M109 howitzer model + extended range
   - `208d0fe` — crate unpacking, combat ammo/power retreat, carry-to-capacity logistics
   - `1514986` / `d029350` — cargo/ammunition block family + art passes
+
+## Shipped this session (artillery + trees batch)
+
+- **Shared shell base** (`AbstractShellEntity`, `common`): `HowitzerShellEntity` and `MortarShellEntity` now extend one abstract `ThrownEntity` base that owns the smoke trail, falling whistle, and impact-sound-then-explosion sequence; subclasses only supply gravity, warhead power, sounds, and a couple of presentation knobs. Unlocks every artillery type added below without copy-pasting a shell class.
+- **Mortar drag-aware ballistics fix** (the "review findings not yet fixed" item): `BallisticSolver` (`entity/ai`) factors the howitzer's drag-aware trajectory sim into a shared static helper; both `HowitzerAttackGoal` and `MortarAttackGoal` now call it instead of the mortar's old naive `dx / FLIGHT_TICKS` constant-speed backfill, which landed rounds short at range.
+- **`IndirectFireUnit` interface** (`entity`): marks any `MobEntity` as a `FireMissionManager` client (`indirectMinRange`/`indirectMaxRange`/`indirectBaseSpread`/`battery()`). `HowitzerEntity` and `MortarEmplacementEntity` both implement it now; `FireMissionManager`'s scan pass and `updateSelfObserved`/`missionFor` are generic over it instead of hardcoded to `HowitzerEntity`, so the mortar is now a full manager client (self-observed + assigned, ranging walk-in, CEP) — not just the howitzer.
+- **Battery fire**: `FireMissionManager` shares one `FireMission` object across same-`battery()`-key tubes within 32 blocks targeting the same player, so several howitzers (or mortars) parked near each other range in together and fire for effect denser than any one tube alone. NOTE: battery-sharing is a live-scan optimization only — a world restart flattens shared missions back to independent per-tube copies, which the next scan re-shares if they're still on the same target. Not yet exercised by any in-game battery placement (no wave/dispatch code groups tubes together); proven by the mechanism, not by content.
+- **Datapad inbound-fire warning generalized**: `DatapadItem.incomingFor` now scans for any `AbstractShellEntity` (not just `HowitzerShellEntity`), so the ETA/bearing warning will pick up every new munition family below once they exist.
 
 ## Shipped this session
 
@@ -26,7 +35,6 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 
 ### Review findings not yet fixed (2026-07 Fable sweep)
 
-- **Mortar shares the old drag flaw** (LOW): `MortarAttackGoal` still uses the naive `dx / FLIGHT_TICKS` constant-speed backfill and lands ~5–8 blocks short at its 40-block range. The howitzer's fix (a drag-aware ballistic solve in `HowitzerAttackGoal.fire`) could be factored into a shared helper and applied to the mortar. Less visible than on the howitzer because of the short range.
 - **`AmmoRunGoal` depot-stock leak** (SUSPECTED, low): a batched sortie debits the `SupplyNetwork` ledger per load during `PICKING_UP`, but if the goal stops mid-sortie (drone flees, target weapon dies/unloads, goal preempted), `stop()`/`start()` discard `carriedLoads` without crediting the depot back — silent stock loss (up to 3 loads now, vs 1 before batching). Fix: return unspent `carriedLoads` to the depot in `stop()`.
 - **Datapad incoming-fire ETA reads early** (COSMETIC): `DatapadItem.incomingFor` computes the closest-approach time from the shell's current velocity as if constant, but horizontal velocity decays 1%/tick, so true arrival is later than shown. Display-only.
 
@@ -39,9 +47,7 @@ Single source of truth for outstanding work. **Read this first when resuming** �
 
 - Terrain saturation / erosion accumulator (repeated impacts degrade the ground).
 - Off-screen statistical resolution: resolve fire missions abstractly in unloaded chunks (no player near).
-- Battery fire: multiple tubes coordinated on a single mission.
-- Additional artillery types: mortar rework, naval bombardment (ship guns), MLRS / rocket artillery, guided missiles, close air support.
-- Shell-family generalization: a shared shell base across mortar / howitzer / etc.
+- Additional artillery types: naval bombardment (ship guns), MLRS / rocket artillery, guided missiles, close air support.
 
 ### Other long-standing items
 
