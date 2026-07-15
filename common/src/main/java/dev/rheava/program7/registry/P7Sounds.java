@@ -94,6 +94,10 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> RIFLE_RELOAD = register("item.salvaged_rifle.reload");
 	/** Soft confirmation chime on a tracking chip tag or read — a personal cue, not a noise the Program hears. */
 	public static final RegistrySupplier<SoundEvent> TRACKING_CHIP_PING = register("item.tracking_chip.ping");
+	/** Glowstone illuminator's shot — a soft glowy hum, not a gunshot; loud-ish so it isn't risk-free to use. */
+	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_FIRE = register("item.glowstone_illuminator.fire");
+	/** Confirmation chime the instant a mob is successfully tagged with GLOWING. */
+	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_TAG = register("item.glowstone_illuminator.tag");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

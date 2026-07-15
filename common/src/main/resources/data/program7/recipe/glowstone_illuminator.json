@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["tgt", " p "],
+  "key": {
+    "t": { "item": "program7:transmitter" },
+    "g": { "item": "minecraft:glowstone" },
+    "p": { "item": "program7:power_bank" }
+  },
+  "result": { "id": "program7:glowstone_illuminator", "count": 1 }
+}

@@ -249,6 +249,14 @@
       { "name": "minecraft:item.crossbow.loading_end", "type": "event" }
   "item.tracking_chip.ping": {
     "subtitle": "subtitles.program7.item.tracking_chip.ping",
+  "item.glowstone_illuminator.fire": {
+    "subtitle": "subtitles.program7.item.glowstone_illuminator.fire",
+    "sounds": [
+      { "name": "minecraft:entity.glow_squid.ambient", "type": "event" }
+    ]
+  },
+  "item.glowstone_illuminator.tag": {
+    "subtitle": "subtitles.program7.item.glowstone_illuminator.tag",
     "sounds": [
       { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
     ]
