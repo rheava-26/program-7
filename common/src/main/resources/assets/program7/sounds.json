@@ -226,5 +226,11 @@
     "sounds": [
       { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
     ]
+  },
+  "item.tracking_chip.ping": {
+    "subtitle": "subtitles.program7.item.tracking_chip.ping",
+    "sounds": [
+      { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
+    ]
   }
 }

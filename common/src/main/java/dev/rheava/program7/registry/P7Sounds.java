@@ -84,6 +84,9 @@ public final class P7Sounds {
 	/** Chime played once the amethyst lens crosses into "worn" territory. */
 	public static final RegistrySupplier<SoundEvent> LASER_LENS_WARN = register("item.charge_laser.lens_warn");
 
+	/** Soft confirmation chime on a tracking chip tag or read — a personal cue, not a noise the Program hears. */
+	public static final RegistrySupplier<SoundEvent> TRACKING_CHIP_PING = register("item.tracking_chip.ping");
+
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);
 		return SOUNDS.register(name, () -> SoundEvent.of(id));

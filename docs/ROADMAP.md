@@ -278,9 +278,17 @@ Phases are ordered so every phase ships something playable, and the Director
       ammo-hungry, slower build-up than bows; early salvage guns ≈ Power
       II–III bow with better range; drones resist firearms, enchanted
       weapons bypass drone armor
-- [ ] Electronics: tracking chips (mark stolen items), glowstone
-      illuminators (glowing on mobs), tracking displays, datapad
-      drone-sensor (heartbeat-monitor style)
+- [x] Tracking chip: transmitter + redstone + copper ingot → 1 chip. Tag a
+      living entity (right-click it) or a nearby dropped item (short
+      raycast) to store its UUID + last-known position on the stack as a
+      data component and glow it for 30s; right-click the air to read a
+      bearing + distance to the actionbar, refreshing position/glow while
+      the target is loaded or reporting "signal lost" once it isn't. Only
+      ever shows what you personally tagged — not a Program-wide radar.
+      Datapad-screen integration (plotting tracked targets on the radar) is
+      deferred; see BACKLOG.
+- [ ] Electronics: glowstone illuminators (glowing on mobs), tracking
+      displays, datapad drone-sensor (heartbeat-monitor style)
 - [ ] Scanner systems: soft X-ray ore overlay from drone scouting, GPR
 - [ ] Automatic MG turret, surface-to-surface missile rack, laser drill,
       thermal vision
