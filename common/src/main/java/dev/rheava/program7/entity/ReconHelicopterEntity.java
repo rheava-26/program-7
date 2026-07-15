@@ -98,7 +98,15 @@ public class ReconHelicopterEntity extends ProgramDroneEntity {
 
 	@Override
 	protected ArmorProfile armorProfile() {
-		return ArmorProfile.LIGHT;
+		// Reclassified from LIGHT: this is a TIER 3 "heavier hull" airframe
+		// (see the mass-3.0 move-control note above) — the charge laser's
+		// design brief specifically calls it out as one of the armored
+		// units the beam is a bad trade against, alongside the heavy attack
+		// drone/IFV/gunboat/battery center. Also makes it a genuinely
+		// tougher target against ballistic/melee than the tier-2 fliers,
+		// which fits its "actively hunts, orbits out of easy melee" role
+		// better than the old LIGHT profile did.
+		return ArmorProfile.ARMORED_VEHICLE;
 	}
 
 	@Nullable

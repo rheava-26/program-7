@@ -73,6 +73,17 @@ public final class P7Sounds {
 	/** A placed glow stick burning all the way out and going dark. */
 	public static final RegistrySupplier<SoundEvent> GLOW_STICK_FADE = register("block.glow_stick.fade");
 
+	/** Charge laser spin-up whine on the trigger pull, before the beam actually starts. */
+	public static final RegistrySupplier<SoundEvent> LASER_SPINUP = register("item.charge_laser.spinup");
+	/** Periodic crackle while the beam is actively firing. */
+	public static final RegistrySupplier<SoundEvent> LASER_BEAM_LOOP = registerRanged("item.charge_laser.beam_loop", 32f);
+	/** Overheat hiss/klaxon — the beam just locked out until it vents. */
+	public static final RegistrySupplier<SoundEvent> LASER_OVERHEAT = register("item.charge_laser.overheat");
+	/** Sneak + right-click battery reload clunk. */
+	public static final RegistrySupplier<SoundEvent> LASER_RELOAD = register("item.charge_laser.reload");
+	/** Chime played once the amethyst lens crosses into "worn" territory. */
+	public static final RegistrySupplier<SoundEvent> LASER_LENS_WARN = register("item.charge_laser.lens_warn");
+
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);
 		return SOUNDS.register(name, () -> SoundEvent.of(id));

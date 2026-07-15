@@ -196,5 +196,35 @@
     "sounds": [
       { "name": "minecraft:block.glass.break", "type": "event" }
     ]
+  },
+  "item.charge_laser.spinup": {
+    "subtitle": "subtitles.program7.item.charge_laser.spinup",
+    "sounds": [
+      { "name": "minecraft:block.beacon.activate", "type": "event" }
+    ]
+  },
+  "item.charge_laser.beam_loop": {
+    "subtitle": "subtitles.program7.item.charge_laser.beam_loop",
+    "sounds": [
+      { "name": "minecraft:block.conduit.ambient", "type": "event" }
+    ]
+  },
+  "item.charge_laser.overheat": {
+    "subtitle": "subtitles.program7.item.charge_laser.overheat",
+    "sounds": [
+      { "name": "minecraft:block.fire.extinguish", "type": "event" }
+    ]
+  },
+  "item.charge_laser.reload": {
+    "subtitle": "subtitles.program7.item.charge_laser.reload",
+    "sounds": [
+      { "name": "minecraft:block.iron_trapdoor.close", "type": "event" }
+    ]
+  },
+  "item.charge_laser.lens_warn": {
+    "subtitle": "subtitles.program7.item.charge_laser.lens_warn",
+    "sounds": [
+      { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
+    ]
   }
 }

@@ -120,6 +120,19 @@ public abstract class CargoBlock extends Block {
 		}
 	}
 
+	/**
+	 * External ignition entry point for things that aren't a neighbouring
+	 * fire/lava block or a burning projectile — currently the charge
+	 * laser's beam. Same blast as the neighbor-update path, just triggered
+	 * directly instead of waiting for a fire block to sit next to the pile.
+	 */
+	public void igniteExternally(World world, BlockPos pos) {
+		BlockState state = world.getBlockState(pos);
+		if (state.isOf(this)) {
+			this.cookOff(world, pos, state.get(COUNT));
+		}
+	}
+
 	private void cookOff(World world, BlockPos pos, int count) {
 		if (world.getBlockState(pos).getBlock() != this) {
 			return;

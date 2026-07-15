@@ -5,6 +5,7 @@ import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
 import dev.rheava.program7.item.GlowStickItem;
 import net.minecraft.item.BlockItem;
@@ -49,6 +50,14 @@ public final class P7Items {
 	/** Phase 4's first player-craftable tool — a cheap, throwable, self-extinguishing light. Cheap enough to toss freely. */
 	public static final RegistrySupplier<Item> GLOW_STICK = ITEMS.register("glow_stick",
 			() -> new GlowStickItem(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+
+	/**
+	 * Phase 4's marquee weapon — a long-range multitool that shreds light
+	 * drones, drills faraway blocks, and is an ignition source, but is
+	 * explicitly not the anti-armor answer. See {@link ChargeLaserItem}.
+	 */
+	public static final RegistrySupplier<Item> CHARGE_LASER = ITEMS.register("charge_laser",
+			() -> new ChargeLaserItem(new Item.Settings().maxCount(1).rarity(Rarity.RARE).arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));

@@ -26,32 +26,42 @@ public final class ArmorProfile {
 		ENCHANTED,
 		/** Plain, unenchanted melee. */
 		MELEE,
+		/**
+		 * Coherent-light weapons — currently just the player's charge laser.
+		 * Deliberately the mirror image of {@link #BALLISTIC}: a naked
+		 * airframe or light hull has nothing to boil the beam off against and
+		 * melts fast, but real plate soaks and disperses it, so hosing an
+		 * armored vehicle down with this is a genuinely bad, battery-wasting
+		 * trade rather than just "a bit less good."
+		 */
+		ENERGY,
 		/** Anything that doesn't fit a more specific bucket. */
 		GENERIC
 	}
 
 	public static final ArmorProfile UNARMORED = new ArmorProfile(
-			1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+			1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.6f, 1.0f);
 
 	public static final ArmorProfile LIGHT = new ArmorProfile(
-			0.9f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+			0.9f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.3f, 1.0f);
 
 	/**
 	 * Bullets bounce off sloped plate, arrows/tridents that slam in transfer
 	 * more, crossbow-AP punches through, and enchanted/psionic weapons bypass
-	 * armor outright.
+	 * armor outright. The beam fares worst of all here (0.2x) — plate
+	 * disperses coherent light far better than it stops a bullet.
 	 */
 	public static final ArmorProfile ARMORED_VEHICLE = new ArmorProfile(
-			0.45f, 1.25f, 0.85f, 1.1f, 1.4f, 0.8f, 0.8f);
+			0.45f, 1.25f, 0.85f, 1.1f, 1.4f, 0.8f, 0.2f, 0.8f);
 
 	/** The toughest hull in the game — even more resistant than a light vehicle. */
 	public static final ArmorProfile HEAVY_HULL = new ArmorProfile(
-			0.35f, 1.15f, 0.8f, 1.0f, 1.3f, 0.7f, 0.7f);
+			0.35f, 1.15f, 0.8f, 1.0f, 1.3f, 0.7f, 0.15f, 0.7f);
 
 	private final float[] multipliers;
 
 	private ArmorProfile(float ballistic, float highVelocityImpact, float piercing,
-			float explosive, float enchanted, float melee, float generic) {
+			float explosive, float enchanted, float melee, float energy, float generic) {
 		this.multipliers = new float[DamageClass.values().length];
 		this.multipliers[DamageClass.BALLISTIC.ordinal()] = ballistic;
 		this.multipliers[DamageClass.HIGH_VELOCITY_IMPACT.ordinal()] = highVelocityImpact;
@@ -59,6 +69,7 @@ public final class ArmorProfile {
 		this.multipliers[DamageClass.EXPLOSIVE.ordinal()] = explosive;
 		this.multipliers[DamageClass.ENCHANTED.ordinal()] = enchanted;
 		this.multipliers[DamageClass.MELEE.ordinal()] = melee;
+		this.multipliers[DamageClass.ENERGY.ordinal()] = energy;
 		this.multipliers[DamageClass.GENERIC.ordinal()] = generic;
 	}
 

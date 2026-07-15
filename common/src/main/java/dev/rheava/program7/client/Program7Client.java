@@ -179,6 +179,7 @@ public final class Program7Client {
 		// can send it without a separate client-side type registration here.
 		ClientTickEvent.CLIENT_POST.register(InterferenceOverlay::clientTick);
 		ClientGuiEvent.RENDER_HUD.register(InterferenceOverlay::render);
+		ClientGuiEvent.RENDER_HUD.register(ChargeLaserHud::render);
 	}
 
 	private Program7Client() {

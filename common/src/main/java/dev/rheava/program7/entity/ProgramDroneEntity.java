@@ -3,6 +3,7 @@ package dev.rheava.program7.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.rheava.program7.Program7;
 import dev.rheava.program7.advancement.P7Advancements;
 import dev.rheava.program7.block.DroneWreckBlock;
 import dev.rheava.program7.director.FireMissionManager;
@@ -10,6 +11,7 @@ import dev.rheava.program7.director.ProgramDirectorState;
 import dev.rheava.program7.director.SupplyNetwork;
 import dev.rheava.program7.director.UpkeepProfile;
 import dev.rheava.program7.entity.ArmorProfile.DamageClass;
+import dev.rheava.program7.registry.P7DamageTypes;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantment;
@@ -487,6 +489,12 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 	 * {@link #armorProfile()} can apply a type-specific multiplier.
 	 */
 	private DamageClass classify(DamageSource source, ItemStack weapon) {
+		if (source.isOf(P7DamageTypes.LASER)) {
+			// The charge laser deals no other kind of damage, so this check
+			// wins over everything below it — including PLAYER_ATTACK, since
+			// the beam is a hitscan tool use, not a melee swing.
+			return DamageClass.ENERGY;
+		}
 		if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
 			return DamageClass.EXPLOSIVE;
 		}
@@ -868,6 +876,23 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 					4, 0.3, 0.1, 0.3, 0.05);
 			world.playSound(null, landingPos, P7Sounds.DRONE_IMPACT.get(), SoundCategory.HOSTILE,
 					0.9f, 0.9f + world.random.nextFloat() * 0.2f);
+
+			// Cook-off: a charge-laser kill on a unit still carrying onboard
+			// rounds detonates the magazine — the "pop a light drone full of
+			// ammo" beat the laser's ignition-source identity is built
+			// around. Scales with however many rounds were still loaded, so
+			// catching one early in its burst is a bigger bang than mopping
+			// up an already-dry unit; a laser kill on a unit with no onboard
+			// magazine (getMagazineSize() == 0) is simply silent here.
+			if (damageSource.isOf(P7DamageTypes.LASER) && this.getMagazineSize() > 0 && this.getRounds() > 0) {
+				float loadFraction = this.getRounds() / (float) this.getMagazineSize();
+				float power = 0.8f + 2.0f * loadFraction;
+				World.ExplosionSourceType sourceType = Program7.CONFIG.terrainDestruction
+						? World.ExplosionSourceType.MOB
+						: World.ExplosionSourceType.NONE;
+				world.createExplosion(this, landingPos.getX() + 0.5, landingPos.getY() + 0.5,
+						landingPos.getZ() + 0.5, power, sourceType);
+			}
 
 			if (this.maceShattered) {
 				// A mace doesn't just kill a light airframe, it blows it apart —
