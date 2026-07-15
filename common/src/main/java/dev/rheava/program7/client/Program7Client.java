@@ -9,6 +9,7 @@ import dev.rheava.program7.client.render.AirUAVModel;
 import dev.rheava.program7.client.render.AirUAVRenderer;
 import dev.rheava.program7.client.render.AntiAirTurretModel;
 import dev.rheava.program7.client.render.AntiAirTurretRenderer;
+import dev.rheava.program7.client.render.ArmorPiercingArrowRenderer;
 import dev.rheava.program7.client.render.AttackDroneRenderer;
 import dev.rheava.program7.client.render.AutogunTurretModel;
 import dev.rheava.program7.client.render.AutogunTurretRenderer;
@@ -167,6 +168,7 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.GUIDED_MISSILE, GuidedMissileRenderer::new);
 		EntityRendererRegistry.register(P7Entities.BOMB, BombRenderer::new);
 		EntityRendererRegistry.register(P7Entities.GLOW_STICK, GlowStickRenderer::new);
+		EntityRendererRegistry.register(P7Entities.ARMOR_PIERCING_BOLT, ArmorPiercingArrowRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,

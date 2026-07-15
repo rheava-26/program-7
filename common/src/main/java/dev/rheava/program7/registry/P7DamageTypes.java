@@ -32,6 +32,16 @@ public final class P7DamageTypes {
 	 * fliers eat it in full.
 	 */
 	public static final RegistryKey<DamageType> BULLET = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Program7.id("bullet"));
+	 * An armor-piercing crossbow bolt's hit. Routed through {@link
+	 * dev.rheava.program7.entity.ArmorProfile.DamageClass#ARMOR_PIERCING} by
+	 * {@code ProgramDroneEntity#classify} — its own class, separate from
+	 * {@link dev.rheava.program7.entity.ArmorProfile.DamageClass#PIERCING}
+	 * (the trident's bucket), so the mod's existing typed-armor math can give
+	 * this bolt an "armor is basically ignored" profile without
+	 * stealth-buffing the vanilla trident, which shares {@code PIERCING}.
+	 * This damage type itself carries no special-casing.
+	 */
+	public static final RegistryKey<DamageType> AP_BOLT = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Program7.id("ap_bolt"));
 
 	private P7DamageTypes() {
 	}

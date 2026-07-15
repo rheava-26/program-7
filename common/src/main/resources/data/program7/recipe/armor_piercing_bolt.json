@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["i", "a"],
+  "key": {
+    "i": { "item": "minecraft:iron_ingot" },
+    "a": { "item": "minecraft:arrow" }
+  },
+  "result": { "id": "program7:armor_piercing_bolt", "count": 4 }
+}

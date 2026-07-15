@@ -5,6 +5,7 @@ import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.item.ArmorPiercingBoltItem;
 import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
 import dev.rheava.program7.item.EnderBlinkGunItem;
@@ -60,6 +61,15 @@ public final class P7Items {
 	 */
 	public static final RegistrySupplier<Item> CHARGE_LASER = ITEMS.register("charge_laser",
 			() -> new ChargeLaserItem(new Item.Settings().maxCount(1).rarity(Rarity.RARE).arch$tab(MAIN_TAB)));
+
+	/**
+	 * The anti-armor specialist ammo: a vanilla-crossbow-loadable bolt (see
+	 * {@link ArmorPiercingBoltItem}) that shreds armored vehicles and is
+	 * unremarkable against everything else. Craft-and-carry deliberately,
+	 * not a default loadout.
+	 */
+	public static final RegistrySupplier<Item> ARMOR_PIERCING_BOLT = ITEMS.register("armor_piercing_bolt",
+			() -> new ArmorPiercingBoltItem(new Item.Settings().arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
