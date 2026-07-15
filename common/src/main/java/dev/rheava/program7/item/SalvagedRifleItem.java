@@ -72,6 +72,8 @@ public class SalvagedRifleItem extends Item {
 	public static final float DAMAGE = 6.5f;
 	/** Small per-shot cooldown so this reads as semi-auto, not a full-auto mash. */
 	private static final int FIRE_COOLDOWN_TICKS = 8;
+	/** Dry-fire cooldown so an empty mag can't be click-spammed — mirrors the illuminator's dry click pacing. */
+	private static final int DRY_FIRE_COOLDOWN_TICKS = 10;
 	/** Loudest tier in the player arsenal so far — guns attract the network. */
 	private static final float NOISE_LOUDNESS = 1.0f;
 
@@ -148,6 +150,7 @@ public class SalvagedRifleItem extends Item {
 		if (!world.isClient) {
 			world.playSound(null, user.getX(), user.getY(), user.getZ(), P7Sounds.WEAPON_DRY_FIRE.get(),
 					SoundCategory.PLAYERS, 0.6f, 1.0f);
+			user.getItemCooldownManager().set(this, DRY_FIRE_COOLDOWN_TICKS);
 		}
 	}
 
@@ -192,9 +195,12 @@ public class SalvagedRifleItem extends Item {
 			DamageSource source = new DamageSource(bulletType, player);
 			target.damage(source, DAMAGE);
 		} else if (blockHit.getType() != HitResult.Type.MISS) {
-			// No entity in the way: resolve where the round actually lands
-			// against terrain (impact puff + chip damage), same as every
-			// other hitscan mount in the arsenal.
+			// No living entity in the way — either the round missed
+			// everything, or it clipped a non-living hittable entity (a
+			// boat, minecart, item frame...) which isn't a valid hitscan
+			// target. Either way, fall through and resolve the round
+			// against whatever's behind it (impact puff + chip damage)
+			// instead of letting the shot silently vanish.
 			HitscanImpact.resolve(world, start, blockHit.getPos(), RANGE, player, RoundClass.MEDIUM);
 		}
 
