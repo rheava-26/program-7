@@ -10,6 +10,7 @@
   "item.program7.datapad": "Datapad",
   "item.program7.glow_stick": "Glow Stick",
   "item.program7.charge_laser": "Charge Laser",
+  "item.program7.ender_pearl_blink_gun": "Ender-Pearl Blink Gun",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -151,5 +152,7 @@
   "subtitles.program7.item.charge_laser.beam_loop": "Laser beam crackles",
   "subtitles.program7.item.charge_laser.overheat": "Laser vents heat",
   "subtitles.program7.item.charge_laser.reload": "Battery slots home",
-  "subtitles.program7.item.charge_laser.lens_warn": "Lens chimes a warning"
+  "subtitles.program7.item.charge_laser.lens_warn": "Lens chimes a warning",
+  "subtitles.program7.item.ender_pearl_blink_gun.charge": "Emitter charges",
+  "subtitles.program7.item.ender_pearl_blink_gun.warp": "Space warps"
 }

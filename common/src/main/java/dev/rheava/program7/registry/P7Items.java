@@ -7,6 +7,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
+import dev.rheava.program7.item.EnderBlinkGunItem;
 import dev.rheava.program7.item.GlowStickItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -171,6 +172,14 @@ public final class P7Items {
 			ITEMS.register("missile_launcher_spawn_egg",
 					() -> new ArchitecturySpawnEggItem(P7Entities.MISSILE_LAUNCHER, 0x23272b, 0xd9364a,
 							new Item.Settings().arch$tab(MAIN_TAB)));
+
+	/**
+	 * A controlled ender pearl reverse-engineered from the Program's own drone
+	 * teleport logistics — a fun, cooldown-gated mobility toy, not an escape
+	 * button. See {@link EnderBlinkGunItem}.
+	 */
+	public static final RegistrySupplier<Item> ENDER_PEARL_BLINK_GUN = ITEMS.register("ender_pearl_blink_gun",
+			() -> new EnderBlinkGunItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();

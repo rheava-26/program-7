@@ -226,5 +226,17 @@
     "sounds": [
       { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
     ]
+  },
+  "item.ender_pearl_blink_gun.charge": {
+    "subtitle": "subtitles.program7.item.ender_pearl_blink_gun.charge",
+    "sounds": [
+      { "name": "minecraft:block.beacon.power_select", "type": "event" }
+    ]
+  },
+  "item.ender_pearl_blink_gun.warp": {
+    "subtitle": "subtitles.program7.item.ender_pearl_blink_gun.warp",
+    "sounds": [
+      { "name": "minecraft:entity.enderman.teleport", "type": "event" }
+    ]
   }
 }
