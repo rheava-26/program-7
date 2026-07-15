@@ -18,7 +18,12 @@ public final class ArmorProfile {
 		BALLISTIC,
 		/** Fast-moving kinetic slams, e.g. arrows/spectral arrows. */
 		HIGH_VELOCITY_IMPACT,
-		/** Armor-piercing punches through plate, e.g. tridents. */
+		/**
+		 * Armor-piercing punches through plate — a trident's stabbing thrust,
+		 * or a fired {@code ArmorPiercingArrowEntity} (armor-piercing
+		 * crossbow bolt). The dedicated anti-vehicle lane: see {@code
+		 * docs/DESIGN.md}'s "Damage & armor is typed" section.
+		 */
 		PIERCING,
 		/** Explosions. */
 		EXPLOSIVE,
@@ -47,16 +52,17 @@ public final class ArmorProfile {
 
 	/**
 	 * Bullets bounce off sloped plate, arrows/tridents that slam in transfer
-	 * more, crossbow-AP punches through, and enchanted/psionic weapons bypass
-	 * armor outright. The beam fares worst of all here (0.2x) — plate
-	 * disperses coherent light far better than it stops a bullet.
+	 * more, crossbow-AP punches through (1.3x — a genuine specialist counter,
+	 * second only to the enchanted/psionic bypass), and enchanted/psionic
+	 * weapons bypass armor outright. The beam fares worst of all here (0.2x)
+	 * — plate disperses coherent light far better than it stops a bullet.
 	 */
 	public static final ArmorProfile ARMORED_VEHICLE = new ArmorProfile(
-			0.45f, 1.25f, 0.85f, 1.1f, 1.4f, 0.8f, 0.2f, 0.8f);
+			0.45f, 1.25f, 1.3f, 1.1f, 1.4f, 0.8f, 0.2f, 0.8f);
 
 	/** The toughest hull in the game — even more resistant than a light vehicle. */
 	public static final ArmorProfile HEAVY_HULL = new ArmorProfile(
-			0.35f, 1.15f, 0.8f, 1.0f, 1.3f, 0.7f, 0.15f, 0.7f);
+			0.35f, 1.15f, 1.2f, 1.0f, 1.3f, 0.7f, 0.15f, 0.7f);
 
 	private final float[] multipliers;
 

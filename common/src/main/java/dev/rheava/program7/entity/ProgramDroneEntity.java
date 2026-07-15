@@ -495,6 +495,13 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			// the beam is a hitscan tool use, not a melee swing.
 			return DamageClass.ENERGY;
 		}
+		if (source.isOf(P7DamageTypes.AP_BOLT)) {
+			// An armor-piercing crossbow bolt is still a PersistentProjectileEntity
+			// and would otherwise fall into the plain-arrow HIGH_VELOCITY_IMPACT
+			// bucket below — this check has to win first so the specialist
+			// anti-armor bolt reads as PIERCING instead of a generic arrow.
+			return DamageClass.PIERCING;
+		}
 		if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
 			return DamageClass.EXPLOSIVE;
 		}

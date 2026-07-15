@@ -10,6 +10,7 @@
   "item.program7.datapad": "Datapad",
   "item.program7.glow_stick": "Glow Stick",
   "item.program7.charge_laser": "Charge Laser",
+  "item.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -84,6 +85,7 @@
   "entity.program7.guided_missile": "Guided Missile",
   "entity.program7.bomb": "Bomb",
   "entity.program7.glow_stick": "Glow Stick",
+  "entity.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 
@@ -95,6 +97,9 @@
 
   "death.attack.program7.laser": "%1$s was melted down by %2$s's charge laser",
   "death.attack.program7.laser.item": "%1$s was melted down by %2$s using %3$s",
+
+  "death.attack.program7.ap_bolt": "%1$s was punched through by %2$s's armor-piercing bolt",
+  "death.attack.program7.ap_bolt.item": "%1$s was punched through by %2$s using %3$s",
 
   "advancements.program7.seven_days.title": "Still Here",
   "advancements.program7.seven_days.description": "Survive seven days after the Program makes landfall",

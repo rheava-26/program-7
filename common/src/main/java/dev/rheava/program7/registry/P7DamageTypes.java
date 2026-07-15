@@ -23,6 +23,16 @@ public final class P7DamageTypes {
 	 */
 	public static final RegistryKey<DamageType> LASER = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Program7.id("laser"));
 
+	/**
+	 * An armor-piercing crossbow bolt's hit. Routed through {@link
+	 * dev.rheava.program7.entity.ArmorProfile.DamageClass#PIERCING} by {@code
+	 * ProgramDroneEntity#classify} — the mod's existing typed-armor math
+	 * already carries the "punches through the plate bullets bounce off"
+	 * profile for that class, so this damage type itself carries no
+	 * special-casing.
+	 */
+	public static final RegistryKey<DamageType> AP_BOLT = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Program7.id("ap_bolt"));
+
 	private P7DamageTypes() {
 	}
 }

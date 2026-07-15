@@ -6,6 +6,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.AirUAVEntity;
 import dev.rheava.program7.entity.AntiAirTurretEntity;
+import dev.rheava.program7.entity.ArmorPiercingArrowEntity;
 import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.AutogunTurretEntity;
 import dev.rheava.program7.entity.BatteryCenterEntity;
@@ -296,6 +297,18 @@ public final class P7Entities {
 							.dimensions(0.25f, 0.25f)
 							.maxTrackingRange(32)
 							.build("glow_stick"));
+
+	/**
+	 * The armor-piercing crossbow bolt in flight — the "no build is walled
+	 * out of hurting armor" specialist anti-vehicle answer. See {@link
+	 * dev.rheava.program7.entity.ArmorPiercingArrowEntity}.
+	 */
+	public static final RegistrySupplier<EntityType<ArmorPiercingArrowEntity>> ARMOR_PIERCING_BOLT =
+			ENTITIES.register("armor_piercing_bolt",
+					() -> EntityType.Builder.<ArmorPiercingArrowEntity>create(ArmorPiercingArrowEntity::new, SpawnGroup.MISC)
+							.dimensions(0.5f, 0.5f)
+							.maxTrackingRange(8)
+							.build("armor_piercing_bolt"));
 
 	public static void register() {
 		ENTITIES.register();
