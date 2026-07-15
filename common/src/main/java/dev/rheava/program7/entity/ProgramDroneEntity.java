@@ -499,8 +499,11 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			// An armor-piercing crossbow bolt is still a PersistentProjectileEntity
 			// and would otherwise fall into the plain-arrow HIGH_VELOCITY_IMPACT
 			// bucket below — this check has to win first so the specialist
-			// anti-armor bolt reads as PIERCING instead of a generic arrow.
-			return DamageClass.PIERCING;
+			// anti-armor bolt reads as its own ARMOR_PIERCING class instead of a
+			// generic arrow. Deliberately NOT the trident's PIERCING bucket: that
+			// class is also what a vanilla trident hits, so folding the bolt into
+			// it would stealth-buff the trident every time the bolt got tuned.
+			return DamageClass.ARMOR_PIERCING;
 		}
 		if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
 			return DamageClass.EXPLOSIVE;
