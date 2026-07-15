@@ -1,6 +1,5 @@
 {
   "itemGroup.program7.main": "Program 7",
-
   "item.program7.drone_core": "Drone Core",
   "item.program7.power_bank": "Power Bank",
   "item.program7.transmitter": "Transmitter",
@@ -10,12 +9,6 @@
   "item.program7.datapad": "Datapad",
   "item.program7.glow_stick": "Glow Stick",
   "item.program7.charge_laser": "Charge Laser",
-  "item.program7.ender_pearl_blink_gun": "Ender-Pearl Blink Gun",
-  "item.program7.salvaged_rifle": "Salvaged Firearm",
-  "item.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
-  "item.program7.tracking_chip": "Tracking Chip",
-  "item.program7.glowstone_illuminator": "Glowstone Illuminator",
-  "item.program7.ender_pearl_launcher": "Ender Pearl Launcher",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -40,7 +33,6 @@
   "item.program7.howitzer_spawn_egg": "Howitzer Spawn Egg",
   "item.program7.mlrs_launcher_spawn_egg": "MLRS Launcher Spawn Egg",
   "item.program7.missile_launcher_spawn_egg": "Missile Launcher Spawn Egg",
-
   "block.program7.probe_core": "Probe Core",
   "block.program7.psionic_research": "Psionic Research Node",
   "block.program7.drone_wreck": "Drone Wreck",
@@ -58,7 +50,6 @@
   "block.program7.artillery_shell": "Artillery Shell",
   "block.program7.power_cell": "Power Cell",
   "block.program7.glow_stick": "Glow Stick",
-
   "entity.program7.surveyor_drone": "Surveyor Drone",
   "entity.program7.air_uav": "Air UAV",
   "entity.program7.attack_drone": "Attack Drone",
@@ -90,38 +81,14 @@
   "entity.program7.guided_missile": "Guided Missile",
   "entity.program7.bomb": "Bomb",
   "entity.program7.glow_stick": "Glow Stick",
-  "entity.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
-
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
-
   "item.program7.charge_laser.tooltip.battery": "Battery: %1$ss",
   "item.program7.charge_laser.tooltip.lens": "Lens integrity: %1$s%%",
   "item.program7.charge_laser.tooltip.overheated": "Overheated — venting",
   "item.program7.charge_laser.tooltip.lens_warn": "Lens worn — repair with amethyst shards soon",
   "item.program7.charge_laser.tooltip.lens_critical": "Lens critically worn — repair with amethyst shards",
-  "item.program7.salvaged_rifle.tooltip.rounds": "Magazine: %1$s / %2$s rounds",
-
-  "item.program7.tracking_chip.tooltip.no_target": "No signal locked — mark a target",
-  "item.program7.tracking_chip.tooltip.locked": "Signal locked",
-  "item.program7.tracking_chip.tagged": "Signal locked: %1$s",
-  "item.program7.tracking_chip.no_target": "No signal locked — right-click a target to mark it",
-  "item.program7.tracking_chip.signal_lost": "Signal lost",
-  "item.program7.tracking_chip.bearing": "Bearing %1$s · %2$sm",
-
-  "item.program7.glowstone_illuminator.tooltip": "Tags what it hits with a long-lasting glow — costs glowstone dust per shot",
-
-  "item.program7.ender_pearl_launcher.tooltip.battery": "Battery: %1$s%%",
-  "item.program7.ender_pearl_launcher.tooltip.shots": "Shots remaining: %1$s",
-  "item.program7.ender_pearl_launcher.tooltip.hint": "Hold to charge — release to launch",
-
   "death.attack.program7.laser": "%1$s was melted down by %2$s's charge laser",
   "death.attack.program7.laser.item": "%1$s was melted down by %2$s using %3$s",
-  "death.attack.program7.bullet": "%1$s was shot dead by %2$s",
-  "death.attack.program7.bullet.item": "%1$s was shot dead by %2$s using %3$s",
-
-  "death.attack.program7.ap_bolt": "%1$s was punched through by %2$s's armor-piercing bolt",
-  "death.attack.program7.ap_bolt.item": "%1$s was punched through by %2$s using %3$s",
-
   "advancements.program7.seven_days.title": "Still Here",
   "advancements.program7.seven_days.description": "Survive seven days after the Program makes landfall",
   "advancements.program7.arrival.title": "Uninvited Guests",
@@ -138,7 +105,6 @@
   "advancements.program7.sustained_fire.description": "Be under fire from ten or more Program gun units at once.",
   "advancements.program7.fixed_wing_melee.title": "How???",
   "advancements.program7.fixed_wing_melee.description": "Kill a fixed-wing Program drone with a melee weapon, no elytra or wind charge.",
-
   "subtitles.program7.entity.surveyor_drone.ambient": "Drone whirs",
   "subtitles.program7.entity.surveyor_drone.alert": "Drone alarm blares",
   "subtitles.program7.entity.surveyor_drone.scan_beep": "Drone beeps",
@@ -163,7 +129,6 @@
   "subtitles.program7.block.assembler.complete": "Assembler finishes a unit",
   "subtitles.program7.block.catapult.launch": "Catapult flings a UAV",
   "subtitles.program7.event.orbital_resupply": "Something falls from orbit",
-
   "subtitles.program7.entity.recon_helicopter.rotor_loop": "Rotors thump overhead",
   "subtitles.program7.entity.air_uav.engine_loop": "Engine drones past",
   "subtitles.program7.unit.tank_tracks_loop": "Tracks grind closer",
@@ -178,13 +143,35 @@
   "subtitles.program7.item.charge_laser.overheat": "Laser vents heat",
   "subtitles.program7.item.charge_laser.reload": "Battery slots home",
   "subtitles.program7.item.charge_laser.lens_warn": "Lens chimes a warning",
+  "item.program7.ender_pearl_blink_gun": "Ender-Pearl Blink Gun",
   "subtitles.program7.item.ender_pearl_blink_gun.charge": "Emitter charges",
-  "subtitles.program7.item.ender_pearl_blink_gun.warp": "Space warps"
+  "subtitles.program7.item.ender_pearl_blink_gun.warp": "Space warps",
+  "item.program7.salvaged_rifle": "Salvaged Firearm",
+  "item.program7.salvaged_rifle.tooltip.rounds": "Magazine: %1$s / %2$s rounds",
+  "death.attack.program7.bullet": "%1$s was shot dead by %2$s",
+  "death.attack.program7.bullet.item": "%1$s was shot dead by %2$s using %3$s",
   "subtitles.program7.item.salvaged_rifle.shot": "Rifle fires",
-  "subtitles.program7.item.salvaged_rifle.reload": "Magazine slots home"
-  "subtitles.program7.item.tracking_chip.ping": "Tracking chip chimes"
+  "subtitles.program7.item.salvaged_rifle.reload": "Magazine slots home",
+  "item.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
+  "entity.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
+  "death.attack.program7.ap_bolt": "%1$s was punched through by %2$s's armor-piercing bolt",
+  "death.attack.program7.ap_bolt.item": "%1$s was punched through by %2$s using %3$s",
+  "item.program7.tracking_chip": "Tracking Chip",
+  "item.program7.tracking_chip.tooltip.no_target": "No signal locked — mark a target",
+  "item.program7.tracking_chip.tooltip.locked": "Signal locked",
+  "item.program7.tracking_chip.tagged": "Signal locked: %1$s",
+  "item.program7.tracking_chip.no_target": "No signal locked — right-click a target to mark it",
+  "item.program7.tracking_chip.signal_lost": "Signal lost",
+  "item.program7.tracking_chip.bearing": "Bearing %1$s · %2$sm",
+  "subtitles.program7.item.tracking_chip.ping": "Tracking chip chimes",
+  "item.program7.glowstone_illuminator": "Glowstone Illuminator",
+  "item.program7.glowstone_illuminator.tooltip": "Tags what it hits with a long-lasting glow — costs glowstone dust per shot",
   "subtitles.program7.item.glowstone_illuminator.fire": "Illuminator hums",
-  "subtitles.program7.item.glowstone_illuminator.tag": "Tag confirmed"
+  "subtitles.program7.item.glowstone_illuminator.tag": "Tag confirmed",
+  "item.program7.ender_pearl_launcher": "Ender Pearl Launcher",
+  "item.program7.ender_pearl_launcher.tooltip.battery": "Battery: %1$s%%",
+  "item.program7.ender_pearl_launcher.tooltip.shots": "Shots remaining: %1$s",
+  "item.program7.ender_pearl_launcher.tooltip.hint": "Hold to charge — release to launch",
   "subtitles.program7.item.ender_pearl_launcher.charge": "Launcher whines",
   "subtitles.program7.item.ender_pearl_launcher.launch": "Launcher thunks",
   "subtitles.program7.item.ender_pearl_launcher.reload": "Battery slots home"

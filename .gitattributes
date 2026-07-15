@@ -1,8 +1,0 @@
-common/src/main/resources/assets/program7/lang/en_us.json merge=union
-common/src/main/resources/assets/program7/sounds.json merge=union
-common/src/main/java/dev/rheava/program7/registry/P7Items.java merge=union
-common/src/main/java/dev/rheava/program7/registry/P7Sounds.java merge=union
-common/src/main/java/dev/rheava/program7/registry/P7DataComponents.java merge=union
-common/src/main/java/dev/rheava/program7/registry/P7DamageTypes.java merge=union
-docs/BACKLOG.md merge=union
-docs/ROADMAP.md merge=union
