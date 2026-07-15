@@ -262,6 +262,16 @@ Phases are ordered so every phase ships something playable, and the Director
       player-craftable tool — proves the loop (craft → throw → placed
       light) before the bench exists. Burns out over a few minutes rather
       than being permanent lighting; see BACKLOG for the burn-down design.
+- [x] Charge laser: the phase's marquee weapon — gun barrel + power bank +
+      amethyst + diamond. A long-range multitool, not a boss-killer: shreds
+      light/small drones through the ENERGY damage class, is a deliberately
+      bad, battery-wasting trade against armored vehicles, drills faraway
+      blocks respecting hardness, and is an ignition source (fire, TNT
+      priming, ammo/magazine cook-off). Three juggled resources — battery
+      (power bank reload, ~6s/cell), heat (20s continuous fire before
+      overheat), amethyst lens wear (repaired with shards in the crafting
+      grid) — all on the stack as a data component. See BACKLOG for the
+      full damage-routing and resource-economy writeup.
 - [ ] Reverse-engineering bench: salvage → schematics
 - [ ] Player drones (dyeable, banner patterns)
 - [ ] Hand-built firearms/rifles: loud (gunfire attracts the network),
