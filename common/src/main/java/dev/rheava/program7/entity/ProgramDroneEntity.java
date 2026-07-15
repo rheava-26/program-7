@@ -495,6 +495,12 @@ public abstract class ProgramDroneEntity extends PathAwareEntity {
 			// the beam is a hitscan tool use, not a melee swing.
 			return DamageClass.ENERGY;
 		}
+		if (source.isOf(P7DamageTypes.BULLET)) {
+			// Same reasoning as the laser check above: the salvaged rifle's
+			// shot is a hitscan tool use, not a projectile entity or melee
+			// swing, so it needs its own explicit check ahead of both.
+			return DamageClass.BALLISTIC;
+		}
 		if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
 			return DamageClass.EXPLOSIVE;
 		}

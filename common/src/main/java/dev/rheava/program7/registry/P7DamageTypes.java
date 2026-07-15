@@ -23,6 +23,16 @@ public final class P7DamageTypes {
 	 */
 	public static final RegistryKey<DamageType> LASER = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Program7.id("laser"));
 
+	/**
+	 * Conventional gunfire from a player-held firearm (the salvaged rifle and
+	 * anything that joins it later). Routed through {@link
+	 * dev.rheava.program7.entity.ArmorProfile.DamageClass#BALLISTIC} by {@code
+	 * ProgramDroneEntity#classify} — the mirror image of {@link #LASER}'s
+	 * {@code ENERGY} routing: armored hulls resist this, light/unarmored
+	 * fliers eat it in full.
+	 */
+	public static final RegistryKey<DamageType> BULLET = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Program7.id("bullet"));
+
 	private P7DamageTypes() {
 	}
 }

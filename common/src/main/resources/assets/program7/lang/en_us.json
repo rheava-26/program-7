@@ -10,6 +10,7 @@
   "item.program7.datapad": "Datapad",
   "item.program7.glow_stick": "Glow Stick",
   "item.program7.charge_laser": "Charge Laser",
+  "item.program7.salvaged_rifle": "Salvaged Firearm",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -92,9 +93,12 @@
   "item.program7.charge_laser.tooltip.overheated": "Overheated — venting",
   "item.program7.charge_laser.tooltip.lens_warn": "Lens worn — repair with amethyst shards soon",
   "item.program7.charge_laser.tooltip.lens_critical": "Lens critically worn — repair with amethyst shards",
+  "item.program7.salvaged_rifle.tooltip.rounds": "Magazine: %1$s / %2$s rounds",
 
   "death.attack.program7.laser": "%1$s was melted down by %2$s's charge laser",
   "death.attack.program7.laser.item": "%1$s was melted down by %2$s using %3$s",
+  "death.attack.program7.bullet": "%1$s was shot dead by %2$s",
+  "death.attack.program7.bullet.item": "%1$s was shot dead by %2$s using %3$s",
 
   "advancements.program7.seven_days.title": "Still Here",
   "advancements.program7.seven_days.description": "Survive seven days after the Program makes landfall",
@@ -151,5 +155,7 @@
   "subtitles.program7.item.charge_laser.beam_loop": "Laser beam crackles",
   "subtitles.program7.item.charge_laser.overheat": "Laser vents heat",
   "subtitles.program7.item.charge_laser.reload": "Battery slots home",
-  "subtitles.program7.item.charge_laser.lens_warn": "Lens chimes a warning"
+  "subtitles.program7.item.charge_laser.lens_warn": "Lens chimes a warning",
+  "subtitles.program7.item.salvaged_rifle.shot": "Rifle fires",
+  "subtitles.program7.item.salvaged_rifle.reload": "Magazine slots home"
 }

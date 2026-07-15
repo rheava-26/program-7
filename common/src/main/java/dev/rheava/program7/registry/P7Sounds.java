@@ -84,6 +84,11 @@ public final class P7Sounds {
 	/** Chime played once the amethyst lens crosses into "worn" territory. */
 	public static final RegistrySupplier<SoundEvent> LASER_LENS_WARN = register("item.charge_laser.lens_warn");
 
+	/** Salvaged rifle shot report — the loudest player-weapon cue in the arsenal so far; guns attract the network. */
+	public static final RegistrySupplier<SoundEvent> RIFLE_SHOT = registerRanged("item.salvaged_rifle.shot", 128f);
+	/** Sneak + right-click magazine reload clunk. */
+	public static final RegistrySupplier<SoundEvent> RIFLE_RELOAD = register("item.salvaged_rifle.reload");
+
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);
 		return SOUNDS.register(name, () -> SoundEvent.of(id));

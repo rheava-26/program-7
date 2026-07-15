@@ -226,5 +226,17 @@
     "sounds": [
       { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
     ]
+  },
+  "item.salvaged_rifle.shot": {
+    "subtitle": "subtitles.program7.item.salvaged_rifle.shot",
+    "sounds": [
+      { "name": "minecraft:item.crossbow.shoot", "type": "event" }
+    ]
+  },
+  "item.salvaged_rifle.reload": {
+    "subtitle": "subtitles.program7.item.salvaged_rifle.reload",
+    "sounds": [
+      { "name": "minecraft:item.crossbow.loading_end", "type": "event" }
+    ]
   }
 }

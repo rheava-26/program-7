@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["pr", "im"],
+  "key": {
+    "p": { "item": "program7:gun_barrel" },
+    "r": { "item": "minecraft:redstone" },
+    "i": { "item": "minecraft:iron_ingot" },
+    "m": { "item": "program7:magazine" }
+  },
+  "result": { "id": "program7:salvaged_rifle", "count": 1 }
+}

@@ -8,6 +8,7 @@ import dev.rheava.program7.Program7;
 import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
 import dev.rheava.program7.item.GlowStickItem;
+import dev.rheava.program7.item.SalvagedRifleItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -171,6 +172,15 @@ public final class P7Items {
 			ITEMS.register("missile_launcher_spawn_egg",
 					() -> new ArchitecturySpawnEggItem(P7Entities.MISSILE_LAUNCHER, 0x23272b, 0xd9364a,
 							new Item.Settings().arch$tab(MAIN_TAB)));
+
+	/**
+	 * The bread-and-butter player weapon — a semi-auto hitscan rifle built
+	 * from salvage. Powerful, but LOUD and ammo-hungry, and routed through
+	 * the {@code BALLISTIC} damage class so armored drones resist it — that's
+	 * the anti-armor lane's job, not this gun's. See {@link SalvagedRifleItem}.
+	 */
+	public static final RegistrySupplier<Item> SALVAGED_RIFLE = ITEMS.register("salvaged_rifle",
+			() -> new SalvagedRifleItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();
