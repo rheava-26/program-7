@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:ender_pearl" },
+    { "item": "program7:transmitter" },
+    { "item": "program7:power_bank" }
+  ],
+  "result": { "id": "program7:ender_pearl_blink_gun", "count": 1 }
+}

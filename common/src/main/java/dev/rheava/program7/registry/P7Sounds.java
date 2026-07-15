@@ -84,6 +84,11 @@ public final class P7Sounds {
 	/** Chime played once the amethyst lens crosses into "worn" territory. */
 	public static final RegistrySupplier<SoundEvent> LASER_LENS_WARN = register("item.charge_laser.lens_warn");
 
+	/** Ender-pearl blink gun's emitter discharge cue — plays whether the shot lands a blink or just shoves a target. */
+	public static final RegistrySupplier<SoundEvent> BLINK_GUN_CHARGE = register("item.ender_pearl_blink_gun.charge");
+	/** The teleport crack itself — played at both the origin and destination of a successful blink. */
+	public static final RegistrySupplier<SoundEvent> BLINK_GUN_WARP = register("item.ender_pearl_blink_gun.warp");
+
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);
 		return SOUNDS.register(name, () -> SoundEvent.of(id));
