@@ -2,6 +2,8 @@ package dev.rheava.program7.item;
 
 import java.util.List;
 
+import org.joml.Vector3f;
+
 import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.LivingEntity;
@@ -13,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -34,9 +37,12 @@ import net.minecraft.world.World;
  * weapon. Right-click fires a short-range hitscan "tag": a mob it connects
  * with gets slapped with {@link StatusEffects#GLOWING} for a long while, so
  * it lights up and stays trackable through walls, but the mob itself is
- * untouched — no damage, no knockback, no threat removed. A block in the way
- * just gets a brief glow-particle flare so a miss still reads as "something
- * happened" instead of a silent whiff.
+ * untouched — no damage, no knockback, no threat removed. Every shot — hit
+ * or miss — draws a short tracer streak along the ray, and anything in the
+ * way that isn't a taggable mob (a block, or a non-living hittable entity
+ * like a boat or minecart) just gets a brief glow-particle flare, so even a
+ * pure whiff into open sky still reads as "something happened" instead of a
+ * silent whiff.
  *
  * <p>Deliberately not free to spam: it eats a glowstone dust per shot
  * (waived in creative) and carries a short cooldown, and the shot itself is
@@ -55,6 +61,18 @@ public class GlowstoneIlluminatorItem extends Item {
 	private static final int DRY_FIRE_COOLDOWN_TICKS = 10;
 	/** Reported noise loudness on every shot, hit or miss — "loud-ish", carries further than a footstep. */
 	private static final float NOISE_LOUDNESS = 0.6f;
+
+	/**
+	 * The tracer: a thin streak of small warm-yellow dust drawn muzzle-to-impact
+	 * on every shot, mirroring {@link dev.rheava.program7.entity.ai.HitscanImpact#drawTracer}
+	 * but tinted to match the item's glowstone theme rather than the firearms'
+	 * red. Guarantees a pure whiff (nothing in range) still has a visible tell
+	 * beyond the fire sound.
+	 */
+	private static final DustParticleEffect TRACER =
+			new DustParticleEffect(new Vector3f(1.0f, 0.85f, 0.35f), 0.5f);
+	/** Spacing (blocks) between tracer dots — tight, so the streak reads as a continuous line. */
+	private static final double TRACER_SPACING = 0.4;
 
 	public GlowstoneIlluminatorItem(Settings settings) {
 		super(settings);
@@ -115,11 +133,44 @@ public class GlowstoneIlluminatorItem extends Item {
 		ProgramAcoustics.emit(world, user.getPos(), P7Sounds.ILLUMINATOR_FIRE.get(), SoundCategory.PLAYERS, 0.7f, 1.0f);
 		ProgramAcoustics.reportNoise(world, user.getX(), user.getY(), user.getZ(), NOISE_LOUDNESS);
 
+		// Draw the tracer on every shot — hit or miss — so a pure whiff into
+		// open sky (no entity, no block within range) still has a visible
+		// tell beyond the fire sound.
+		Vec3d tracerEnd = entityHit != null ? entityHit.getPos() : beamEnd;
+		drawTracer(world, start, tracerEnd);
+
 		if (entityHit != null && entityHit.getEntity() instanceof LivingEntity target
 				&& !(target instanceof PlayerEntity)) {
 			tagMob(world, target);
 		} else if (blockHit.getType() != HitResult.Type.MISS) {
-			illuminateBlock(world, blockHit);
+			illuminatePoint(world, blockHit.getPos());
+		} else if (entityHit != null) {
+			// Hit something hittable that isn't a taggable living entity
+			// (a boat, a minecart, a player) with no block behind it — fall
+			// through to the same flare a block impact gets rather than
+			// silently consuming the dust with no effect.
+			illuminatePoint(world, entityHit.getPos());
+		}
+	}
+
+	/**
+	 * Draws the visible tracer streak from {@code from} (eye position) to
+	 * {@code to} (where the shot ends up — an entity, a block, or the end of
+	 * its range) as a thin line of small warm-yellow dust. Server-side; call
+	 * once per shot, hit or miss.
+	 */
+	private void drawTracer(ServerWorld world, Vec3d from, Vec3d to) {
+		Vec3d delta = to.subtract(from);
+		double length = delta.length();
+		if (length < 1.0e-4) {
+			return;
+		}
+		int steps = Math.max(2, (int) (length / TRACER_SPACING));
+		Vec3d step = delta.multiply(1.0 / steps);
+		Vec3d point = from;
+		for (int i = 0; i < steps; i++) {
+			point = point.add(step);
+			world.spawnParticles(TRACER, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
 		}
 	}
 
@@ -138,13 +189,14 @@ public class GlowstoneIlluminatorItem extends Item {
 	}
 
 	/**
-	 * A miss still has to land somewhere: a small flare of glow/end-rod
-	 * particles at the impact point. Deliberately just particles for this
-	 * first cut — no light-emitting block placement, keeping the "marker,
-	 * not a base-building tool" brief simple.
+	 * A shot that doesn't tag a mob still has to land somewhere: a small
+	 * flare of glow/end-rod particles at the impact point — whether that's a
+	 * block the beam struck, or a non-living hittable entity (boat,
+	 * minecart) that stopped it with no block behind it. Deliberately just
+	 * particles for this first cut — no light-emitting block placement,
+	 * keeping the "marker, not a base-building tool" brief simple.
 	 */
-	private void illuminateBlock(ServerWorld world, BlockHitResult blockHit) {
-		Vec3d pos = blockHit.getPos();
+	private void illuminatePoint(ServerWorld world, Vec3d pos) {
 		world.spawnParticles(ParticleTypes.GLOW, pos.x, pos.y, pos.z, 10, 0.15, 0.15, 0.15, 0.01);
 		world.spawnParticles(ParticleTypes.END_ROD, pos.x, pos.y, pos.z, 4, 0.1, 0.1, 0.1, 0.01);
 	}
