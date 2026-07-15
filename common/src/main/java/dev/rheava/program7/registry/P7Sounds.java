@@ -88,6 +88,10 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> BLINK_GUN_CHARGE = register("item.ender_pearl_blink_gun.charge");
 	/** The teleport crack itself — played at both the origin and destination of a successful blink. */
 	public static final RegistrySupplier<SoundEvent> BLINK_GUN_WARP = register("item.ender_pearl_blink_gun.warp");
+	/** Salvaged rifle shot report — the loudest player-weapon cue in the arsenal so far; guns attract the network. */
+	public static final RegistrySupplier<SoundEvent> RIFLE_SHOT = registerRanged("item.salvaged_rifle.shot", 128f);
+	/** Sneak + right-click magazine reload clunk. */
+	public static final RegistrySupplier<SoundEvent> RIFLE_RELOAD = register("item.salvaged_rifle.reload");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

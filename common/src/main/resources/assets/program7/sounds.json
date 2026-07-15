@@ -237,6 +237,16 @@
     "subtitle": "subtitles.program7.item.ender_pearl_blink_gun.warp",
     "sounds": [
       { "name": "minecraft:entity.enderman.teleport", "type": "event" }
+  "item.salvaged_rifle.shot": {
+    "subtitle": "subtitles.program7.item.salvaged_rifle.shot",
+    "sounds": [
+      { "name": "minecraft:item.crossbow.shoot", "type": "event" }
+    ]
+  },
+  "item.salvaged_rifle.reload": {
+    "subtitle": "subtitles.program7.item.salvaged_rifle.reload",
+    "sounds": [
+      { "name": "minecraft:item.crossbow.loading_end", "type": "event" }
     ]
   }
 }
