@@ -92,6 +92,8 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> RIFLE_SHOT = registerRanged("item.salvaged_rifle.shot", 128f);
 	/** Sneak + right-click magazine reload clunk. */
 	public static final RegistrySupplier<SoundEvent> RIFLE_RELOAD = register("item.salvaged_rifle.reload");
+	/** Soft confirmation chime on a tracking chip tag or read — a personal cue, not a noise the Program hears. */
+	public static final RegistrySupplier<SoundEvent> TRACKING_CHIP_PING = register("item.tracking_chip.ping");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

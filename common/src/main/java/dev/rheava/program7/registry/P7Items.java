@@ -11,6 +11,7 @@ import dev.rheava.program7.item.DatapadItem;
 import dev.rheava.program7.item.EnderBlinkGunItem;
 import dev.rheava.program7.item.GlowStickItem;
 import dev.rheava.program7.item.SalvagedRifleItem;
+import dev.rheava.program7.item.TrackingChipItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -70,6 +71,13 @@ public final class P7Items {
 	 */
 	public static final RegistrySupplier<Item> ARMOR_PIERCING_BOLT = ITEMS.register("armor_piercing_bolt",
 			() -> new ArmorPiercingBoltItem(new Item.Settings().arch$tab(MAIN_TAB)));
+	 * Reverse-engineered from a {@code transmitter} — mark one target (a
+	 * living entity or a dropped item) and follow it. See {@link
+	 * TrackingChipItem}. Non-stacking like the datapad: it's a personal
+	 * instrument carrying live per-stack state, not a fungible resource.
+	 */
+	public static final RegistrySupplier<Item> TRACKING_CHIP = ITEMS.register("tracking_chip",
+			() -> new TrackingChipItem(new Item.Settings().maxCount(1).arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));

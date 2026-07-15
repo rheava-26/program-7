@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "program7:transmitter" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:copper_ingot" }
+  ],
+  "result": { "id": "program7:tracking_chip", "count": 1 }
+}

@@ -13,6 +13,7 @@
   "item.program7.ender_pearl_blink_gun": "Ender-Pearl Blink Gun",
   "item.program7.salvaged_rifle": "Salvaged Firearm",
   "item.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
+  "item.program7.tracking_chip": "Tracking Chip",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -98,6 +99,13 @@
   "item.program7.charge_laser.tooltip.lens_critical": "Lens critically worn — repair with amethyst shards",
   "item.program7.salvaged_rifle.tooltip.rounds": "Magazine: %1$s / %2$s rounds",
 
+  "item.program7.tracking_chip.tooltip.no_target": "No signal locked — mark a target",
+  "item.program7.tracking_chip.tooltip.locked": "Signal locked",
+  "item.program7.tracking_chip.tagged": "Signal locked: %1$s",
+  "item.program7.tracking_chip.no_target": "No signal locked — right-click a target to mark it",
+  "item.program7.tracking_chip.signal_lost": "Signal lost",
+  "item.program7.tracking_chip.bearing": "Bearing %1$s · %2$sm",
+
   "death.attack.program7.laser": "%1$s was melted down by %2$s's charge laser",
   "death.attack.program7.laser.item": "%1$s was melted down by %2$s using %3$s",
   "death.attack.program7.bullet": "%1$s was shot dead by %2$s",
@@ -166,4 +174,5 @@
   "subtitles.program7.item.ender_pearl_blink_gun.warp": "Space warps"
   "subtitles.program7.item.salvaged_rifle.shot": "Rifle fires",
   "subtitles.program7.item.salvaged_rifle.reload": "Magazine slots home"
+  "subtitles.program7.item.tracking_chip.ping": "Tracking chip chimes"
 }

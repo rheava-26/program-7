@@ -213,9 +213,12 @@ Phases are ordered so every phase ships something playable, and the Director
       (posture, heat bar, off-grid fleet estimate vs in-range count, escalation
       tier, nearest-base bearing) beside a north-up chunk-grid radar; contacts
       are blips coloured by their AlertState toward you, a slow sweep + ~1.5s
-      beep rakes the grid, and hovering gives a per-contact read. TODO: live
-      refresh (currently a frozen snapshot), acoustic deception/bluffing, and
-      research-progress panel
+      beep rakes the grid, and hovering gives a per-contact read. Live-refreshes
+      while open (the screen polls the server a few times a second). Also
+      plots every tracking chip in the player's inventory as a distinct
+      bright "tracked" blip — exact position, not fog/range-limited like an
+      ordinary contact, greyed for a lost signal. TODO: acoustic
+      deception/bluffing, and research-progress panel
 - [x] Onboarding advancements: "Uninvited Guests" (first salvage) and "Know
       Your Enemy" (carry a datapad) — addresses the no-onboarding review gap
       (needs an in-game check; advancement JSON isn't compile-verifiable)
@@ -278,9 +281,22 @@ Phases are ordered so every phase ships something playable, and the Director
       ammo-hungry, slower build-up than bows; early salvage guns ≈ Power
       II–III bow with better range; drones resist firearms, enchanted
       weapons bypass drone armor
-- [ ] Electronics: tracking chips (mark stolen items), glowstone
-      illuminators (glowing on mobs), tracking displays, datapad
-      drone-sensor (heartbeat-monitor style)
+- [x] Tracking chip: transmitter + redstone + copper ingot → 1 chip. Tag a
+      living entity (right-click it) or a nearby dropped item (short
+      raycast, bounded by the block world so a wall stops it) to store its
+      UUID + last-known position on the stack as a data component and glow
+      it for 30s — only on that in-person tag, not on every read, and both
+      actions share a cooldown with a faint reported noise on read so it
+      can't be spammed into a free through-wall wallhack. Right-click the
+      air to read a bearing + distance to the actionbar, refreshing the
+      stored position while the target is loaded or reporting "signal lost"
+      once it isn't. Only ever shows what you personally tagged — not a
+      Program-wide radar. Datapad-screen integration: the datapad's radar
+      now plots every carried chip's stored target directly as a distinct
+      "tracked" blip, exact and not fog-limited, greyed out for a lost
+      signal — see the datapad entry below.
+- [ ] Electronics: glowstone illuminators (glowing on mobs), tracking
+      displays, datapad drone-sensor (heartbeat-monitor style)
 - [ ] Scanner systems: soft X-ray ore overlay from drone scouting, GPR
 - [ ] Automatic MG turret, surface-to-surface missile rack, laser drill,
       thermal vision

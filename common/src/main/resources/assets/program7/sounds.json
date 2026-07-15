@@ -247,6 +247,10 @@
     "subtitle": "subtitles.program7.item.salvaged_rifle.reload",
     "sounds": [
       { "name": "minecraft:item.crossbow.loading_end", "type": "event" }
+  "item.tracking_chip.ping": {
+    "subtitle": "subtitles.program7.item.tracking_chip.ping",
+    "sounds": [
+      { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
     ]
   }
 }
