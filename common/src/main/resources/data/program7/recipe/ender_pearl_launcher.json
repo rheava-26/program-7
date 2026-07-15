@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["eae", "pbp", "iri"],
+  "key": {
+    "e": { "item": "minecraft:ender_eye" },
+    "a": { "item": "minecraft:amethyst_shard" },
+    "p": { "item": "program7:gun_barrel" },
+    "b": { "item": "program7:power_bank" },
+    "i": { "item": "minecraft:iron_ingot" },
+    "r": { "item": "minecraft:redstone" }
+  },
+  "result": { "id": "program7:ender_pearl_launcher", "count": 1 }
+}

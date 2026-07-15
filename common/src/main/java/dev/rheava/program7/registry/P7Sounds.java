@@ -98,6 +98,12 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_FIRE = register("item.glowstone_illuminator.fire");
 	/** Confirmation chime the instant a mob is successfully tagged with GLOWING. */
 	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_TAG = register("item.glowstone_illuminator.tag");
+	/** Ender pearl launcher's rising charge whine while the trigger is held — pitch climbs with charge level (see the item's usageTick). */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_CHARGE = register("item.ender_pearl_launcher.charge");
+	/** The heavy launch thunk when a charged shot is released. */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_LAUNCH = register("item.ender_pearl_launcher.launch");
+	/** Sneak + right-click battery reload clunk. */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_RELOAD = register("item.ender_pearl_launcher.reload");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

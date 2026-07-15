@@ -9,6 +9,7 @@ import dev.rheava.program7.item.ArmorPiercingBoltItem;
 import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
 import dev.rheava.program7.item.EnderBlinkGunItem;
+import dev.rheava.program7.item.EnderPearlLauncherItem;
 import dev.rheava.program7.item.GlowStickItem;
 import dev.rheava.program7.item.SalvagedRifleItem;
 import dev.rheava.program7.item.TrackingChipItem;
@@ -214,6 +215,12 @@ public final class P7Items {
 	 */
 	public static final RegistrySupplier<Item> SALVAGED_RIFLE = ITEMS.register("salvaged_rifle",
 			() -> new SalvagedRifleItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
+	 * A battery-powered charge-up gun that lobs a vanilla ender pearl a very
+	 * long distance — a precision long-range warp tool, not a boss-killer.
+	 * See {@link EnderPearlLauncherItem}.
+	 */
+	public static final RegistrySupplier<Item> ENDER_PEARL_LAUNCHER = ITEMS.register("ender_pearl_launcher",
+			() -> new EnderPearlLauncherItem(new Item.Settings().maxCount(1).rarity(Rarity.RARE).arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();

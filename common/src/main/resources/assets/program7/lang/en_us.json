@@ -15,6 +15,7 @@
   "item.program7.armor_piercing_bolt": "Armor-Piercing Bolt",
   "item.program7.tracking_chip": "Tracking Chip",
   "item.program7.glowstone_illuminator": "Glowstone Illuminator",
+  "item.program7.ender_pearl_launcher": "Ender Pearl Launcher",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -109,6 +110,10 @@
 
   "item.program7.glowstone_illuminator.tooltip": "Tags what it hits with a long-lasting glow — costs glowstone dust per shot",
 
+  "item.program7.ender_pearl_launcher.tooltip.battery": "Battery: %1$s%%",
+  "item.program7.ender_pearl_launcher.tooltip.shots": "Shots remaining: %1$s",
+  "item.program7.ender_pearl_launcher.tooltip.hint": "Hold to charge — release to launch",
+
   "death.attack.program7.laser": "%1$s was melted down by %2$s's charge laser",
   "death.attack.program7.laser.item": "%1$s was melted down by %2$s using %3$s",
   "death.attack.program7.bullet": "%1$s was shot dead by %2$s",
@@ -180,4 +185,7 @@
   "subtitles.program7.item.tracking_chip.ping": "Tracking chip chimes"
   "subtitles.program7.item.glowstone_illuminator.fire": "Illuminator hums",
   "subtitles.program7.item.glowstone_illuminator.tag": "Tag confirmed"
+  "subtitles.program7.item.ender_pearl_launcher.charge": "Launcher whines",
+  "subtitles.program7.item.ender_pearl_launcher.launch": "Launcher thunks",
+  "subtitles.program7.item.ender_pearl_launcher.reload": "Battery slots home"
 }
