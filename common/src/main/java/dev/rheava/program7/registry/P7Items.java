@@ -7,6 +7,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
+import dev.rheava.program7.item.EnderPearlLauncherItem;
 import dev.rheava.program7.item.GlowStickItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -171,6 +172,14 @@ public final class P7Items {
 			ITEMS.register("missile_launcher_spawn_egg",
 					() -> new ArchitecturySpawnEggItem(P7Entities.MISSILE_LAUNCHER, 0x23272b, 0xd9364a,
 							new Item.Settings().arch$tab(MAIN_TAB)));
+
+	/**
+	 * A battery-powered charge-up gun that lobs a vanilla ender pearl a very
+	 * long distance — a precision long-range warp tool, not a boss-killer.
+	 * See {@link EnderPearlLauncherItem}.
+	 */
+	public static final RegistrySupplier<Item> ENDER_PEARL_LAUNCHER = ITEMS.register("ender_pearl_launcher",
+			() -> new EnderPearlLauncherItem(new Item.Settings().maxCount(1).rarity(Rarity.RARE).arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();

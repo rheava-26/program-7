@@ -226,5 +226,23 @@
     "sounds": [
       { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
     ]
+  },
+  "item.ender_pearl_launcher.charge": {
+    "subtitle": "subtitles.program7.item.ender_pearl_launcher.charge",
+    "sounds": [
+      { "name": "minecraft:block.beacon.power_select", "type": "event" }
+    ]
+  },
+  "item.ender_pearl_launcher.launch": {
+    "subtitle": "subtitles.program7.item.ender_pearl_launcher.launch",
+    "sounds": [
+      { "name": "minecraft:item.crossbow.shoot", "type": "event" }
+    ]
+  },
+  "item.ender_pearl_launcher.reload": {
+    "subtitle": "subtitles.program7.item.ender_pearl_launcher.reload",
+    "sounds": [
+      { "name": "minecraft:block.iron_trapdoor.close", "type": "event" }
+    ]
   }
 }

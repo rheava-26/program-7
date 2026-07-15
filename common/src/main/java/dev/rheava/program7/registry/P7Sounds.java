@@ -84,6 +84,13 @@ public final class P7Sounds {
 	/** Chime played once the amethyst lens crosses into "worn" territory. */
 	public static final RegistrySupplier<SoundEvent> LASER_LENS_WARN = register("item.charge_laser.lens_warn");
 
+	/** Ender pearl launcher's rising charge whine while the trigger is held — pitch climbs with charge level (see the item's usageTick). */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_CHARGE = register("item.ender_pearl_launcher.charge");
+	/** The heavy launch thunk when a charged shot is released. */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_LAUNCH = register("item.ender_pearl_launcher.launch");
+	/** Sneak + right-click battery reload clunk. */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_RELOAD = register("item.ender_pearl_launcher.reload");
+
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);
 		return SOUNDS.register(name, () -> SoundEvent.of(id));

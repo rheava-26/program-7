@@ -10,6 +10,7 @@
   "item.program7.datapad": "Datapad",
   "item.program7.glow_stick": "Glow Stick",
   "item.program7.charge_laser": "Charge Laser",
+  "item.program7.ender_pearl_launcher": "Ender Pearl Launcher",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -93,6 +94,10 @@
   "item.program7.charge_laser.tooltip.lens_warn": "Lens worn — repair with amethyst shards soon",
   "item.program7.charge_laser.tooltip.lens_critical": "Lens critically worn — repair with amethyst shards",
 
+  "item.program7.ender_pearl_launcher.tooltip.battery": "Battery: %1$s%%",
+  "item.program7.ender_pearl_launcher.tooltip.shots": "Shots remaining: %1$s",
+  "item.program7.ender_pearl_launcher.tooltip.hint": "Hold to charge — release to launch",
+
   "death.attack.program7.laser": "%1$s was melted down by %2$s's charge laser",
   "death.attack.program7.laser.item": "%1$s was melted down by %2$s using %3$s",
 
@@ -151,5 +156,8 @@
   "subtitles.program7.item.charge_laser.beam_loop": "Laser beam crackles",
   "subtitles.program7.item.charge_laser.overheat": "Laser vents heat",
   "subtitles.program7.item.charge_laser.reload": "Battery slots home",
-  "subtitles.program7.item.charge_laser.lens_warn": "Lens chimes a warning"
+  "subtitles.program7.item.charge_laser.lens_warn": "Lens chimes a warning",
+  "subtitles.program7.item.ender_pearl_launcher.charge": "Launcher whines",
+  "subtitles.program7.item.ender_pearl_launcher.launch": "Launcher thunks",
+  "subtitles.program7.item.ender_pearl_launcher.reload": "Battery slots home"
 }

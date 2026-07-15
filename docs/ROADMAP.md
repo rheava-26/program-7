@@ -272,6 +272,16 @@ Phases are ordered so every phase ships something playable, and the Director
       overheat), amethyst lens wear (repaired with shards in the crafting
       grid) — all on the stack as a data component. See BACKLOG for the
       full damage-routing and resource-economy writeup.
+- [x] Ender pearl launcher: a battery-powered, charge-up gun that lobs a
+      vanilla ender pearl a very long distance, with a landing-prediction
+      laser sight (forward-simulates the pearl's own drag/gravity arc while
+      charging). Vanilla ender pearls already teleport their thrower on
+      impact, so a well-aimed long shot is a precision long-range warp — a
+      mobility/repositioning tool, not a combat weapon (deals no damage).
+      Costs battery (power bank reload, ~4 shots/cell) and exposure time
+      while charging. Covers the *mobility* half of the "ender-pearl gun"
+      line below; the *anti-armor* half (typed damage vs. armored targets)
+      is still open. See BACKLOG for the full writeup.
 - [ ] Reverse-engineering bench: salvage → schematics
 - [ ] Player drones (dyeable, banner patterns)
 - [ ] Hand-built firearms/rifles: loud (gunfire attracts the network),
