@@ -18,7 +18,14 @@ public final class ArmorProfile {
 		BALLISTIC,
 		/** Fast-moving kinetic slams, e.g. arrows/spectral arrows. */
 		HIGH_VELOCITY_IMPACT,
-		/** Armor-piercing punches through plate, e.g. tridents. */
+		/**
+		 * Armor-piercing punches through plate — currently just a trident's
+		 * stabbing thrust. The dedicated anti-vehicle lane: see {@code
+		 * docs/DESIGN.md}'s "Damage & armor is typed" section. (The
+		 * armor-piercing crossbow bolt used to share this bucket too, but it
+		 * has its own {@link #ARMOR_PIERCING} class now — folding it in here
+		 * would have stealth-buffed the trident, which is also PIERCING.)
+		 */
 		PIERCING,
 		/** Explosions. */
 		EXPLOSIVE,
@@ -26,32 +33,57 @@ public final class ArmorProfile {
 		ENCHANTED,
 		/** Plain, unenchanted melee. */
 		MELEE,
+		/**
+		 * Coherent-light weapons — currently just the player's charge laser.
+		 * Deliberately the mirror image of {@link #BALLISTIC}: a naked
+		 * airframe or light hull has nothing to boil the beam off against and
+		 * melts fast, but real plate soaks and disperses it, so hosing an
+		 * armored vehicle down with this is a genuinely bad, battery-wasting
+		 * trade rather than just "a bit less good."
+		 */
+		ENERGY,
+		/**
+		 * A fired {@code ArmorPiercingArrowEntity} (armor-piercing crossbow
+		 * bolt) — the specialist anti-armor round. Deliberately its own
+		 * class, separate from {@link #PIERCING}, so its "ignore the plate"
+		 * profile can't leak onto anything else that happens to share a
+		 * bucket (the trident, notably). Multiplier sits at ~1.0 across
+		 * every {@link ArmorProfile} — armored/heavy units take essentially
+		 * full damage, same as anything unarmored — because the design is
+		 * "armor doesn't help against this," not "this deals bonus damage."
+		 */
+		ARMOR_PIERCING,
 		/** Anything that doesn't fit a more specific bucket. */
 		GENERIC
 	}
 
 	public static final ArmorProfile UNARMORED = new ArmorProfile(
-			1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+			1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.6f, 1.0f, 1.0f);
 
 	public static final ArmorProfile LIGHT = new ArmorProfile(
-			0.9f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+			0.9f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.3f, 1.0f, 1.0f);
 
 	/**
 	 * Bullets bounce off sloped plate, arrows/tridents that slam in transfer
-	 * more, crossbow-AP punches through, and enchanted/psionic weapons bypass
-	 * armor outright.
+	 * more, and enchanted/psionic weapons bypass armor outright. The beam
+	 * fares worst of all here (0.2x) — plate disperses coherent light far
+	 * better than it stops a bullet. The armor-piercing bolt (its own {@link
+	 * DamageClass#ARMOR_PIERCING} class, not {@link DamageClass#PIERCING})
+	 * sits at ~1.0 — the specialist counter that ignores this unit's armor
+	 * rather than merely resisting it less.
 	 */
 	public static final ArmorProfile ARMORED_VEHICLE = new ArmorProfile(
-			0.45f, 1.25f, 0.85f, 1.1f, 1.4f, 0.8f, 0.8f);
+			0.45f, 1.25f, 0.85f, 1.1f, 1.4f, 0.8f, 0.2f, 0.8f, 1.0f);
 
 	/** The toughest hull in the game — even more resistant than a light vehicle. */
 	public static final ArmorProfile HEAVY_HULL = new ArmorProfile(
-			0.35f, 1.15f, 0.8f, 1.0f, 1.3f, 0.7f, 0.7f);
+			0.35f, 1.15f, 0.8f, 1.0f, 1.3f, 0.7f, 0.15f, 0.7f, 1.0f);
 
 	private final float[] multipliers;
 
 	private ArmorProfile(float ballistic, float highVelocityImpact, float piercing,
-			float explosive, float enchanted, float melee, float generic) {
+			float explosive, float enchanted, float melee, float energy, float generic,
+			float armorPiercing) {
 		this.multipliers = new float[DamageClass.values().length];
 		this.multipliers[DamageClass.BALLISTIC.ordinal()] = ballistic;
 		this.multipliers[DamageClass.HIGH_VELOCITY_IMPACT.ordinal()] = highVelocityImpact;
@@ -59,7 +91,9 @@ public final class ArmorProfile {
 		this.multipliers[DamageClass.EXPLOSIVE.ordinal()] = explosive;
 		this.multipliers[DamageClass.ENCHANTED.ordinal()] = enchanted;
 		this.multipliers[DamageClass.MELEE.ordinal()] = melee;
+		this.multipliers[DamageClass.ENERGY.ordinal()] = energy;
 		this.multipliers[DamageClass.GENERIC.ordinal()] = generic;
+		this.multipliers[DamageClass.ARMOR_PIERCING.ordinal()] = armorPiercing;
 	}
 
 	public float multiplierFor(DamageClass damageClass) {

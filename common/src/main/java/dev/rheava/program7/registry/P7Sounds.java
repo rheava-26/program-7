@@ -66,6 +66,44 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> BOAT_ENGINE_LOOP = registerRanged("entity.gunboat.engine_loop", 64f);
 	/** Standoff mining-laser hum — see MineResourceGoal. */
 	public static final RegistrySupplier<SoundEvent> MINING_LASER = registerRanged("entity.mining_drone.laser", 48f);
+	/** Player throws a glow stick — close-quarters cue, default range. */
+	public static final RegistrySupplier<SoundEvent> GLOW_STICK_THROW = register("item.glow_stick.throw");
+	/** A thrown glow stick sticking to a surface. */
+	public static final RegistrySupplier<SoundEvent> GLOW_STICK_STICK = register("block.glow_stick.stick");
+	/** A placed glow stick burning all the way out and going dark. */
+	public static final RegistrySupplier<SoundEvent> GLOW_STICK_FADE = register("block.glow_stick.fade");
+
+	/** Charge laser spin-up whine on the trigger pull, before the beam actually starts. */
+	public static final RegistrySupplier<SoundEvent> LASER_SPINUP = register("item.charge_laser.spinup");
+	/** Periodic crackle while the beam is actively firing. */
+	public static final RegistrySupplier<SoundEvent> LASER_BEAM_LOOP = registerRanged("item.charge_laser.beam_loop", 32f);
+	/** Overheat hiss/klaxon — the beam just locked out until it vents. */
+	public static final RegistrySupplier<SoundEvent> LASER_OVERHEAT = register("item.charge_laser.overheat");
+	/** Sneak + right-click battery reload clunk. */
+	public static final RegistrySupplier<SoundEvent> LASER_RELOAD = register("item.charge_laser.reload");
+	/** Chime played once the amethyst lens crosses into "worn" territory. */
+	public static final RegistrySupplier<SoundEvent> LASER_LENS_WARN = register("item.charge_laser.lens_warn");
+
+	/** Ender-pearl blink gun's emitter discharge cue — plays whether the shot lands a blink or just shoves a target. */
+	public static final RegistrySupplier<SoundEvent> BLINK_GUN_CHARGE = register("item.ender_pearl_blink_gun.charge");
+	/** The teleport crack itself — played at both the origin and destination of a successful blink. */
+	public static final RegistrySupplier<SoundEvent> BLINK_GUN_WARP = register("item.ender_pearl_blink_gun.warp");
+	/** Salvaged rifle shot report — the loudest player-weapon cue in the arsenal so far; guns attract the network. */
+	public static final RegistrySupplier<SoundEvent> RIFLE_SHOT = registerRanged("item.salvaged_rifle.shot", 128f);
+	/** Sneak + right-click magazine reload clunk. */
+	public static final RegistrySupplier<SoundEvent> RIFLE_RELOAD = register("item.salvaged_rifle.reload");
+	/** Soft confirmation chime on a tracking chip tag or read — a personal cue, not a noise the Program hears. */
+	public static final RegistrySupplier<SoundEvent> TRACKING_CHIP_PING = register("item.tracking_chip.ping");
+	/** Glowstone illuminator's shot — a soft glowy hum, not a gunshot; loud-ish so it isn't risk-free to use. */
+	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_FIRE = register("item.glowstone_illuminator.fire");
+	/** Confirmation chime the instant a mob is successfully tagged with GLOWING. */
+	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_TAG = register("item.glowstone_illuminator.tag");
+	/** Ender pearl launcher's rising charge whine while the trigger is held — pitch climbs with charge level (see the item's usageTick). */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_CHARGE = register("item.ender_pearl_launcher.charge");
+	/** The heavy launch thunk when a charged shot is released. */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_LAUNCH = register("item.ender_pearl_launcher.launch");
+	/** Sneak + right-click battery reload clunk. */
+	public static final RegistrySupplier<SoundEvent> LAUNCHER_RELOAD = register("item.ender_pearl_launcher.reload");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

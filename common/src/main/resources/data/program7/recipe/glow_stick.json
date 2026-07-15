@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["gsg", "sgs"],
+  "key": {
+    "g": { "item": "minecraft:glowstone_dust" },
+    "s": { "item": "minecraft:stick" }
+  },
+  "result": { "id": "program7:glow_stick", "count": 16 }
+}

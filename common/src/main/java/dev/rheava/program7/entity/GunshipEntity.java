@@ -1,6 +1,7 @@
 package dev.rheava.program7.entity;
 
 import dev.rheava.program7.entity.ai.BurstGunAttackGoal;
+import dev.rheava.program7.entity.ai.CasBombingGoal;
 import dev.rheava.program7.entity.ai.HoverWanderGoal;
 import dev.rheava.program7.entity.ai.InertialFlightMoveControl;
 import dev.rheava.program7.entity.ai.InvestigateNoiseGoal;
@@ -30,11 +31,14 @@ import net.minecraft.world.World;
  * fat Osprey-derived fuselage on twin ducted rotors, a helicopter tail rotor,
  * and a fluid-traversing belly autocannon.
  *
- * <p>This pass is the airframe's <b>presence + direct-fire belly
- * autocannon</b> only, reusing {@link BurstGunAttackGoal} exactly like
- * {@link HeavyAttackDroneEntity} does, just heavier and reaching further.
- * The CAS bombing run described in the doctrine doc is a later pass wired
- * through the fire-mission system — nothing here depends on it existing.
+ * <p>The airframe's <b>presence + direct-fire belly autocannon</b> reuses
+ * {@link BurstGunAttackGoal} exactly like {@link HeavyAttackDroneEntity}
+ * does, just heavier and reaching further. Close air support — the doctrine
+ * doc's bombing run — is now wired through the fire-mission system as
+ * {@link CasBombingGoal}: a lower-priority {@code FireMissionManager} client
+ * that flies to and bombs a purely indirect designation (an observer's
+ * relay the gunship itself has no line of sight on) whenever the cannon has
+ * no live target of its own to answer with instead.
  *
  * <p>It is, deliberately, the heaviest thing that flies: its
  * {@link InertialFlightMoveControl} mass is set well above the Tier 3 heavy
@@ -44,7 +48,7 @@ import net.minecraft.world.World;
  * simply doesn't override {@link #fleeHealthFraction()}, so the inherited
  * {@code 0.0f} default holds: no {@code RetreatGoal}, fights to the end.
  */
-public class GunshipEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed {
+public class GunshipEntity extends ProgramDroneEntity implements ReloadableWeapon, MagazineFed, IndirectFireUnit {
 	private static final int MAGAZINE_CAPACITY = 40;
 	private static final String NBT_ROUNDS = "RoundsRemaining";
 
@@ -78,6 +82,11 @@ public class GunshipEntity extends ProgramDroneEntity implements ReloadableWeapo
 		// Damage 5.0->17.0/shot (gun-feel + differentiated-rounds pass): HEAVY
 		// caliber, clearly the hardest-hitting round in the arsenal.
 		this.goalSelector.add(0, new BurstGunAttackGoal(this, 0.7, 30.0, 6, 45, 17.0f, RoundClass.HEAVY));
+		// Same priority as the noise investigator, lower than the cannon: the
+		// LOOK/MOVE control conflict with BurstGunAttackGoal means this only
+		// actually starts once the cannon has no live target of its own (see
+		// class doc / CasBombingGoal's own doc).
+		this.goalSelector.add(1, new CasBombingGoal(this));
 		this.goalSelector.add(1, new InvestigateNoiseGoal(this));
 		this.goalSelector.add(2, new HoverWanderGoal(this));
 		this.goalSelector.add(3, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));
@@ -155,6 +164,32 @@ public class GunshipEntity extends ProgramDroneEntity implements ReloadableWeapo
 		}
 		this.roundsRemaining--;
 		return true;
+	}
+
+	@Override
+	public double indirectMinRange() {
+		// No standoff floor: unlike a tube, it flies to the target itself.
+		return 0.0;
+	}
+
+	@Override
+	public double indirectMaxRange() {
+		// Generous — it closes the distance under its own power rather than
+		// needing to already be in range like every fixed/lobbing tube.
+		return 200.0;
+	}
+
+	@Override
+	public double indirectBaseSpread() {
+		// Between the howitzer's rifle precision and the MLRS's shotgun
+		// saturation — a diving-pass release isn't a precision strike.
+		return 1.5;
+	}
+
+	@Override
+	public String battery() {
+		// A single aircraft: no battery concept for CAS.
+		return null;
 	}
 
 	@Override

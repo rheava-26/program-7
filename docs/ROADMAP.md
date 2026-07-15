@@ -213,9 +213,12 @@ Phases are ordered so every phase ships something playable, and the Director
       (posture, heat bar, off-grid fleet estimate vs in-range count, escalation
       tier, nearest-base bearing) beside a north-up chunk-grid radar; contacts
       are blips coloured by their AlertState toward you, a slow sweep + ~1.5s
-      beep rakes the grid, and hovering gives a per-contact read. TODO: live
-      refresh (currently a frozen snapshot), acoustic deception/bluffing, and
-      research-progress panel
+      beep rakes the grid, and hovering gives a per-contact read. Live-refreshes
+      while open (the screen polls the server a few times a second). Also
+      plots every tracking chip in the player's inventory as a distinct
+      bright "tracked" blip — exact position, not fog/range-limited like an
+      ordinary contact, greyed for a lost signal. TODO: acoustic
+      deception/bluffing, and research-progress panel
 - [x] Onboarding advancements: "Uninvited Guests" (first salvage) and "Know
       Your Enemy" (carry a datapad) — addresses the no-onboarding review gap
       (needs an in-game check; advancement JSON isn't compile-verifiable)
@@ -257,15 +260,53 @@ Phases are ordered so every phase ships something playable, and the Director
 
 ## Phase 4 — Reverse Engineering (player tech tree)
 
+- [x] Glow stick: cheap throwable light (glowstone dust + sticks → 16),
+      not a reverse-engineered salvage item but the phase's first
+      player-craftable tool — proves the loop (craft → throw → placed
+      light) before the bench exists. Burns out over a few minutes rather
+      than being permanent lighting; see BACKLOG for the burn-down design.
+- [x] Charge laser: the phase's marquee weapon — gun barrel + power bank +
+      amethyst + diamond. A long-range multitool, not a boss-killer: shreds
+      light/small drones through the ENERGY damage class, is a deliberately
+      bad, battery-wasting trade against armored vehicles, drills faraway
+      blocks respecting hardness, and is an ignition source (fire, TNT
+      priming, ammo/magazine cook-off). Three juggled resources — battery
+      (power bank reload, ~6s/cell), heat (20s continuous fire before
+      overheat), amethyst lens wear (repaired with shards in the crafting
+      grid) — all on the stack as a data component. See BACKLOG for the
+      full damage-routing and resource-economy writeup.
+- [x] Ender pearl launcher: a battery-powered, charge-up gun that lobs a
+      vanilla ender pearl a very long distance, with a landing-prediction
+      laser sight (forward-simulates the pearl's own drag/gravity arc while
+      charging). Vanilla ender pearls already teleport their thrower on
+      impact, so a well-aimed long shot is a precision long-range warp — a
+      mobility/repositioning tool, not a combat weapon (deals no damage).
+      Costs battery (power bank reload, ~4 shots/cell) and exposure time
+      while charging. Covers the *mobility* half of the "ender-pearl gun"
+      line below; the *anti-armor* half (typed damage vs. armored targets)
+      is still open. See BACKLOG for the full writeup.
 - [ ] Reverse-engineering bench: salvage → schematics
 - [ ] Player drones (dyeable, banner patterns)
 - [ ] Hand-built firearms/rifles: loud (gunfire attracts the network),
       ammo-hungry, slower build-up than bows; early salvage guns ≈ Power
       II–III bow with better range; drones resist firearms, enchanted
       weapons bypass drone armor
-- [ ] Electronics: tracking chips (mark stolen items), glowstone
-      illuminators (glowing on mobs), tracking displays, datapad
-      drone-sensor (heartbeat-monitor style)
+- [x] Tracking chip: transmitter + redstone + copper ingot → 1 chip. Tag a
+      living entity (right-click it) or a nearby dropped item (short
+      raycast, bounded by the block world so a wall stops it) to store its
+      UUID + last-known position on the stack as a data component and glow
+      it for 30s — only on that in-person tag, not on every read, and both
+      actions share a cooldown with a faint reported noise on read so it
+      can't be spammed into a free through-wall wallhack. Right-click the
+      air to read a bearing + distance to the actionbar, refreshing the
+      stored position while the target is loaded or reporting "signal lost"
+      once it isn't. Only ever shows what you personally tagged — not a
+      Program-wide radar. Datapad-screen integration: the datapad's radar
+      now plots every carried chip's stored target directly as a distinct
+      "tracked" blip, exact and not fog-limited, greyed out for a lost
+      signal — see the datapad entry below.
+- [ ] Electronics: glowstone illuminators (glowing on mobs), tracking
+      displays, datapad drone-sensor (heartbeat-monitor style)
 - [ ] Scanner systems: soft X-ray ore overlay from drone scouting, GPR
 - [ ] Automatic MG turret, surface-to-surface missile rack, laser drill,
       thermal vision

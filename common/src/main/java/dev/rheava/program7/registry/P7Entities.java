@@ -6,11 +6,15 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
 import dev.rheava.program7.entity.AirUAVEntity;
 import dev.rheava.program7.entity.AntiAirTurretEntity;
+import dev.rheava.program7.entity.ArmorPiercingArrowEntity;
 import dev.rheava.program7.entity.AttackDroneEntity;
 import dev.rheava.program7.entity.AutogunTurretEntity;
 import dev.rheava.program7.entity.BatteryCenterEntity;
+import dev.rheava.program7.entity.BombEntity;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
+import dev.rheava.program7.entity.GlowStickEntity;
+import dev.rheava.program7.entity.GuidedMissileEntity;
 import dev.rheava.program7.entity.GunboatEntity;
 import dev.rheava.program7.entity.GunshipEntity;
 import dev.rheava.program7.entity.HowitzerEntity;
@@ -21,6 +25,9 @@ import dev.rheava.program7.entity.IFVEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumAttackDroneEntity;
 import dev.rheava.program7.entity.MediumMiningDroneEntity;
+import dev.rheava.program7.entity.MissileLauncherEntity;
+import dev.rheava.program7.entity.MlrsLauncherEntity;
+import dev.rheava.program7.entity.MlrsRocketEntity;
 import dev.rheava.program7.entity.MortarEmplacementEntity;
 import dev.rheava.program7.entity.MortarShellEntity;
 import dev.rheava.program7.entity.ReconHelicopterEntity;
@@ -243,6 +250,66 @@ public final class P7Entities {
 							.maxTrackingRange(48)
 							.build("howitzer_shell"));
 
+	/** Tier 3-4 mobile rocket artillery: ripples several unguided rockets rather than lobbing one precise shell. */
+	public static final RegistrySupplier<EntityType<MlrsLauncherEntity>> MLRS_LAUNCHER =
+			ENTITIES.register("mlrs_launcher",
+					() -> EntityType.Builder.create(MlrsLauncherEntity::new, SpawnGroup.MISC)
+							.dimensions(3.9f, 3.5f)
+							.maxTrackingRange(16)
+							.build("mlrs_launcher"));
+
+	/** One bomb out of a CAS aircraft's stick. */
+	public static final RegistrySupplier<EntityType<BombEntity>> BOMB =
+			ENTITIES.register("bomb",
+					() -> EntityType.Builder.<BombEntity>create(BombEntity::new, SpawnGroup.MISC)
+							.dimensions(0.5f, 0.5f)
+							.maxTrackingRange(48)
+							.build("bomb"));
+
+	/** One rocket out of an MLRS ripple. */
+	public static final RegistrySupplier<EntityType<MlrsRocketEntity>> MLRS_ROCKET =
+			ENTITIES.register("mlrs_rocket",
+					() -> EntityType.Builder.<MlrsRocketEntity>create(MlrsRocketEntity::new, SpawnGroup.MISC)
+							.dimensions(0.4f, 0.4f)
+							.maxTrackingRange(48)
+							.build("mlrs_rocket"));
+
+	/** Tier 4-5 mobile precision artillery: a handful of guided missiles that beat the range accuracy floor everything else is stuck under. */
+	public static final RegistrySupplier<EntityType<MissileLauncherEntity>> MISSILE_LAUNCHER =
+			ENTITIES.register("missile_launcher",
+					() -> EntityType.Builder.create(MissileLauncherEntity::new, SpawnGroup.MISC)
+							.dimensions(3.9f, 3.5f)
+							.maxTrackingRange(16)
+							.build("missile_launcher"));
+
+	/** A homing, limited-turn-rate guided missile. */
+	public static final RegistrySupplier<EntityType<GuidedMissileEntity>> GUIDED_MISSILE =
+			ENTITIES.register("guided_missile",
+					() -> EntityType.Builder.<GuidedMissileEntity>create(GuidedMissileEntity::new, SpawnGroup.MISC)
+							.dimensions(0.4f, 0.4f)
+							.maxTrackingRange(64)
+							.build("guided_missile"));
+
+	/** Phase 4's first player tool: a thrown, self-extinguishing light source. */
+	public static final RegistrySupplier<EntityType<GlowStickEntity>> GLOW_STICK =
+			ENTITIES.register("glow_stick",
+					() -> EntityType.Builder.<GlowStickEntity>create(GlowStickEntity::new, SpawnGroup.MISC)
+							.dimensions(0.25f, 0.25f)
+							.maxTrackingRange(32)
+							.build("glow_stick"));
+
+	/**
+	 * The armor-piercing crossbow bolt in flight — the "no build is walled
+	 * out of hurting armor" specialist anti-vehicle answer. See {@link
+	 * dev.rheava.program7.entity.ArmorPiercingArrowEntity}.
+	 */
+	public static final RegistrySupplier<EntityType<ArmorPiercingArrowEntity>> ARMOR_PIERCING_BOLT =
+			ENTITIES.register("armor_piercing_bolt",
+					() -> EntityType.Builder.<ArmorPiercingArrowEntity>create(ArmorPiercingArrowEntity::new, SpawnGroup.MISC)
+							.dimensions(0.5f, 0.5f)
+							.maxTrackingRange(8)
+							.build("armor_piercing_bolt"));
+
 	public static void register() {
 		ENTITIES.register();
 
@@ -273,6 +340,8 @@ public final class P7Entities {
 		EntityAttributeRegistry.register(BATTERY_CENTER, BatteryCenterEntity::createBatteryCenterAttributes);
 		EntityAttributeRegistry.register(GUNSHIP, GunshipEntity::createGunshipAttributes);
 		EntityAttributeRegistry.register(HOWITZER, HowitzerEntity::createHowitzerAttributes);
+		EntityAttributeRegistry.register(MLRS_LAUNCHER, MlrsLauncherEntity::createMlrsLauncherAttributes);
+		EntityAttributeRegistry.register(MISSILE_LAUNCHER, MissileLauncherEntity::createMissileLauncherAttributes);
 	}
 
 	private P7Entities() {

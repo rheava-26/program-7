@@ -9,12 +9,19 @@ import dev.rheava.program7.client.render.AirUAVModel;
 import dev.rheava.program7.client.render.AirUAVRenderer;
 import dev.rheava.program7.client.render.AntiAirTurretModel;
 import dev.rheava.program7.client.render.AntiAirTurretRenderer;
+import dev.rheava.program7.client.render.ArmorPiercingArrowRenderer;
 import dev.rheava.program7.client.render.AttackDroneRenderer;
 import dev.rheava.program7.client.render.AutogunTurretModel;
 import dev.rheava.program7.client.render.AutogunTurretRenderer;
 import dev.rheava.program7.client.render.BatteryCenterModel;
 import dev.rheava.program7.client.render.BatteryCenterRenderer;
+import dev.rheava.program7.client.render.BombModel;
+import dev.rheava.program7.client.render.BombRenderer;
 import dev.rheava.program7.client.render.DropPodRenderer;
+import dev.rheava.program7.client.render.GlowStickModel;
+import dev.rheava.program7.client.render.GlowStickRenderer;
+import dev.rheava.program7.client.render.GuidedMissileModel;
+import dev.rheava.program7.client.render.GuidedMissileRenderer;
 import dev.rheava.program7.client.render.GunboatModel;
 import dev.rheava.program7.client.render.GunboatRenderer;
 import dev.rheava.program7.client.render.GunshipModel;
@@ -37,6 +44,12 @@ import dev.rheava.program7.client.render.MediumAttackDroneModel;
 import dev.rheava.program7.client.render.MediumAttackDroneRenderer;
 import dev.rheava.program7.client.render.MediumMiningDroneModel;
 import dev.rheava.program7.client.render.MediumMiningDroneRenderer;
+import dev.rheava.program7.client.render.MissileLauncherModel;
+import dev.rheava.program7.client.render.MissileLauncherRenderer;
+import dev.rheava.program7.client.render.MlrsLauncherModel;
+import dev.rheava.program7.client.render.MlrsLauncherRenderer;
+import dev.rheava.program7.client.render.MlrsRocketModel;
+import dev.rheava.program7.client.render.MlrsRocketRenderer;
 import dev.rheava.program7.client.render.MortarEmplacementModel;
 import dev.rheava.program7.client.render.MortarEmplacementRenderer;
 import dev.rheava.program7.client.render.MortarShellModel;
@@ -111,6 +124,18 @@ public final class Program7Client {
 				HowitzerModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(HowitzerShellModel.LAYER,
 				HowitzerShellModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(MlrsLauncherModel.LAYER,
+				MlrsLauncherModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(MlrsRocketModel.LAYER,
+				MlrsRocketModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(MissileLauncherModel.LAYER,
+				MissileLauncherModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(GuidedMissileModel.LAYER,
+				GuidedMissileModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(BombModel.LAYER,
+				BombModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(GlowStickModel.LAYER,
+				GlowStickModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
@@ -137,6 +162,13 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.GUNSHIP, GunshipRenderer::new);
 		EntityRendererRegistry.register(P7Entities.HOWITZER, HowitzerRenderer::new);
 		EntityRendererRegistry.register(P7Entities.HOWITZER_SHELL, HowitzerShellRenderer::new);
+		EntityRendererRegistry.register(P7Entities.MLRS_LAUNCHER, MlrsLauncherRenderer::new);
+		EntityRendererRegistry.register(P7Entities.MLRS_ROCKET, MlrsRocketRenderer::new);
+		EntityRendererRegistry.register(P7Entities.MISSILE_LAUNCHER, MissileLauncherRenderer::new);
+		EntityRendererRegistry.register(P7Entities.GUIDED_MISSILE, GuidedMissileRenderer::new);
+		EntityRendererRegistry.register(P7Entities.BOMB, BombRenderer::new);
+		EntityRendererRegistry.register(P7Entities.GLOW_STICK, GlowStickRenderer::new);
+		EntityRendererRegistry.register(P7Entities.ARMOR_PIERCING_BOLT, ArmorPiercingArrowRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,
@@ -149,6 +181,7 @@ public final class Program7Client {
 		// can send it without a separate client-side type registration here.
 		ClientTickEvent.CLIENT_POST.register(InterferenceOverlay::clientTick);
 		ClientGuiEvent.RENDER_HUD.register(InterferenceOverlay::render);
+		ClientGuiEvent.RENDER_HUD.register(ChargeLaserHud::render);
 	}
 
 	private Program7Client() {

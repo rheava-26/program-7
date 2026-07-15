@@ -10,6 +10,7 @@ import dev.rheava.program7.block.DroneWreckBlockEntity;
 import dev.rheava.program7.block.FuelPlantBlockEntity;
 import dev.rheava.program7.block.LaunchCatapultBlockEntity;
 import dev.rheava.program7.block.ProbeCoreBlockEntity;
+import dev.rheava.program7.block.PsionicResearchBlockEntity;
 import dev.rheava.program7.block.StorageDeckBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.RegistryKeys;
@@ -57,6 +58,11 @@ public final class P7BlockEntities {
 			BLOCK_ENTITIES.register("fuel_plant",
 					() -> BlockEntityType.Builder.create(FuelPlantBlockEntity::new,
 							P7Blocks.FUEL_PLANT.get()).build(null));
+
+	public static final RegistrySupplier<BlockEntityType<PsionicResearchBlockEntity>> PSIONIC_RESEARCH =
+			BLOCK_ENTITIES.register("psionic_research",
+					() -> BlockEntityType.Builder.create(PsionicResearchBlockEntity::new,
+							P7Blocks.PSIONIC_RESEARCH.get()).build(null));
 
 	public static void register() {
 		BLOCK_ENTITIES.register();

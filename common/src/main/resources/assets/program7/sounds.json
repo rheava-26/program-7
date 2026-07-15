@@ -2,181 +2,433 @@
   "entity.surveyor_drone.ambient": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.ambient",
     "sounds": [
-      { "name": "minecraft:block.beacon.ambient", "type": "event" }
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event"
+      }
     ]
   },
   "entity.surveyor_drone.alert": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.alert",
     "sounds": [
-      { "name": "minecraft:block.note_block.bit", "type": "event" }
+      {
+        "name": "minecraft:block.note_block.bit",
+        "type": "event"
+      }
     ]
   },
   "entity.surveyor_drone.scan_beep": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.scan_beep",
     "sounds": [
-      { "name": "minecraft:block.note_block.bit", "type": "event" }
+      {
+        "name": "minecraft:block.note_block.bit",
+        "type": "event"
+      }
     ]
   },
   "entity.surveyor_drone.interference": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.interference",
     "sounds": [
-      { "name": "minecraft:entity.elder_guardian.curse", "type": "event" }
+      {
+        "name": "minecraft:entity.elder_guardian.curse",
+        "type": "event"
+      }
     ]
   },
   "entity.surveyor_drone.hurt": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.hurt",
     "sounds": [
-      { "name": "minecraft:entity.iron_golem.hurt", "type": "event" }
+      {
+        "name": "minecraft:entity.iron_golem.hurt",
+        "type": "event"
+      }
     ]
   },
   "entity.surveyor_drone.death": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.death",
     "sounds": [
-      { "name": "minecraft:entity.generic.explode", "type": "event" }
+      {
+        "name": "minecraft:entity.generic.explode",
+        "type": "event"
+      }
     ]
   },
   "entity.surveyor_drone.impact": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.impact",
     "sounds": [
-      { "name": "minecraft:block.anvil.land", "type": "event" }
+      {
+        "name": "minecraft:block.anvil.land",
+        "type": "event"
+      }
     ]
   },
   "entity.surveyor_drone.whir": {
     "subtitle": "subtitles.program7.entity.surveyor_drone.whir",
     "sounds": [
-      { "name": "minecraft:block.conduit.ambient", "type": "event" }
+      {
+        "name": "minecraft:block.conduit.ambient",
+        "type": "event"
+      }
     ]
   },
   "entity.attack_drone.fuse": {
     "subtitle": "subtitles.program7.entity.attack_drone.fuse",
     "sounds": [
-      { "name": "minecraft:entity.creeper.primed", "type": "event" }
+      {
+        "name": "minecraft:entity.creeper.primed",
+        "type": "event"
+      }
     ]
   },
   "event.drop_pod.descent": {
     "subtitle": "subtitles.program7.event.drop_pod.descent",
     "sounds": [
-      { "name": "minecraft:entity.ender_dragon.growl", "type": "event" }
+      {
+        "name": "minecraft:entity.ender_dragon.growl",
+        "type": "event"
+      }
     ]
   },
   "event.drop_pod.impact": {
     "subtitle": "subtitles.program7.event.drop_pod.impact",
     "sounds": [
-      { "name": "minecraft:entity.generic.explode", "type": "event" }
+      {
+        "name": "minecraft:entity.generic.explode",
+        "type": "event"
+      }
     ]
   },
   "unit.gun_fire": {
     "subtitle": "subtitles.program7.unit.gun_fire",
     "sounds": [
-      { "name": "minecraft:entity.firework_rocket.blast", "type": "event" }
+      {
+        "name": "minecraft:entity.firework_rocket.blast",
+        "type": "event"
+      }
     ]
   },
   "unit.sniper_fire": {
     "subtitle": "subtitles.program7.unit.sniper_fire",
     "sounds": [
-      { "name": "minecraft:item.crossbow.shoot", "type": "event" }
+      {
+        "name": "minecraft:item.crossbow.shoot",
+        "type": "event"
+      }
     ]
   },
   "unit.gun_whistle": {
     "subtitle": "subtitles.program7.unit.gun_whistle",
     "sounds": [
-      { "name": "minecraft:entity.arrow.shoot", "type": "event" }
+      {
+        "name": "minecraft:entity.arrow.shoot",
+        "type": "event"
+      }
     ]
   },
   "unit.mortar_fire": {
     "subtitle": "subtitles.program7.unit.mortar_fire",
     "sounds": [
-      { "name": "minecraft:entity.firework_rocket.launch", "type": "event" }
+      {
+        "name": "minecraft:entity.firework_rocket.launch",
+        "type": "event"
+      }
     ]
   },
   "unit.mortar_whistle": {
     "subtitle": "subtitles.program7.unit.mortar_whistle",
     "sounds": [
-      { "name": "minecraft:entity.phantom.swoop", "type": "event" }
+      {
+        "name": "minecraft:entity.phantom.swoop",
+        "type": "event"
+      }
     ]
   },
   "unit.mortar_impact": {
     "subtitle": "subtitles.program7.unit.mortar_impact",
     "sounds": [
-      { "name": "minecraft:entity.generic.explode", "type": "event" }
+      {
+        "name": "minecraft:entity.generic.explode",
+        "type": "event"
+      }
     ]
   },
   "unit.alarm": {
     "subtitle": "subtitles.program7.unit.alarm",
     "sounds": [
-      { "name": "minecraft:block.bell.use", "type": "event" }
+      {
+        "name": "minecraft:block.bell.use",
+        "type": "event"
+      }
     ]
   },
   "block.assembler.working": {
     "subtitle": "subtitles.program7.block.assembler.working",
     "sounds": [
-      { "name": "minecraft:block.smithing_table.use", "type": "event" }
+      {
+        "name": "minecraft:block.smithing_table.use",
+        "type": "event"
+      }
     ]
   },
   "block.assembler.complete": {
     "subtitle": "subtitles.program7.block.assembler.complete",
     "sounds": [
-      { "name": "minecraft:block.anvil.use", "type": "event" }
+      {
+        "name": "minecraft:block.anvil.use",
+        "type": "event"
+      }
     ]
   },
   "block.catapult.launch": {
     "subtitle": "subtitles.program7.block.catapult.launch",
     "sounds": [
-      { "name": "minecraft:block.piston.extend", "type": "event" }
+      {
+        "name": "minecraft:block.piston.extend",
+        "type": "event"
+      }
     ]
   },
   "event.orbital_resupply": {
     "subtitle": "subtitles.program7.event.orbital_resupply",
     "sounds": [
-      { "name": "minecraft:entity.lightning_bolt.thunder", "type": "event" }
+      {
+        "name": "minecraft:entity.lightning_bolt.thunder",
+        "type": "event"
+      }
     ]
   },
   "event.scan_sting": {
     "subtitle": "subtitles.program7.event.scan_sting",
     "sounds": [
-      { "name": "minecraft:entity.elder_guardian.curse", "type": "event" }
+      {
+        "name": "minecraft:entity.elder_guardian.curse",
+        "type": "event"
+      }
     ]
   },
   "event.drones_inbound": {
     "subtitle": "subtitles.program7.event.drones_inbound",
     "sounds": [
-      { "name": "minecraft:event.raid.horn", "type": "event" }
+      {
+        "name": "minecraft:event.raid.horn",
+        "type": "event"
+      }
     ]
   },
   "entity.recon_helicopter.rotor_loop": {
     "subtitle": "subtitles.program7.entity.recon_helicopter.rotor_loop",
     "sounds": [
-      { "name": "minecraft:entity.ravager.step", "type": "event" }
+      {
+        "name": "minecraft:entity.ravager.step",
+        "type": "event"
+      }
     ]
   },
   "entity.air_uav.engine_loop": {
     "subtitle": "subtitles.program7.entity.air_uav.engine_loop",
     "sounds": [
-      { "name": "minecraft:entity.blaze.burn", "type": "event" }
+      {
+        "name": "minecraft:entity.blaze.burn",
+        "type": "event"
+      }
     ]
   },
   "unit.tank_tracks_loop": {
     "subtitle": "subtitles.program7.unit.tank_tracks_loop",
     "sounds": [
-      { "name": "minecraft:entity.ravager.step", "type": "event" }
+      {
+        "name": "minecraft:entity.ravager.step",
+        "type": "event"
+      }
     ]
   },
   "entity.gunboat.engine_loop": {
     "subtitle": "subtitles.program7.entity.gunboat.engine_loop",
     "sounds": [
-      { "name": "minecraft:entity.guardian.ambient", "type": "event" }
+      {
+        "name": "minecraft:entity.guardian.ambient",
+        "type": "event"
+      }
     ]
   },
   "entity.mining_drone.laser": {
     "subtitle": "subtitles.program7.entity.mining_drone.laser",
     "sounds": [
-      { "name": "minecraft:block.beacon.power_select", "type": "event" }
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event"
+      }
     ]
   },
   "unit.weapon_dry_fire": {
     "subtitle": "subtitles.program7.unit.weapon_dry_fire",
     "sounds": [
-      { "name": "minecraft:block.dispenser.fail", "type": "event" }
+      {
+        "name": "minecraft:block.dispenser.fail",
+        "type": "event"
+      }
+    ]
+  },
+  "item.glow_stick.throw": {
+    "subtitle": "subtitles.program7.item.glow_stick.throw",
+    "sounds": [
+      {
+        "name": "minecraft:entity.snowball.throw",
+        "type": "event"
+      }
+    ]
+  },
+  "block.glow_stick.stick": {
+    "subtitle": "subtitles.program7.block.glow_stick.stick",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.place",
+        "type": "event"
+      }
+    ]
+  },
+  "block.glow_stick.fade": {
+    "subtitle": "subtitles.program7.block.glow_stick.fade",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event"
+      }
+    ]
+  },
+  "item.charge_laser.spinup": {
+    "subtitle": "subtitles.program7.item.charge_laser.spinup",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event"
+      }
+    ]
+  },
+  "item.charge_laser.beam_loop": {
+    "subtitle": "subtitles.program7.item.charge_laser.beam_loop",
+    "sounds": [
+      {
+        "name": "minecraft:block.conduit.ambient",
+        "type": "event"
+      }
+    ]
+  },
+  "item.charge_laser.overheat": {
+    "subtitle": "subtitles.program7.item.charge_laser.overheat",
+    "sounds": [
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event"
+      }
+    ]
+  },
+  "item.charge_laser.reload": {
+    "subtitle": "subtitles.program7.item.charge_laser.reload",
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_trapdoor.close",
+        "type": "event"
+      }
+    ]
+  },
+  "item.charge_laser.lens_warn": {
+    "subtitle": "subtitles.program7.item.charge_laser.lens_warn",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event"
+      }
+    ]
+  },
+  "item.ender_pearl_blink_gun.charge": {
+    "subtitle": "subtitles.program7.item.ender_pearl_blink_gun.charge",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event"
+      }
+    ]
+  },
+  "item.ender_pearl_blink_gun.warp": {
+    "subtitle": "subtitles.program7.item.ender_pearl_blink_gun.warp",
+    "sounds": [
+      {
+        "name": "minecraft:entity.enderman.teleport",
+        "type": "event"
+      }
+    ]
+  },
+  "item.salvaged_rifle.shot": {
+    "subtitle": "subtitles.program7.item.salvaged_rifle.shot",
+    "sounds": [
+      {
+        "name": "minecraft:item.crossbow.shoot",
+        "type": "event"
+      }
+    ]
+  },
+  "item.salvaged_rifle.reload": {
+    "subtitle": "subtitles.program7.item.salvaged_rifle.reload",
+    "sounds": [
+      {
+        "name": "minecraft:item.crossbow.loading_end",
+        "type": "event"
+      }
+    ]
+  },
+  "item.tracking_chip.ping": {
+    "subtitle": "subtitles.program7.item.tracking_chip.ping",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event"
+      }
+    ]
+  },
+  "item.glowstone_illuminator.fire": {
+    "subtitle": "subtitles.program7.item.glowstone_illuminator.fire",
+    "sounds": [
+      {
+        "name": "minecraft:entity.glow_squid.ambient",
+        "type": "event"
+      }
+    ]
+  },
+  "item.glowstone_illuminator.tag": {
+    "subtitle": "subtitles.program7.item.glowstone_illuminator.tag",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event"
+      }
+    ]
+  },
+  "item.ender_pearl_launcher.charge": {
+    "subtitle": "subtitles.program7.item.ender_pearl_launcher.charge",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event"
+      }
+    ]
+  },
+  "item.ender_pearl_launcher.launch": {
+    "subtitle": "subtitles.program7.item.ender_pearl_launcher.launch",
+    "sounds": [
+      {
+        "name": "minecraft:item.crossbow.shoot",
+        "type": "event"
+      }
+    ]
+  },
+  "item.ender_pearl_launcher.reload": {
+    "subtitle": "subtitles.program7.item.ender_pearl_launcher.reload",
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_trapdoor.close",
+        "type": "event"
+      }
     ]
   }
 }

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["aga", "pbp", "iri"],
+  "key": {
+    "a": { "item": "minecraft:amethyst_shard" },
+    "g": { "item": "minecraft:diamond" },
+    "p": { "item": "program7:gun_barrel" },
+    "b": { "item": "program7:power_bank" },
+    "i": { "item": "minecraft:iron_ingot" },
+    "r": { "item": "minecraft:redstone" }
+  },
+  "result": { "id": "program7:charge_laser", "count": 1 }
+}

@@ -9,22 +9,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import dev.rheava.program7.Program7;
+import dev.rheava.program7.audio.ProgramAcoustics;
 import dev.rheava.program7.entity.AirUAVEntity;
-import dev.rheava.program7.entity.HowitzerEntity;
+import dev.rheava.program7.entity.IndirectFireUnit;
 import dev.rheava.program7.entity.ProgramDroneEntity;
 import dev.rheava.program7.entity.ReconHelicopterEntity;
 import dev.rheava.program7.entity.ScoutCarEntity;
 import dev.rheava.program7.entity.SurveyorDroneEntity;
+import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -38,25 +46,35 @@ import org.jetbrains.annotations.Nullable;
  * acquisition (three target sources — a live observer, counter-battery, or a
  * player dwell heatmap), ranging walk-in, and the accuracy model (§3) whose
  * error radius grows with <em>chunk</em> distance as a hard floor and tightens
- * with spotting and ranging progress. This pass wires only the howitzer as a
- * client (see {@link dev.rheava.program7.entity.ai.HowitzerAttackGoal}); the
- * manager is deliberately reusable in shape but fields no other unit yet.
+ * with spotting and ranging progress. Any mount implementing {@link
+ * IndirectFireUnit} is a client — the howitzer and mortar first, with the
+ * MLRS, naval, and missile families riding the same generic loop.
  *
- * <p>Only in-loaded-chunk fire is handled here — off-screen statistical
- * resolution (doc §7) is a later pass. Active missions and the dwell grid
- * persist in NBT so a restart mid-barrage resolves rather than dropping shells
- * into the void, the same discipline as {@link VirtualFleet}.
+ * <p><b>Battery fire</b> (doc §4 "several tubes ranging and firing together
+ * on one target"): when several same-{@link IndirectFireUnit#battery()}
+ * tubes stand within {@link #BATTERY_RADIUS} of each other and would
+ * otherwise be assigned the same designation, they're handed the exact same
+ * {@link FireMission} object rather than independent copies — every tube's
+ * shot advances the shared ranging progress, so a battery walks fire in
+ * faster and fires for effect together, denser than any one tube alone.
+ *
+ * <p>A mission whose tube is loaded fires through its own attack goal
+ * (real shell entity, real magazine); one whose tube has unloaded is picked
+ * up here instead by {@link #resolveOffscreenMissions} (doc §7 "off-screen
+ * statistical resolution") — no real projectile, just a rolled impact,
+ * optional real damage if the target chunk happens to be loaded, and always
+ * an acoustic report, so a distant war keeps making noise even with nobody
+ * standing at either end of it. Active missions and the dwell grid persist
+ * in NBT so a restart mid-barrage resolves rather than dropping shells into
+ * the void, the same discipline as {@link VirtualFleet}.
  */
 public final class FireMissionManager {
 	/** Reassess external target sources / missions on this cadence (~1s). Self-observed fire is refreshed live from the goal every tick. */
 	private static final int SCAN_INTERVAL = 20;
-	/** Mirror of {@link dev.rheava.program7.entity.ai.HowitzerAttackGoal}'s standoff window, so the manager only assigns targets a tube could actually service. */
-	private static final double HOWITZER_MIN_RANGE = 24.0;
-	private static final double HOWITZER_MAX_RANGE = 112.0;
+	/** Tubes of the same battery key within this many blocks of each other share one mission. */
+	private static final double BATTERY_RADIUS = 32.0;
 
-	// ---- Accuracy model (§3 CEP). error = baseScale / (spotting * ranging), floored at baseScale * FLOOR so range can never be fully cancelled. ----
-	/** Signature spread of the howitzer at point-blank, before the range term. */
-	private static final double BASE_SPREAD = 1.0;
+	// ---- Accuracy model (§3 CEP). error = baseSpread / (spotting * ranging), floored at baseSpread-scaled range term so range can never be fully cancelled. ----
 	/** How fast the error floor grows with distance, measured in CHUNKS (tight up close, loose far). */
 	private static final double RANGE_FACTOR_PER_CHUNK = 0.6;
 	/** A live observer (eyes-on) divides the error by this — spotting tightens, but see {@link #RANGE_FLOOR_FRACTION}. */
@@ -73,6 +91,19 @@ public final class FireMissionManager {
 	private static final int MISSION_STALE_TICKS = 60;
 	/** No refresh for this long → the mission is dropped entirely. */
 	private static final int MISSION_DROP_TICKS = 200;
+
+	// ---- Off-screen statistical resolution (§7): a mission whose tube isn't loaded still fires, on a coarse generic cadence, without a real shell entity. ----
+	/** How often (ticks) an off-screen mission rolls a statistical shot — coarser than any real tube's own cadence, since this is background simulation, not the main event. */
+	private static final int OFFSCREEN_FIRE_INTERVAL = 200;
+	// Off-screen impact audio reuses P7Sounds.MORTAR_IMPACT's own registered
+	// fixed audible range (192 blocks, see P7Sounds) via ProgramAcoustics —
+	// no separate radius constant needed here.
+	//
+	// Off-screen shooter-position estimate fallback: the target itself, since
+	// an unloaded tube's exact position isn't tracked once its entity unloads.
+	// Range/spotting terms in currentSpread degrade to "just the base spread"
+	// when shooter and target coincide, which is an acceptable simplification
+	// for a barrage the player isn't anywhere near anyway.
 
 	// ---- Counter-battery (§2 acquisition #3): a far-off projectile hit publishes its shooter's position as a short-lived candidate. ----
 	/** A hit closer than this isn't counter-battery — it's just a fight, handled by direct fire. */
@@ -92,13 +123,13 @@ public final class FireMissionManager {
 	/** Hard cap on the grid so it stays lightweight; the coldest cells are pruned past this. */
 	private static final int DWELL_MAX_CELLS = 256;
 
-	// Priority when a howitzer can see several candidate sources: live observer > counter-battery > dwell.
+	// Priority when a tube can see several candidate sources: live observer > counter-battery > dwell.
 	private static final int PRIORITY_OBSERVER = 3;
 	private static final int PRIORITY_COUNTER = 2;
 	private static final int PRIORITY_DWELL = 1;
 
 	private int tickCounter = 0;
-	/** Active missions, keyed by the firing unit's UUID. */
+	/** Active missions, keyed by the firing unit's UUID. Battery-mates share a value reference (see class doc). */
 	private final Map<UUID, FireMission> missions = new HashMap<>();
 	/** Live counter-battery candidates, keyed by the offending player's UUID. */
 	private final Map<UUID, Candidate> counterBattery = new HashMap<>();
@@ -108,7 +139,7 @@ public final class FireMissionManager {
 	/**
 	 * Ticked every tick from the Director; internally throttled to one pass
 	 * every {@link #SCAN_INTERVAL} ticks. Rebuilds the external target sources,
-	 * (re)assigns missions to loaded howitzers, and ages out stale state.
+	 * (re)assigns missions to loaded tubes, and ages out stale state.
 	 * Returns {@code true} when persistent state changed, so the caller knows
 	 * whether to mark dirty.
 	 */
@@ -123,13 +154,14 @@ public final class FireMissionManager {
 		boolean changed = this.expireCounterBattery(now);
 		changed |= this.accumulateDwell(world);
 
-		// One pass over the loaded entities: collect firing units and any recon
-		// observer currently holding eyes on a player (the live-eyes designation).
-		List<HowitzerEntity> howitzers = new ArrayList<>();
+		// One pass over the loaded entities: collect firing units (anything
+		// implementing IndirectFireUnit) and any recon observer currently
+		// holding eyes on a player (the live-eyes designation).
+		List<Tube> tubes = new ArrayList<>();
 		List<Designation> designations = new ArrayList<>();
 		for (Entity entity : world.iterateEntities()) {
-			if (entity instanceof HowitzerEntity howitzer && howitzer.isAlive()) {
-				howitzers.add(howitzer);
+			if (entity instanceof MobEntity mob && mob instanceof IndirectFireUnit unit && mob.isAlive()) {
+				tubes.add(new Tube(mob, unit));
 			} else if (entity instanceof ProgramDroneEntity drone && isObserver(drone)) {
 				ProgramDroneEntity.AlertState alert = drone.getAlertState();
 				if (alert != ProgramDroneEntity.AlertState.TRACKING
@@ -158,12 +190,103 @@ public final class FireMissionManager {
 			designations.add(new Designation(pos, cell.playerId, false, PRIORITY_DWELL));
 		}
 
-		changed |= this.assignMissions(howitzers, designations, now);
+		changed |= this.assignMissions(tubes, designations, now);
+		changed |= this.resolveOffscreenMissions(world, director, now);
 		changed |= this.pruneMissions(world, now);
 		return changed;
 	}
 
-	/** The recon layer the doc points at — anything carrying the AlertState ramp as a spotter, not the howitzer itself. */
+	/**
+	 * The doc's §7 off-screen statistical resolution: a mission whose tube's
+	 * chunk isn't currently loaded can't rely on its attack goal ticking (AI
+	 * only runs on loaded entities), so it would otherwise just sit there
+	 * doing nothing until a player wanders back into range. Instead, on a
+	 * coarse generic cadence (no real magazine to check — the tube entity
+	 * itself isn't loaded to ask), roll a shot statistically: work out an
+	 * impact point from the mission's own CEP, apply real block/entity
+	 * damage if the target's chunk happens to be loaded (typically because a
+	 * <em>different</em> player is standing there even though the gun itself
+	 * is far off), and always broadcast the report so a distant player can
+	 * hear "a barrage over the horizon" even with neither chunk loaded.
+	 *
+	 * <p><b>Known simplification (v1):</b> unlike a loaded tube, this never
+	 * debits the tube's own onboard magazine (inaccessible on an unloaded
+	 * entity) — an off-screen mission fires for free rather than truly
+	 * starving out. It also doesn't defer/replay damage once an unloaded
+	 * target chunk later loads (the doc's "applies... if and when that area
+	 * loads"); a shot rolled while the target is unloaded is simply a report
+	 * with no physical effect. Both are documented gaps, not silent bugs.
+	 */
+	private boolean resolveOffscreenMissions(ServerWorld world, ProgramDirectorState director, long now) {
+		if (this.missions.isEmpty()) {
+			return false;
+		}
+		boolean changed = false;
+		for (Map.Entry<UUID, FireMission> entry : this.missions.entrySet()) {
+			if (world.getEntity(entry.getKey()) != null) {
+				// Loaded — its own attack goal handles real firing.
+				continue;
+			}
+			FireMission mission = entry.getValue();
+			if (mission.targetPos == null) {
+				continue;
+			}
+			mission.offscreenCooldown -= SCAN_INTERVAL;
+			if (mission.offscreenCooldown > 0) {
+				continue;
+			}
+			mission.offscreenCooldown = OFFSCREEN_FIRE_INTERVAL;
+			// A shot just went out for this mission — refresh the idle clock so
+			// a sustained off-screen barrage doesn't get pruned by the same
+			// MISSION_DROP_TICKS TTL that governs a silent, abandoned mission
+			// (see finding: OFFSCREEN_FIRE_INTERVAL == MISSION_DROP_TICKS meant
+			// a mission fired exactly one off-screen shot before being aged
+			// out on the very next scan).
+			mission.lastTouchTick = now;
+			this.resolveStatisticalShot(world, director, mission);
+			changed = true;
+		}
+		return changed;
+	}
+
+	/**
+	 * Rolls one off-screen shot for {@code mission}: a scattered impact point
+	 * around its target (the shooter's exact position isn't tracked once its
+	 * entity unloads, so the spread math degrades to "just the mission's own
+	 * CEP" rather than a true range-scaled figure — an acceptable
+	 * simplification for a barrage the player isn't anywhere near). Real
+	 * damage only lands if the impact's chunk is loaded; the audio always
+	 * broadcasts.
+	 */
+	private void resolveStatisticalShot(ServerWorld world, ProgramDirectorState director, FireMission mission) {
+		Vec3d target = mission.targetPos;
+		double spread = this.currentSpread(mission, target);
+		Vec3d impact = target.add(
+				(world.getRandom().nextDouble() * 2.0 - 1.0) * spread,
+				0.0,
+				(world.getRandom().nextDouble() * 2.0 - 1.0) * spread);
+
+		ProgramAcoustics.emit(world, impact, P7Sounds.MORTAR_IMPACT.get(), SoundCategory.HOSTILE, 1.6f, 0.7f);
+
+		BlockPos impactBlock = BlockPos.ofFloored(impact);
+		boolean chunkLoaded = world.getChunk(impactBlock.getX() >> 4, impactBlock.getZ() >> 4,
+				ChunkStatus.FULL, false) != null;
+		if (chunkLoaded) {
+			World.ExplosionSourceType sourceType = Program7.CONFIG.terrainDestruction
+					? World.ExplosionSourceType.MOB
+					: World.ExplosionSourceType.NONE;
+			world.createExplosion(null, impact.x, impact.y, impact.z, mission.impactPower, sourceType);
+			// The erosion accumulator wants the shell's saturation weight
+			// (1.0-2.0), not its explosion power (2.0-3.4) — a real shell's
+			// AbstractShellEntity#onImpact passes its own saturationWeight()
+			// here too (see finding #5); the two numbers are unrelated.
+			director.getTerrainSaturation().recordImpact(world, impactBlock, mission.saturationWeight);
+		}
+
+		this.onShotFired(mission);
+	}
+
+	/** The recon layer the doc points at — anything carrying the AlertState ramp as a spotter, not a tube itself. */
 	private static boolean isObserver(ProgramDroneEntity drone) {
 		return drone instanceof SurveyorDroneEntity || drone instanceof AirUAVEntity
 				|| drone instanceof ReconHelicopterEntity || drone instanceof ScoutCarEntity;
@@ -237,30 +360,42 @@ public final class FireMissionManager {
 	}
 
 	/**
-	 * For every loaded howitzer that isn't already self-observing a live
-	 * target of its own, pick the highest-priority (then nearest) in-range
-	 * designation and drive its mission onto it.
+	 * For every loaded tube that isn't already self-observing a live target of
+	 * its own, pick the highest-priority (then nearest) in-range designation
+	 * and drive its mission onto it — sharing a battery-mate's mission object
+	 * when one's already firing on the same designation nearby (§4 battery
+	 * fire).
 	 */
-	private boolean assignMissions(List<HowitzerEntity> howitzers, List<Designation> designations, long now) {
-		if (howitzers.isEmpty() || designations.isEmpty()) {
+	private boolean assignMissions(List<Tube> tubes, List<Designation> designations, long now) {
+		if (tubes.isEmpty() || designations.isEmpty()) {
 			return false;
 		}
+		// Live battery key/position for every tube seen this pass — lets
+		// findBatteryMate merge two tubes assigned in the very same scan
+		// (mateBatteryKeyCache/mateBatteryPosCache only cover tubes that
+		// already had a mission as of the *previous* pruneMissions pass, so
+		// on their own they miss two brand-new tubes merging together right
+		// now; see finding #2).
+		Map<UUID, Tube> liveTubes = new HashMap<>();
+		for (Tube tube : tubes) {
+			liveTubes.put(tube.mob().getUuid(), tube);
+		}
 		boolean changed = false;
-		for (HowitzerEntity howitzer : howitzers) {
-			LivingEntity own = howitzer.getTarget();
+		for (Tube tube : tubes) {
+			LivingEntity own = tube.mob().getTarget();
 			if (own != null && own.isAlive()) {
 				// It has line of sight itself — the goal self-designates every
 				// tick; the manager leaves that mission alone here.
 				continue;
 			}
-			Vec3d shooter = howitzer.getPos();
+			Vec3d shooter = tube.mob().getPos();
 			Designation best = null;
 			double bestDistance = 0.0;
 			for (Designation designation : designations) {
 				double dx = designation.pos().x - shooter.x;
 				double dz = designation.pos().z - shooter.z;
 				double distance = Math.sqrt(dx * dx + dz * dz);
-				if (distance < HOWITZER_MIN_RANGE || distance > HOWITZER_MAX_RANGE) {
+				if (distance < tube.spec().indirectMinRange() || distance > tube.spec().indirectMaxRange()) {
 					continue;
 				}
 				if (best == null || designation.priority() > best.priority()
@@ -270,7 +405,14 @@ public final class FireMissionManager {
 				}
 			}
 			if (best != null) {
-				FireMission mission = this.missions.computeIfAbsent(howitzer.getUuid(), id -> new FireMission());
+				FireMission mission = this.missions.get(tube.mob().getUuid());
+				if (mission == null) {
+					FireMission batteryMate = this.findBatteryMate(tube, best, now, liveTubes);
+					mission = batteryMate != null ? batteryMate
+							: new FireMission(tube.spec().indirectBaseSpread(), tube.spec().indirectImpactPower(),
+									tube.spec().indirectSaturationWeight());
+					this.missions.put(tube.mob().getUuid(), mission);
+				}
 				this.applyDesignation(mission, best, now);
 				changed = true;
 			}
@@ -279,11 +421,98 @@ public final class FireMissionManager {
 	}
 
 	/**
+	 * Looks for another live tube already assigned a mission on the same
+	 * target player as {@code designation}, of the same {@link
+	 * IndirectFireUnit#battery()} key and within {@link #BATTERY_RADIUS} of
+	 * {@code tube} — if found, its mission is returned so the new tube joins
+	 * the same battery instead of starting its own independent ranging
+	 * walk-in. The battery key/position lookup prefers {@code liveTubes} (the
+	 * tubes actually seen this scan pass, so two tubes assigned in the very
+	 * same pass still merge) and falls back to {@link #mateBatteryKeyCache}/
+	 * {@link #mateBatteryPosCache} — small per-scan caches rebuilt every
+	 * {@link #pruneMissions} pass (one scan interval, ~1s, behind live) — for
+	 * a candidate mission whose tube isn't in this pass's tube list (e.g. it
+	 * unloaded since).
+	 */
+	@Nullable
+	private FireMission findBatteryMate(Tube tube, Designation designation, long now, Map<UUID, Tube> liveTubes) {
+		String key = tube.spec().battery();
+		if (key == null) {
+			return null;
+		}
+		for (Map.Entry<UUID, FireMission> entry : this.missions.entrySet()) {
+			if (entry.getKey().equals(tube.mob().getUuid())) {
+				continue;
+			}
+			FireMission candidate = entry.getValue();
+			if (candidate.targetPlayerId == null || !candidate.targetPlayerId.equals(designation.playerId())) {
+				continue;
+			}
+			if (now - candidate.lastTouchTick > MISSION_STALE_TICKS) {
+				continue;
+			}
+			Tube liveMate = liveTubes.get(entry.getKey());
+			String mateKey = liveMate != null ? liveMate.spec().battery() : this.mateBatteryKeyCache.get(entry.getKey());
+			if (!key.equals(mateKey)) {
+				continue;
+			}
+			Vec3d matePos = liveMate != null ? liveMate.mob().getPos() : this.mateBatteryPosCache.get(entry.getKey());
+			if (matePos == null || matePos.distanceTo(tube.mob().getPos()) > BATTERY_RADIUS) {
+				continue;
+			}
+			return candidate;
+		}
+		return null;
+	}
+
+	// Small per-scan caches (rebuilt every pruneMissions pass) so
+	// findBatteryMate can check a mission's originating tube's battery key
+	// and position without threading extra state through FireMission itself
+	// (which stays a pure target-state record, not a tube registry).
+	private final Map<UUID, String> mateBatteryKeyCache = new HashMap<>();
+	private final Map<UUID, Vec3d> mateBatteryPosCache = new HashMap<>();
+
+	/**
+	 * Point a mission at a fresh designation, resetting the walk-in when the
+	 * spotting state flips or the target has moved.
+	 *
+	 * <p>Shared-battery guard (§4 finding #4): a self-observing tube calls
+	 * this every tick via {@link #updateSelfObserved}, while a battery-mate
+	 * that itself has no line of sight gets re-pointed at the same shared
+	 * {@link FireMission} once per {@link #SCAN_INTERVAL} through {@link
+	 * #assignMissions} — possibly with a lower-priority, unspotted
+	 * designation (counter-battery/dwell). Applying that lower-priority
+	 * write unconditionally would flip {@code observed} true→false→true and
+	 * re-anchor the target every scan, permanently resetting the walk-in
+	 * even though a mate has real eyes on. A lower-priority designation
+	 * arriving while the mission is currently observed <em>and</em> was
+	 * touched more recently than a full scan interval ago (i.e. something is
+	 * touching it every tick, not just once a scan — only self-observation
+	 * does that) is superseded rather than applied.
+	 */
+	private void applyDesignation(FireMission mission, Designation designation, long now) {
+		if (mission.observed && designation.priority() < mission.priority
+				&& now - mission.lastTouchTick < SCAN_INTERVAL) {
+			return;
+		}
+		if (mission.observed != designation.spotted()) {
+			mission.rangingProgress = 1;
+		}
+		mission.observed = designation.spotted();
+		mission.priority = designation.priority();
+		mission.targetPlayerId = designation.playerId();
+		mission.setTarget(designation.pos(), RANGING_RESET_DISTANCE);
+		mission.lastTouchTick = now;
+	}
+
+	/**
 	 * Age missions out: drop one whose firing unit is gone or long silent, and
 	 * knock a merely-stale one back to wide/unobserved so a lost observer or a
 	 * moved target undoes the walk-in.
 	 */
 	private boolean pruneMissions(ServerWorld world, long now) {
+		this.mateBatteryKeyCache.clear();
+		this.mateBatteryPosCache.clear();
 		if (this.missions.isEmpty()) {
 			return false;
 		}
@@ -293,15 +522,19 @@ public final class FireMissionManager {
 			Map.Entry<UUID, FireMission> entry = iterator.next();
 			Entity shooter = world.getEntity(entry.getKey());
 			// A loaded, confirmed-dead tube: its mission is truly over, drop it.
-			// A null lookup means the howitzer's chunk is merely unloaded, NOT
+			// A null lookup means the tube's chunk is merely unloaded, NOT
 			// that it's gone — keeping the mission is the whole reason it's
 			// persisted in NBT (a barrage has to survive a restart or the tube's
 			// chunk unloading). Those fall through to the idle TTL below, which
 			// ages out a genuinely abandoned mission on its own.
-			if (shooter instanceof HowitzerEntity howitzer && !howitzer.isAlive()) {
-				iterator.remove();
-				changed = true;
-				continue;
+			if (shooter instanceof MobEntity mob && mob instanceof IndirectFireUnit unit) {
+				if (!mob.isAlive()) {
+					iterator.remove();
+					changed = true;
+					continue;
+				}
+				this.mateBatteryKeyCache.put(entry.getKey(), unit.battery());
+				this.mateBatteryPosCache.put(entry.getKey(), mob.getPos());
 			}
 			long idle = now - entry.getValue().lastTouchTick;
 			if (idle > MISSION_DROP_TICKS) {
@@ -317,27 +550,18 @@ public final class FireMissionManager {
 		return changed;
 	}
 
-	/** Point a mission at a fresh designation, resetting the walk-in when the spotting state flips or the target has moved. */
-	private void applyDesignation(FireMission mission, Designation designation, long now) {
-		if (mission.observed != designation.spotted()) {
-			mission.rangingProgress = 1;
-		}
-		mission.observed = designation.spotted();
-		mission.priority = designation.priority();
-		mission.targetPlayerId = designation.playerId();
-		mission.setTarget(designation.pos(), RANGING_RESET_DISTANCE);
-		mission.lastTouchTick = now;
-	}
-
-	// ---- Client (howitzer goal) hooks ----------------------------------------------------------
+	// ---- Client (attack goal) hooks ----------------------------------------------------------
 
 	/**
-	 * Called from the howitzer goal every tick it holds a live line-of-sight
+	 * Called from a tube's attack goal every tick it holds a live line-of-sight
 	 * target: self-observation is the top-priority, eyes-on source, so it
 	 * (re)builds this unit's mission directly rather than waiting on the scan.
 	 */
-	public FireMission updateSelfObserved(HowitzerEntity shooter, LivingEntity target, long now) {
-		FireMission mission = this.missions.computeIfAbsent(shooter.getUuid(), id -> new FireMission());
+	public <T extends MobEntity & IndirectFireUnit> FireMission updateSelfObserved(T shooter, LivingEntity target,
+			long now) {
+		FireMission mission = this.missions.computeIfAbsent(shooter.getUuid(),
+				id -> new FireMission(shooter.indirectBaseSpread(), shooter.indirectImpactPower(),
+						shooter.indirectSaturationWeight()));
 		this.applyDesignation(mission,
 				new Designation(target.getPos(), target.getUuid(), true, PRIORITY_OBSERVER), now);
 		return mission;
@@ -345,7 +569,7 @@ public final class FireMissionManager {
 
 	/** The mission currently assigned to {@code shooter}, or null if it has nothing to fire on. */
 	@Nullable
-	public FireMission missionFor(HowitzerEntity shooter) {
+	public FireMission missionFor(Entity shooter) {
 		return this.missions.get(shooter.getUuid());
 	}
 
@@ -358,12 +582,12 @@ public final class FireMissionManager {
 	public double currentSpread(FireMission mission, Vec3d shooterPos) {
 		Vec3d target = mission.targetPos;
 		if (target == null) {
-			return BASE_SPREAD;
+			return mission.baseSpread;
 		}
 		double dx = target.x - shooterPos.x;
 		double dz = target.z - shooterPos.z;
 		double chunks = Math.sqrt(dx * dx + dz * dz) / 16.0;
-		double rangeScale = BASE_SPREAD * (1.0 + chunks * RANGE_FACTOR_PER_CHUNK);
+		double rangeScale = mission.baseSpread * (1.0 + chunks * RANGE_FACTOR_PER_CHUNK);
 		double spotting = mission.observed ? SPOTTING_TIGHTEN : 1.0;
 		double error = rangeScale / (spotting * mission.rangingProgress);
 		double floor = rangeScale * RANGE_FLOOR_FRACTION;
@@ -374,7 +598,9 @@ public final class FireMissionManager {
 	 * Report that {@code mission} just put a round downrange. Fire only walks
 	 * in while an observer keeps eyes on (§2 step 3), so an unobserved mission
 	 * (counter-battery / dwell, no live spotter) never tightens — it stays a
-	 * wide ranging shot until a spotter arrives.
+	 * wide ranging shot until a spotter arrives. Battery-mates share the same
+	 * {@link FireMission} object, so any tube's shot advances the walk-in for
+	 * the whole battery.
 	 */
 	public void onShotFired(FireMission mission) {
 		if (mission != null && mission.observed && mission.rangingProgress < MAX_RANGING_STEPS) {
@@ -434,6 +660,10 @@ public final class FireMissionManager {
 			if (!missionTag.containsUuid("Shooter")) {
 				continue;
 			}
+			// Battery-sharing is a live-scan optimization (see class doc); a
+			// restart flattens shared missions back to one independent object
+			// per shooter, which the next scan will re-share if they're still
+			// firing on the same designation.
 			this.missions.put(missionTag.getUuid("Shooter"), FireMission.fromNbt(missionTag));
 		}
 
@@ -451,6 +681,10 @@ public final class FireMissionManager {
 	}
 
 	// ---- Data ----------------------------------------------------------------------------------
+
+	/** One candidate firing unit for this scan pass — the loaded mob plus its {@link IndirectFireUnit} facet. */
+	private record Tube(MobEntity mob, IndirectFireUnit spec) {
+	}
 
 	/** A candidate target position for one scan pass. */
 	private record Designation(Vec3d pos, UUID playerId, boolean spotted, int priority) {
@@ -480,7 +714,9 @@ public final class FireMissionManager {
 	/**
 	 * One indirect-fire mission's live state (doc §2/§3): where it's shooting,
 	 * whether a spotter has eyes on, how far the walk-in has advanced, and the
-	 * anchor position the walk-in resets against when the target moves.
+	 * anchor position the walk-in resets against when the target moves. Shared
+	 * by every tube in a battery (see class doc) — there is one of these per
+	 * <em>mission</em>, not strictly per tube.
 	 */
 	public static final class FireMission {
 		@Nullable
@@ -494,10 +730,36 @@ public final class FireMissionManager {
 		private boolean observed;
 		private int priority;
 		private long lastTouchTick;
+		/** This mission's signature CEP (§3) — set from the owning tube's {@link IndirectFireUnit#indirectBaseSpread()} when the mission is created. */
+		private double baseSpread;
+		/** Roughly how big a bang this mission's munition makes — set from {@link IndirectFireUnit#indirectImpactPower()}; used only by off-screen statistical resolution, which has no real shell entity to ask. */
+		private float impactPower;
+		/** How much this mission's munition feeds {@code TerrainSaturation} per hit — set from {@link IndirectFireUnit#indirectSaturationWeight()}; used only by off-screen statistical resolution (see {@link #resolveStatisticalShot}), which has no real shell entity's own {@code saturationWeight()} to ask. */
+		private float saturationWeight;
+		/** Ticks until the next off-screen statistical shot, decremented only while this mission's tube is unloaded (see {@link #resolveOffscreenMissions}). Persisted so a restart mid-barrage doesn't reset the clock and prune the mission before its first off-screen shot (see class doc). */
+		private int offscreenCooldown = OFFSCREEN_FIRE_INTERVAL;
+
+		private FireMission(double baseSpread, float impactPower, float saturationWeight) {
+			this.baseSpread = baseSpread;
+			this.impactPower = impactPower;
+			this.saturationWeight = saturationWeight;
+		}
 
 		@Nullable
 		public Vec3d targetPos() {
 			return this.targetPos;
+		}
+
+		/**
+		 * The live target player's UUID, if this mission currently has one —
+		 * the guided-missile family (see {@code MissileAttackGoal}) resolves
+		 * this against the world to home in on the actual entity rather than
+		 * a fixed point, when the mission is currently spotted (see {@link
+		 * #isObserved()}).
+		 */
+		@Nullable
+		public UUID targetPlayerId() {
+			return this.targetPlayerId;
 		}
 
 		public boolean isObserved() {
@@ -540,11 +802,23 @@ public final class FireMissionManager {
 			tag.putBoolean("Observed", this.observed);
 			tag.putInt("Priority", this.priority);
 			tag.putLong("LastTouch", this.lastTouchTick);
+			tag.putDouble("BaseSpread", this.baseSpread);
+			tag.putFloat("ImpactPower", this.impactPower);
+			tag.putFloat("SaturationWeight", this.saturationWeight);
+			tag.putInt("OffscreenCooldown", this.offscreenCooldown);
 			return tag;
 		}
 
 		private static FireMission fromNbt(NbtCompound tag) {
-			FireMission mission = new FireMission();
+			FireMission mission = new FireMission(tag.contains("BaseSpread") ? tag.getDouble("BaseSpread") : 1.0,
+					tag.contains("ImpactPower") ? tag.getFloat("ImpactPower") : 2.0f,
+					tag.contains("SaturationWeight") ? tag.getFloat("SaturationWeight") : 1.0f);
+			// Persisted so a restart mid-barrage resumes the off-screen fire
+			// clock where it left off rather than snapping back to a full
+			// OFFSCREEN_FIRE_INTERVAL — see the field doc and finding #1.
+			mission.offscreenCooldown = tag.contains("OffscreenCooldown")
+					? tag.getInt("OffscreenCooldown")
+					: OFFSCREEN_FIRE_INTERVAL;
 			if (tag.containsUuid("Target")) {
 				mission.targetPlayerId = tag.getUuid("Target");
 			}

@@ -17,11 +17,15 @@ import net.minecraft.network.packet.CustomPayload;
  * fleet estimate, escalation tier, nearest-base bearing), a list of
  * {@link Contact} blips — each a Program unit within datapad range, given as
  * an offset from the player so the client can plot it on the chunk grid, its
- * alert stage (does it know about you yet?), and a coarse type guess — and an
- * {@link Incoming} artillery warning (the acoustic-intelligence hook from
- * ARTILLERY_AND_INDIRECT_FIRE.md §5/§9: a shell is in the air toward you).
+ * alert stage (does it know about you yet?), and a coarse type guess — a list
+ * of {@link Tracked} blips gathered from the player's own carried tracking
+ * chips (see {@code DatapadItem#trackedFor}, {@code TrackingChipItem}) — the
+ * player's own intel, exact and not fog-limited by datapad range like an
+ * ordinary contact — and an {@link Incoming} artillery warning (the
+ * acoustic-intelligence hook from ARTILLERY_AND_INDIRECT_FIRE.md §5/§9: a
+ * shell is in the air toward you).
  */
-public record DatapadSnapshotPayload(Header header, List<Contact> contacts, Incoming incoming)
+public record DatapadSnapshotPayload(Header header, List<Contact> contacts, List<Tracked> tracked, Incoming incoming)
 		implements CustomPayload {
 	public static final CustomPayload.Id<DatapadSnapshotPayload> ID =
 			new CustomPayload.Id<>(Program7.id("datapad_snapshot"));
@@ -65,6 +69,28 @@ public record DatapadSnapshotPayload(Header header, List<Contact> contacts, Inco
 	}
 
 	/**
+	 * A tracking-chip blip: the exact position of one target a player's own
+	 * carried {@code TrackingChipItem} stack has marked, gathered straight off
+	 * the item stack's stored {@code TrackingChipTarget} component rather than
+	 * fog-limited/range-filtered like an ordinary {@link Contact}.
+	 *
+	 * @param relX world X offset from the player (blocks) — the target's live
+	 *             resolved position if it's currently loaded, alive, and in
+	 *             the same dimension, otherwise its last-known stored position
+	 * @param relZ see {@link #relX}
+	 * @param live whether {@code relX}/{@code relZ} is a live resolved
+	 *             position or a stale last-known fix — the chip's own
+	 *             "signal lost" condition, so the client can grey the marker
+	 */
+	public record Tracked(float relX, float relZ, boolean live) {
+		public static final PacketCodec<RegistryByteBuf, Tracked> CODEC = PacketCodec.tuple(
+				PacketCodecs.FLOAT, Tracked::relX,
+				PacketCodecs.FLOAT, Tracked::relZ,
+				PacketCodecs.BOOL, Tracked::live,
+				Tracked::new);
+	}
+
+	/**
 	 * The incoming-artillery warning down the datapad's status rail. A shell in
 	 * the air whose flight path passes near the player surfaces here so the
 	 * player gets the §5 fairness telegraph on the readout as well as by ear.
@@ -89,6 +115,7 @@ public record DatapadSnapshotPayload(Header header, List<Contact> contacts, Inco
 	public static final PacketCodec<RegistryByteBuf, DatapadSnapshotPayload> CODEC = PacketCodec.tuple(
 			Header.CODEC, DatapadSnapshotPayload::header,
 			Contact.CODEC.collect(PacketCodecs.toList()), DatapadSnapshotPayload::contacts,
+			Tracked.CODEC.collect(PacketCodecs.toList()), DatapadSnapshotPayload::tracked,
 			Incoming.CODEC, DatapadSnapshotPayload::incoming,
 			DatapadSnapshotPayload::new);
 

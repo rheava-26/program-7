@@ -5,7 +5,15 @@ import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.rheava.program7.Program7;
+import dev.rheava.program7.item.ArmorPiercingBoltItem;
+import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
+import dev.rheava.program7.item.EnderBlinkGunItem;
+import dev.rheava.program7.item.EnderPearlLauncherItem;
+import dev.rheava.program7.item.GlowStickItem;
+import dev.rheava.program7.item.SalvagedRifleItem;
+import dev.rheava.program7.item.TrackingChipItem;
+import dev.rheava.program7.item.GlowstoneIlluminatorItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -45,8 +53,45 @@ public final class P7Items {
 	public static final RegistrySupplier<Item> DATAPAD = ITEMS.register("datapad",
 			() -> new DatapadItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
 
+	/** Phase 4's first player-craftable tool — a cheap, throwable, self-extinguishing light. Cheap enough to toss freely. */
+	public static final RegistrySupplier<Item> GLOW_STICK = ITEMS.register("glow_stick",
+			() -> new GlowStickItem(new Item.Settings().maxCount(16).arch$tab(MAIN_TAB)));
+
+	/**
+	 * Phase 4's marquee weapon — a long-range multitool that shreds light
+	 * drones, drills faraway blocks, and is an ignition source, but is
+	 * explicitly not the anti-armor answer. See {@link ChargeLaserItem}.
+	 */
+	public static final RegistrySupplier<Item> CHARGE_LASER = ITEMS.register("charge_laser",
+			() -> new ChargeLaserItem(new Item.Settings().maxCount(1).rarity(Rarity.RARE).arch$tab(MAIN_TAB)));
+
+	/**
+	 * The anti-armor specialist ammo: a vanilla-crossbow-loadable bolt (see
+	 * {@link ArmorPiercingBoltItem}) that shreds armored vehicles and is
+	 * unremarkable against everything else. Craft-and-carry deliberately,
+	 * not a default loadout.
+	 */
+	public static final RegistrySupplier<Item> ARMOR_PIERCING_BOLT = ITEMS.register("armor_piercing_bolt",
+			() -> new ArmorPiercingBoltItem(new Item.Settings().arch$tab(MAIN_TAB)));
+	 * Reverse-engineered from a {@code transmitter} — mark one target (a
+	 * living entity or a dropped item) and follow it. See {@link
+	 * TrackingChipItem}. Non-stacking like the datapad: it's a personal
+	 * instrument carrying live per-stack state, not a fungible resource.
+	 */
+	public static final RegistrySupplier<Item> TRACKING_CHIP = ITEMS.register("tracking_chip",
+			() -> new TrackingChipItem(new Item.Settings().maxCount(1).arch$tab(MAIN_TAB)));
+	 * A mob-tracking chip launcher, not a weapon: right-click hitscan-tags
+	 * whatever it hits with a long GLOWING status so it's trackable through
+	 * walls. Costs a glowstone dust per shot and stays on a short cooldown —
+	 * see {@link GlowstoneIlluminatorItem}.
+	 */
+	public static final RegistrySupplier<Item> GLOWSTONE_ILLUMINATOR = ITEMS.register("glowstone_illuminator",
+			() -> new GlowstoneIlluminatorItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
+
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> PSIONIC_RESEARCH_ITEM = ITEMS.register("psionic_research",
+			() -> new BlockItem(P7Blocks.PSIONIC_RESEARCH.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> ASSEMBLER = ITEMS.register("assembler",
 			() -> new BlockItem(P7Blocks.ASSEMBLER.get(), new Item.Settings().arch$tab(MAIN_TAB)));
 	public static final RegistrySupplier<Item> LAUNCH_CATAPULT = ITEMS.register("launch_catapult",
@@ -148,6 +193,34 @@ public final class P7Items {
 	public static final RegistrySupplier<Item> HOWITZER_SPAWN_EGG = ITEMS.register("howitzer_spawn_egg",
 			() -> new ArchitecturySpawnEggItem(P7Entities.HOWITZER, 0x23272b, 0x53592e,
 					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> MLRS_LAUNCHER_SPAWN_EGG = ITEMS.register("mlrs_launcher_spawn_egg",
+			() -> new ArchitecturySpawnEggItem(P7Entities.MLRS_LAUNCHER, 0x23272b, 0xb0562c,
+					new Item.Settings().arch$tab(MAIN_TAB)));
+	public static final RegistrySupplier<Item> MISSILE_LAUNCHER_SPAWN_EGG =
+			ITEMS.register("missile_launcher_spawn_egg",
+					() -> new ArchitecturySpawnEggItem(P7Entities.MISSILE_LAUNCHER, 0x23272b, 0xd9364a,
+							new Item.Settings().arch$tab(MAIN_TAB)));
+
+	/**
+	 * A controlled ender pearl reverse-engineered from the Program's own drone
+	 * teleport logistics — a fun, cooldown-gated mobility toy, not an escape
+	 * button. See {@link EnderBlinkGunItem}.
+	 */
+	public static final RegistrySupplier<Item> ENDER_PEARL_BLINK_GUN = ITEMS.register("ender_pearl_blink_gun",
+			() -> new EnderBlinkGunItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
+	 * The bread-and-butter player weapon — a semi-auto hitscan rifle built
+	 * from salvage. Powerful, but LOUD and ammo-hungry, and routed through
+	 * the {@code BALLISTIC} damage class so armored drones resist it — that's
+	 * the anti-armor lane's job, not this gun's. See {@link SalvagedRifleItem}.
+	 */
+	public static final RegistrySupplier<Item> SALVAGED_RIFLE = ITEMS.register("salvaged_rifle",
+			() -> new SalvagedRifleItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
+	 * A battery-powered charge-up gun that lobs a vanilla ender pearl a very
+	 * long distance — a precision long-range warp tool, not a boss-killer.
+	 * See {@link EnderPearlLauncherItem}.
+	 */
+	public static final RegistrySupplier<Item> ENDER_PEARL_LAUNCHER = ITEMS.register("ender_pearl_launcher",
+			() -> new EnderPearlLauncherItem(new Item.Settings().maxCount(1).rarity(Rarity.RARE).arch$tab(MAIN_TAB)));
 
 	public static void register() {
 		TABS.register();

@@ -1,13 +1,16 @@
 package dev.rheava.program7.item;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import dev.architectury.networking.NetworkManager;
 import dev.rheava.program7.director.ProgramDirectorState;
+import dev.rheava.program7.entity.AbstractShellEntity;
 import dev.rheava.program7.entity.AirUAVEntity;
 import dev.rheava.program7.entity.HarvesterDroneEntity;
-import dev.rheava.program7.entity.HowitzerShellEntity;
 import dev.rheava.program7.entity.LogisticsDroneEntity;
 import dev.rheava.program7.entity.MediumMiningDroneEntity;
 import dev.rheava.program7.entity.ProgramDroneEntity;
@@ -18,6 +21,8 @@ import dev.rheava.program7.entity.SurveyorDroneEntity;
 import dev.rheava.program7.entity.TransportDroneEntity;
 import dev.rheava.program7.entity.WheeledHaulerEntity;
 import dev.rheava.program7.network.DatapadSnapshotPayload;
+import dev.rheava.program7.registry.P7DataComponents;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -33,9 +38,11 @@ import net.minecraft.util.math.MathHelper;
  * Reading it (right-click) opens the v2 radar screen: a chunk-grid sweep of
  * everything the Program knows about the area, its posture/heat, the size of
  * the off-screen fleet, the escalation tier, and a bearing to the nearest
- * known base. All of that is resolved server-side here and pushed to the
- * client as a {@link DatapadSnapshotPayload}; the client opens the screen
- * when it arrives.
+ * known base — plus, see {@link #trackedFor}, every target the player has
+ * personally marked with a {@link TrackingChipItem}, plotted as an exact,
+ * non-fog-limited blip. All of that is resolved server-side here and pushed
+ * to the client as a {@link DatapadSnapshotPayload}; the client opens the
+ * screen when it arrives.
  */
 public class DatapadItem extends Item {
 	/** Radar reach: everything within this many blocks of the player is plotted (~7 chunks). */
@@ -99,25 +106,71 @@ public class DatapadItem extends Item {
 				state.currentTierEstimate(),
 				baseYaw,
 				baseDistance);
-		return new DatapadSnapshotPayload(header, contacts, incomingFor(player));
+		return new DatapadSnapshotPayload(header, contacts, trackedFor(player), incomingFor(player));
 	}
 
 	/**
-	 * The §5/§9 inbound-artillery telegraph: scan for a howitzer shell in the
-	 * air whose flight path closes to within {@link #WARN_NEAR_RADIUS} of the
-	 * player, and report the most imminent one as a rough bearing (the direction
-	 * it's coming from) and an ETA in seconds. Closest-horizontal-approach math
-	 * on the shell's own velocity, so it fires the warning while the round is
-	 * still climbing — the datapad half of the whistle the player already hears.
+	 * The datapad's DATAPAD INTEGRATION for the tracking chip: scan the
+	 * player's whole inventory (main + armor + offhand, same {@code
+	 * getInventory().size()} sweep as {@code ChargeLaserItem#findPowerBank})
+	 * for every {@link TrackingChipItem} stack carrying a stored {@link
+	 * TrackingChipTarget}, and resolve each one's <em>current</em> position
+	 * directly — independent of whether the chip itself has been read
+	 * recently. Unlike {@link #snapshotFor}'s {@link DatapadSnapshotPayload.Contact}
+	 * list this isn't range-limited or fog-limited: it's the player's own
+	 * marked intel, so the datapad shows it exactly, wherever it is. A target
+	 * that's currently loaded, alive, and in this dimension resolves live; a
+	 * dead, unloaded, or cross-dimension target falls back to the chip's
+	 * last-known stored position and is flagged {@code live = false} so the
+	 * client can grey it as "signal lost", mirroring {@code
+	 * TrackingChipItem#read}'s own null/isAlive handling. Duplicate chips
+	 * tracking the same target only ever produce one blip.
+	 */
+	private static List<DatapadSnapshotPayload.Tracked> trackedFor(ServerPlayerEntity player) {
+		ServerWorld serverWorld = player.getServerWorld();
+		List<DatapadSnapshotPayload.Tracked> tracked = new ArrayList<>();
+		Set<UUID> seen = new HashSet<>();
+
+		for (int i = 0; i < player.getInventory().size(); i++) {
+			ItemStack stack = player.getInventory().getStack(i);
+			if (!(stack.getItem() instanceof TrackingChipItem)) {
+				continue;
+			}
+			TrackingChipTarget target = stack.get(P7DataComponents.TRACKING_CHIP_TARGET);
+			if (target == null || !seen.add(target.targetUuid())) {
+				continue;
+			}
+
+			Entity found = serverWorld.getEntity(target.targetUuid());
+			boolean live = found != null && found.isAlive();
+			double x = live ? found.getX() : target.lastX();
+			double z = live ? found.getZ() : target.lastZ();
+
+			double dx = x - player.getX();
+			double dz = z - player.getZ();
+			tracked.add(new DatapadSnapshotPayload.Tracked((float) dx, (float) dz, live));
+		}
+		return tracked;
+	}
+
+	/**
+	 * The §5/§9 inbound-artillery telegraph: scan for any indirect-fire
+	 * munition (every {@link AbstractShellEntity} subclass — howitzer, mortar,
+	 * rocket, missile, naval, bomb) in the air whose flight path closes to
+	 * within {@link #WARN_NEAR_RADIUS} of the player, and report the most
+	 * imminent one as a rough bearing (the direction it's coming from) and an
+	 * ETA in seconds. Closest-horizontal-approach math on the shell's own
+	 * velocity, so it fires the warning while the round is still climbing —
+	 * the datapad half of the whistle the player already hears.
 	 */
 	private static DatapadSnapshotPayload.Incoming incomingFor(ServerPlayerEntity player) {
 		ServerWorld world = player.getServerWorld();
-		List<HowitzerShellEntity> shells = world.getEntitiesByClass(HowitzerShellEntity.class,
+		List<AbstractShellEntity> shells = world.getEntitiesByClass(AbstractShellEntity.class,
 				player.getBoundingBox().expand(WARN_DETECT_RADIUS), e -> true);
 
-		HowitzerShellEntity soonest = null;
+		AbstractShellEntity soonest = null;
 		double soonestTicks = Double.MAX_VALUE;
-		for (HowitzerShellEntity shell : shells) {
+		for (AbstractShellEntity shell : shells) {
 			double vx = shell.getVelocity().x;
 			double vz = shell.getVelocity().z;
 			double speedSq = vx * vx + vz * vz;

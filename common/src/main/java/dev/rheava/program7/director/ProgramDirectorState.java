@@ -1,6 +1,7 @@
 package dev.rheava.program7.director;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -221,6 +222,10 @@ public class ProgramDirectorState extends PersistentState {
 	private final SupplyNetwork supplyNetwork = new SupplyNetwork();
 	/** Indirect-fire missions end to end (see {@link FireMissionManager} / ARTILLERY_AND_INDIRECT_FIRE.md §8). */
 	private final FireMissionManager fireMissionManager = new FireMissionManager();
+	/** The bombardment-saturation / terrain-erosion accumulator (see {@link TerrainSaturation} / ARTILLERY_AND_INDIRECT_FIRE.md §5a). */
+	private final TerrainSaturation terrainSaturation = new TerrainSaturation();
+	/** Player reverse-engineering progression — the psionic research building and its meter (see {@link ResearchTree} / RESEARCH_TREE.md). */
+	private final ResearchTree researchTree = new ResearchTree();
 	/**
 	 * The resource ledger. The Program spends this to field units and (in
 	 * later phases) refills it by actually mining. An empty ledger means no
@@ -345,6 +350,14 @@ public class ProgramDirectorState extends PersistentState {
 		}
 
 		if (this.fireMissionManager.tick(world, this)) {
+			this.markDirty();
+		}
+
+		if (this.terrainSaturation.tick(world)) {
+			this.markDirty();
+		}
+
+		if (this.researchTree.tick(world, this)) {
 			this.markDirty();
 		}
 	}
@@ -1154,6 +1167,19 @@ public class ProgramDirectorState extends PersistentState {
 		return this.fireMissionManager;
 	}
 
+	public TerrainSaturation getTerrainSaturation() {
+		return this.terrainSaturation;
+	}
+
+	public ResearchTree getResearchTree() {
+		return this.researchTree;
+	}
+
+	/** Read-only view for {@link ResearchTree}'s own building-placement search — the Program's known core sites. */
+	public List<BlockPos> getCoreSites() {
+		return Collections.unmodifiableList(this.coreSites);
+	}
+
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		nbt.putInt("GlobalThreat", this.globalThreat);
@@ -1220,6 +1246,8 @@ public class ProgramDirectorState extends PersistentState {
 		nbt.put("VirtualFleet", this.virtualFleet.toNbt(registryLookup));
 		nbt.put("SupplyNetwork", this.supplyNetwork.toNbt());
 		nbt.put("FireMissions", this.fireMissionManager.toNbt());
+		nbt.put("TerrainSaturation", this.terrainSaturation.toNbt());
+		nbt.put("ResearchTree", this.researchTree.toNbt());
 		return nbt;
 	}
 
@@ -1297,6 +1325,12 @@ public class ProgramDirectorState extends PersistentState {
 		}
 		if (nbt.contains("FireMissions")) {
 			state.fireMissionManager.readNbt(nbt.getCompound("FireMissions"));
+		}
+		if (nbt.contains("TerrainSaturation")) {
+			state.terrainSaturation.readNbt(nbt.getCompound("TerrainSaturation"));
+		}
+		if (nbt.contains("ResearchTree")) {
+			state.researchTree.readNbt(nbt.getCompound("ResearchTree"));
 		}
 		return state;
 	}

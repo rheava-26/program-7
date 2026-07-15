@@ -14,13 +14,16 @@ import dev.rheava.program7.block.CrateBlock;
 import dev.rheava.program7.block.DroneWreckBlock;
 import dev.rheava.program7.block.PowerCellBlock;
 import dev.rheava.program7.block.FuelPlantBlock;
+import dev.rheava.program7.block.GlowStickBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.PlatingBlock;
 import dev.rheava.program7.block.ProbeCoreBlock;
+import dev.rheava.program7.block.PsionicResearchBlock;
 import dev.rheava.program7.block.StorageDeckBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.BlockSoundGroup;
 
@@ -176,6 +179,41 @@ public final class P7Blocks {
 					.sounds(BlockSoundGroup.NETHERITE)
 					.luminance(state -> 6)
 					.nonOpaque()));
+
+	/**
+	 * The single strategic choke point behind every Tier 4+ capability — the
+	 * psionic research building (see {@link
+	 * dev.rheava.program7.director.ResearchTree}). Tuned between the assembler
+	 * and the probe core: a real siege target, not a drive-by kill.
+	 */
+	public static final RegistrySupplier<Block> PSIONIC_RESEARCH = BLOCKS.register("psionic_research",
+			() -> new PsionicResearchBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GRAY)
+					.strength(14.0f, 350.0f)
+					.requiresTool()
+					.sounds(BlockSoundGroup.NETHERITE)
+					.luminance(state -> 9)));
+
+	/**
+	 * The placed form of a thrown glow stick — no {@code BlockItem}, since
+	 * {@link dev.rheava.program7.item.GlowStickItem} is the only player-facing
+	 * form; this only ever appears via {@link
+	 * dev.rheava.program7.entity.GlowStickEntity} sticking to a surface.
+	 * Luminance steps down with {@link GlowStickBlock#STAGE} as it burns out.
+	 */
+	public static final RegistrySupplier<Block> GLOW_STICK = BLOCKS.register("glow_stick",
+			() -> new GlowStickBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GOLD)
+					.noCollision()
+					.breakInstantly()
+					.sounds(BlockSoundGroup.GLASS)
+					.luminance(state -> GlowStickBlock.luminanceForStage(state.get(GlowStickBlock.STAGE)))
+					.nonOpaque()
+					// Same reason vanilla torches use this: a piston can't carry the
+					// position-keyed scheduled-tick burn-down chain, so letting a piston
+					// relocate the block instead of destroying it would orphan that chain
+					// and leave a permanent light-12 block behind.
+					.pistonBehavior(PistonBehavior.DESTROY)));
 
 	public static void register() {
 		BLOCKS.register();

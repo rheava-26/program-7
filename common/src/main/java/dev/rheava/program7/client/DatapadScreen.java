@@ -55,6 +55,11 @@ public final class DatapadScreen extends Screen {
 			0xFFE83838, // TRACKING — red
 			0xFFFF2020, // ENGAGING — hot red
 	};
+	/** A tracking-chip blip's own colour axis — deliberately outside the alert palette so it reads as "your intel," not a contact. */
+	private static final int TRACKED_LIVE_COLOR = 0xFFFFD23F;
+	private static final int TRACKED_LIVE_RING = 0xFFFFFFFF;
+	/** Signal-lost tracked marker: dim, no bright ring — a last-known fix, not a live read. */
+	private static final int TRACKED_LOST_COLOR = 0xFF5A6470;
 	private static final String[] ALERT_LABELS = {
 			"Unaware", "Suspicious", "Searching", "Tracking", "Engaging"};
 	private static final String[] GUESS_LABELS = {
@@ -273,10 +278,47 @@ public final class DatapadScreen extends Screen {
 			}
 		}
 
+		// Tracked blips — the player's own tracking-chip intel, exact and not
+		// range/fog-limited like a Contact above (see DatapadItem#trackedFor),
+		// so they're drawn as a distinct bright diamond-with-ring "pin" instead
+		// of a plain dot, and can land clamped to the scope's edge if the mark
+		// is out of the radar's normal range. A lost signal (see
+		// DatapadSnapshotPayload.Tracked#live) still plots its last-known fix,
+		// just greyed and without the bright ring, mirroring the tracking
+		// chip's own "signal lost" read instead of vanishing outright.
+		DatapadSnapshotPayload.Tracked hoveredTracked = null;
+		int thx = 0;
+		int thy = 0;
+		for (DatapadSnapshotPayload.Tracked t : this.snapshot.tracked()) {
+			int bx = cx + Math.round(t.relX() * scale);
+			int by = cy + Math.round(t.relZ() * scale);
+			bx = MathHelper.clamp(bx, rx + 2, rx + side - 4);
+			by = MathHelper.clamp(by, ry + 2, ry + side - 4);
+			int color = t.live() ? TRACKED_LIVE_COLOR : TRACKED_LOST_COLOR;
+
+			// Diamond pin, bigger than a plain contact dot.
+			context.fill(bx, by - 3, bx + 1, by + 4, color);
+			context.fill(bx - 1, by - 2, bx + 2, by + 3, color);
+			context.fill(bx - 2, by - 1, bx + 3, by + 2, color);
+			if (t.live()) {
+				context.drawBorder(bx - 3, by - 4, 7, 7, TRACKED_LIVE_RING);
+			}
+
+			if (mouseX >= bx - 3 && mouseX <= bx + 4 && mouseY >= by - 4 && mouseY <= by + 5) {
+				hoveredTracked = t;
+				thx = bx;
+				thy = by;
+			}
+		}
+
 		// Player, always on top, dead centre.
 		context.fill(cx - 2, cy - 2, cx + 2, cy + 2, PLAYER_COLOR);
 
-		if (hovered != null) {
+		// Tracked-blip tooltip wins over a regular contact's if both are
+		// hovered — it's drawn on top, so it should win the hover too.
+		if (hoveredTracked != null) {
+			context.drawTooltip(this.textRenderer, trackedTooltip(hoveredTracked), thx, thy);
+		} else if (hovered != null) {
 			context.drawTooltip(this.textRenderer, contactTooltip(hovered), hx, hy);
 		}
 	}
@@ -292,6 +334,16 @@ public final class DatapadScreen extends Screen {
 		String sees = alert >= 3 ? "yes" : alert == 2 ? "closing in" : alert == 1 ? "not yet" : "no";
 		lines.add(Text.literal("Has your position: " + sees).formatted(Formatting.DARK_GRAY));
 		int dist = Math.round(MathHelper.sqrt(c.relX() * c.relX() + c.relZ() * c.relZ()));
+		lines.add(Text.literal("Range: ~" + dist + "m").formatted(Formatting.DARK_GRAY));
+		return lines;
+	}
+
+	private static List<Text> trackedTooltip(DatapadSnapshotPayload.Tracked t) {
+		List<Text> lines = new ArrayList<>();
+		lines.add(Text.literal("Tracked target").formatted(Formatting.GOLD));
+		lines.add(Text.literal(t.live() ? "Signal: live" : "Signal: lost (last known)")
+				.formatted(t.live() ? Formatting.GREEN : Formatting.GRAY));
+		int dist = Math.round(MathHelper.sqrt(t.relX() * t.relX() + t.relZ() * t.relZ()));
 		lines.add(Text.literal("Range: ~" + dist + "m").formatted(Formatting.DARK_GRAY));
 		return lines;
 	}
