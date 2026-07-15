@@ -226,5 +226,17 @@
     "sounds": [
       { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
     ]
+  },
+  "item.glowstone_illuminator.fire": {
+    "subtitle": "subtitles.program7.item.glowstone_illuminator.fire",
+    "sounds": [
+      { "name": "minecraft:entity.glow_squid.ambient", "type": "event" }
+    ]
+  },
+  "item.glowstone_illuminator.tag": {
+    "subtitle": "subtitles.program7.item.glowstone_illuminator.tag",
+    "sounds": [
+      { "name": "minecraft:block.amethyst_block.chime", "type": "event" }
+    ]
   }
 }

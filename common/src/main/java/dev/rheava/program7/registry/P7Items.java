@@ -8,6 +8,7 @@ import dev.rheava.program7.Program7;
 import dev.rheava.program7.item.ChargeLaserItem;
 import dev.rheava.program7.item.DatapadItem;
 import dev.rheava.program7.item.GlowStickItem;
+import dev.rheava.program7.item.GlowstoneIlluminatorItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -58,6 +59,15 @@ public final class P7Items {
 	 */
 	public static final RegistrySupplier<Item> CHARGE_LASER = ITEMS.register("charge_laser",
 			() -> new ChargeLaserItem(new Item.Settings().maxCount(1).rarity(Rarity.RARE).arch$tab(MAIN_TAB)));
+
+	/**
+	 * A mob-tracking chip launcher, not a weapon: right-click hitscan-tags
+	 * whatever it hits with a long GLOWING status so it's trackable through
+	 * walls. Costs a glowstone dust per shot and stays on a short cooldown —
+	 * see {@link GlowstoneIlluminatorItem}.
+	 */
+	public static final RegistrySupplier<Item> GLOWSTONE_ILLUMINATOR = ITEMS.register("glowstone_illuminator",
+			() -> new GlowstoneIlluminatorItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON).arch$tab(MAIN_TAB)));
 
 	public static final RegistrySupplier<Item> PROBE_CORE_ITEM = ITEMS.register("probe_core",
 			() -> new BlockItem(P7Blocks.PROBE_CORE.get(), new Item.Settings().arch$tab(MAIN_TAB)));

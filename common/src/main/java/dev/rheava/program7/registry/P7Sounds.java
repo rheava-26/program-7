@@ -84,6 +84,11 @@ public final class P7Sounds {
 	/** Chime played once the amethyst lens crosses into "worn" territory. */
 	public static final RegistrySupplier<SoundEvent> LASER_LENS_WARN = register("item.charge_laser.lens_warn");
 
+	/** Glowstone illuminator's shot — a soft glowy hum, not a gunshot; loud-ish so it isn't risk-free to use. */
+	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_FIRE = register("item.glowstone_illuminator.fire");
+	/** Confirmation chime the instant a mob is successfully tagged with GLOWING. */
+	public static final RegistrySupplier<SoundEvent> ILLUMINATOR_TAG = register("item.glowstone_illuminator.tag");
+
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);
 		return SOUNDS.register(name, () -> SoundEvent.of(id));
