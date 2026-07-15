@@ -3,6 +3,7 @@ package dev.rheava.program7.item;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import dev.rheava.program7.audio.ProgramAcoustics;
@@ -19,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
@@ -93,6 +95,8 @@ public class EnderPearlLauncherItem extends Item {
 	private static final int MAX_PREDICTION_TICKS = 200;
 	/** Only every Nth simulated point gets a beam particle — a full-resolution line is unnecessary and needlessly expensive. */
 	private static final int PATH_PARTICLE_STRIDE = 3;
+	/** Beam particles don't start until this far from the eye, so a dust particle doesn't spawn in the shooter's face every tick. */
+	private static final double BEAM_START_OFFSET = 1.5;
 
 	private static final int PARTICLE_INTERVAL_TICKS = 2;
 	private static final int CHARGE_SOUND_INTERVAL_TICKS = 8;
@@ -101,6 +105,8 @@ public class EnderPearlLauncherItem extends Item {
 	private static final float LAUNCH_NOISE_LOUDNESS = 0.8f;
 	/** Short kick-back cooldown after a launch — not a balance lever (battery already gates spam), just gun feel. */
 	private static final int LAUNCH_COOLDOWN_TICKS = 15;
+	/** Debounce on the dry-click sound/reject so sub-{@link #MIN_CHARGE_FRACTION} tap-spam can't machine-gun it. */
+	private static final int DRY_FIRE_COOLDOWN_TICKS = 10;
 
 	public EnderPearlLauncherItem(Settings settings) {
 		super(settings.component(P7DataComponents.ENDER_PEARL_LAUNCHER_STATE, EnderPearlLauncherState.DEFAULT));
@@ -171,6 +177,9 @@ public class EnderPearlLauncherItem extends Item {
 		if (!world.isClient) {
 			world.playSound(null, user.getX(), user.getY(), user.getZ(), P7Sounds.WEAPON_DRY_FIRE.get(),
 					SoundCategory.PLAYERS, 0.6f, 1.0f);
+			// Debounce: without this, releasing under MIN_CHARGE_FRACTION over and over (or tapping with an
+			// empty battery) re-triggers use()/onStoppedUsing() every tick and machine-guns the click sound.
+			user.getItemCooldownManager().set(this, DRY_FIRE_COOLDOWN_TICKS);
 		}
 	}
 
@@ -197,7 +206,8 @@ public class EnderPearlLauncherItem extends Item {
 			Vec3d look = player.getRotationVec(1.0f);
 			Vec3d velocity = look.multiply(previewSpeed);
 			PredictedLanding landing = this.predictLanding(serverWorld, player, muzzle, velocity);
-			this.drawLaserSight(serverWorld, landing);
+			// usageTick only runs server-side (guarded above), where PlayerEntity is always ServerPlayerEntity.
+			this.drawLaserSight(serverWorld, (ServerPlayerEntity) player, landing);
 		}
 		if (elapsed % CHARGE_SOUND_INTERVAL_TICKS == 0) {
 			// Pitch climbs with charge — the "rising whine" cue.
@@ -253,21 +263,41 @@ public class EnderPearlLauncherItem extends Item {
 
 	// ---- laser sight: forward-simulated landing prediction --------------------
 
-	private record PredictedLanding(List<Vec3d> path, Vec3d impact) {
+	/**
+	 * {@code impact} is {@code null} when the sim never actually landed —
+	 * ran off loaded terrain or hit {@link #MAX_PREDICTION_TICKS} still
+	 * airborne. In both cases the shot is "beyond what we can predict," not
+	 * "predicted to land in mid-air," so {@link #drawLaserSight} must not
+	 * draw a landing marker at the last simulated point.
+	 */
+	private record PredictedLanding(List<Vec3d> path, @Nullable Vec3d impact) {
 	}
 
 	/**
 	 * Steps the pearl's own physics (drag then gravity, matching {@code
 	 * ThrownEntity}'s integration order — see {@link BallisticSolver}'s doc)
 	 * forward from {@code start} at {@code velocity}, one simulated tick at a
-	 * time, until it would enter a non-air block. That coarse per-tick check
-	 * is deliberately cheap (no collision-shape math) since it runs up to
-	 * {@link #MAX_PREDICTION_TICKS} times a call; the final short segment
-	 * gets one precise {@link World#raycast} to pin down the exact impact
-	 * point, the same idiom {@link ChargeLaserItem#usageTick} uses for its
-	 * beam. A single entity-collision check across the whole resolved path
-	 * (not one per simulated tick) then lets a mob standing in the arc
-	 * pre-empt the block landing, without paying for a box search every tick.
+	 * time. Unlike a naive "check the block at each endpoint" sim, every
+	 * single tick gets its own real {@link World#raycast} of that tick's
+	 * segment with {@link RaycastContext.ShapeType#COLLIDER} — which is what
+	 * a real thrown pearl actually collides against, so it (a) can't tunnel
+	 * through a thin wall between two sampled points, and (b) naturally
+	 * passes straight through tall grass, flowers, crops, and water, since
+	 * none of those have a collision shape, instead of falsely stopping on
+	 * them the way an "isAir()" check would.
+	 *
+	 * <p>Entities are checked the same way — per segment, not as one straight
+	 * chord from the muzzle to wherever the sim ends up — because a lobbed
+	 * arc sits above that chord for most of its flight; a chord test would
+	 * miss mobs the arc actually passes over/through and could false-hit
+	 * ones it never gets near. Whichever of the block or entity check fires
+	 * first within a given segment wins that tick.
+	 *
+	 * <p>Before sampling a tick's endpoint, its chunk must already be
+	 * loaded — if not, the sim stops right there (as "can't predict this
+	 * far," not "lands here") rather than force-loading chunks out to
+	 * {@link #MAX_PREDICTION_TICKS} ticks' worth of distance every couple of
+	 * ticks the trigger is held.
 	 */
 	private PredictedLanding predictLanding(ServerWorld world, PlayerEntity shooter, Vec3d start, Vec3d velocity) {
 		List<Vec3d> path = new ArrayList<>();
@@ -275,39 +305,72 @@ public class EnderPearlLauncherItem extends Item {
 		Vec3d vel = velocity;
 		path.add(pos);
 
-		Vec3d blockImpact = null;
+		Vec3d impact = null;
 		for (int tick = 0; tick < MAX_PREDICTION_TICKS; tick++) {
 			Vec3d next = pos.add(vel);
-			if (!world.getBlockState(BlockPos.ofFloored(next)).isAir()) {
-				BlockHitResult refined = world.raycast(new RaycastContext(pos, next,
-						RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, shooter));
-				blockImpact = refined.getType() == HitResult.Type.MISS ? next : refined.getPos();
-				path.add(blockImpact);
+
+			if (!world.isChunkLoaded(BlockPos.ofFloored(next))) {
+				// Ran off the edge of loaded terrain — beyond what the sim can answer for. No marker.
 				break;
 			}
+
+			BlockHitResult blockHit = world.raycast(new RaycastContext(pos, next,
+					RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, shooter));
+			Vec3d blockImpact = blockHit.getType() == HitResult.Type.BLOCK ? blockHit.getPos() : null;
+
+			Box segmentBox = new Box(pos, next).expand(1.0);
+			EntityHitResult entityHit = ProjectileUtil.getEntityCollision(world, shooter, pos, next, segmentBox,
+					candidate -> candidate != shooter && candidate.canHit());
+			Vec3d entityImpact = entityHit != null ? entityHit.getPos() : null;
+
+			Vec3d segmentImpact = closerOf(pos, blockImpact, entityImpact);
+			if (segmentImpact != null) {
+				impact = segmentImpact;
+				path.add(impact);
+				break;
+			}
+
 			path.add(next);
 			pos = next;
 			vel = new Vec3d(vel.x * BallisticSolver.DRAG, vel.y * BallisticSolver.DRAG - PREDICTION_GRAVITY,
 					vel.z * BallisticSolver.DRAG);
 		}
-		Vec3d endpoint = blockImpact != null ? blockImpact : pos;
-
-		Box searchBox = new Box(start, endpoint).expand(1.0);
-		EntityHitResult entityHit = ProjectileUtil.getEntityCollision(world, shooter, start, endpoint, searchBox,
-				candidate -> candidate != shooter && candidate.canHit());
-		Vec3d impact = entityHit != null ? entityHit.getPos() : endpoint;
 		return new PredictedLanding(path, impact);
 	}
 
-	private void drawLaserSight(ServerWorld world, PredictedLanding landing) {
+	/** Picks whichever of two (possibly absent) hit points is nearer {@code from} — the one the arc reaches first. */
+	@Nullable
+	private static Vec3d closerOf(Vec3d from, @Nullable Vec3d a, @Nullable Vec3d b) {
+		if (a == null) {
+			return b;
+		}
+		if (b == null) {
+			return a;
+		}
+		return from.squaredDistanceTo(a) <= from.squaredDistanceTo(b) ? a : b;
+	}
+
+	private void drawLaserSight(ServerWorld world, ServerPlayerEntity shooter, PredictedLanding landing) {
 		DustParticleEffect beamColor = new DustParticleEffect(new Vector3f(0.55f, 0.15f, 0.85f), 0.9f);
 		List<Vec3d> path = landing.path();
+		Vec3d muzzle = path.get(0);
+		double startOffsetSq = BEAM_START_OFFSET * BEAM_START_OFFSET;
+		// Per-viewer, force = true: ServerWorld#spawnParticles(ParticleEffect, ...) only reaches players within
+		// 32 blocks of the particle, which silently swallows the far end of a 300-block sight line. This overload
+		// sends straight to the shooter regardless of distance.
 		for (int i = 0; i < path.size(); i += PATH_PARTICLE_STRIDE) {
 			Vec3d point = path.get(i);
-			world.spawnParticles(beamColor, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
+			if (point.squaredDistanceTo(muzzle) < startOffsetSq) {
+				// Skip points right at the eye so a dust particle doesn't spawn in the shooter's face every tick.
+				continue;
+			}
+			world.spawnParticles(shooter, beamColor, true, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
 		}
 		Vec3d impact = landing.impact();
-		world.spawnParticles(ParticleTypes.END_ROD, impact.x, impact.y + 0.15, impact.z, 8, 0.2, 0.1, 0.2, 0.01);
+		if (impact != null) {
+			world.spawnParticles(shooter, ParticleTypes.END_ROD, true, impact.x, impact.y + 0.15, impact.z,
+					8, 0.2, 0.1, 0.2, 0.01);
+		}
 	}
 
 	// ---- use-action plumbing -----------------------------------------------
