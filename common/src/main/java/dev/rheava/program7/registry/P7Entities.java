@@ -12,6 +12,7 @@ import dev.rheava.program7.entity.BatteryCenterEntity;
 import dev.rheava.program7.entity.BombEntity;
 import dev.rheava.program7.entity.DropPodEntity;
 import dev.rheava.program7.entity.GroundDroneEntity;
+import dev.rheava.program7.entity.GlowStickEntity;
 import dev.rheava.program7.entity.GuidedMissileEntity;
 import dev.rheava.program7.entity.GunboatEntity;
 import dev.rheava.program7.entity.GunshipEntity;
@@ -287,6 +288,14 @@ public final class P7Entities {
 							.dimensions(0.4f, 0.4f)
 							.maxTrackingRange(64)
 							.build("guided_missile"));
+
+	/** Phase 4's first player tool: a thrown, self-extinguishing light source. */
+	public static final RegistrySupplier<EntityType<GlowStickEntity>> GLOW_STICK =
+			ENTITIES.register("glow_stick",
+					() -> EntityType.Builder.<GlowStickEntity>create(GlowStickEntity::new, SpawnGroup.MISC)
+							.dimensions(0.25f, 0.25f)
+							.maxTrackingRange(32)
+							.build("glow_stick"));
 
 	public static void register() {
 		ENTITIES.register();

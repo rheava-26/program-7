@@ -178,5 +178,23 @@
     "sounds": [
       { "name": "minecraft:block.dispenser.fail", "type": "event" }
     ]
+  },
+  "item.glow_stick.throw": {
+    "subtitle": "subtitles.program7.item.glow_stick.throw",
+    "sounds": [
+      { "name": "minecraft:entity.snowball.throw", "type": "event" }
+    ]
+  },
+  "block.glow_stick.stick": {
+    "subtitle": "subtitles.program7.block.glow_stick.stick",
+    "sounds": [
+      { "name": "minecraft:block.amethyst_block.place", "type": "event" }
+    ]
+  },
+  "block.glow_stick.fade": {
+    "subtitle": "subtitles.program7.block.glow_stick.fade",
+    "sounds": [
+      { "name": "minecraft:block.glass.break", "type": "event" }
+    ]
   }
 }

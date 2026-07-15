@@ -14,6 +14,7 @@ import dev.rheava.program7.block.CrateBlock;
 import dev.rheava.program7.block.DroneWreckBlock;
 import dev.rheava.program7.block.PowerCellBlock;
 import dev.rheava.program7.block.FuelPlantBlock;
+import dev.rheava.program7.block.GlowStickBlock;
 import dev.rheava.program7.block.LaunchCatapultBlock;
 import dev.rheava.program7.block.PlatingBlock;
 import dev.rheava.program7.block.ProbeCoreBlock;
@@ -191,6 +192,22 @@ public final class P7Blocks {
 					.requiresTool()
 					.sounds(BlockSoundGroup.NETHERITE)
 					.luminance(state -> 9)));
+
+	/**
+	 * The placed form of a thrown glow stick — no {@code BlockItem}, since
+	 * {@link dev.rheava.program7.item.GlowStickItem} is the only player-facing
+	 * form; this only ever appears via {@link
+	 * dev.rheava.program7.entity.GlowStickEntity} sticking to a surface.
+	 * Luminance steps down with {@link GlowStickBlock#STAGE} as it burns out.
+	 */
+	public static final RegistrySupplier<Block> GLOW_STICK = BLOCKS.register("glow_stick",
+			() -> new GlowStickBlock(AbstractBlock.Settings.create()
+					.mapColor(MapColor.GOLD)
+					.noCollision()
+					.breakInstantly()
+					.sounds(BlockSoundGroup.GLASS)
+					.luminance(state -> GlowStickBlock.luminanceForStage(state.get(GlowStickBlock.STAGE)))
+					.nonOpaque()));
 
 	public static void register() {
 		BLOCKS.register();

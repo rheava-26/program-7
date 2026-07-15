@@ -8,6 +8,7 @@
   "item.program7.explosive_warhead": "Explosive Warhead",
   "item.program7.magazine": "Magazine",
   "item.program7.datapad": "Datapad",
+  "item.program7.glow_stick": "Glow Stick",
   "item.program7.air_uav_spawn_egg": "Air UAV Spawn Egg",
   "item.program7.surveyor_drone_spawn_egg": "Surveyor Drone Spawn Egg",
   "item.program7.attack_drone_spawn_egg": "Attack Drone Spawn Egg",
@@ -49,6 +50,7 @@
   "block.program7.autocannon_magazine": "Autocannon Magazine",
   "block.program7.artillery_shell": "Artillery Shell",
   "block.program7.power_cell": "Power Cell",
+  "block.program7.glow_stick": "Glow Stick",
 
   "entity.program7.surveyor_drone": "Surveyor Drone",
   "entity.program7.air_uav": "Air UAV",
@@ -80,6 +82,7 @@
   "entity.program7.missile_launcher": "Missile Launcher",
   "entity.program7.guided_missile": "Guided Missile",
   "entity.program7.bomb": "Bomb",
+  "entity.program7.glow_stick": "Glow Stick",
 
   "message.program7.scan_complete": "⚠ Psionic interference — your threat profile has been logged",
 
@@ -130,5 +133,8 @@
   "subtitles.program7.unit.tank_tracks_loop": "Tracks grind closer",
   "subtitles.program7.entity.gunboat.engine_loop": "Engine throbs",
   "subtitles.program7.entity.mining_drone.laser": "Mining laser whines",
-  "subtitles.program7.unit.weapon_dry_fire": "Weapon clicks empty"
+  "subtitles.program7.unit.weapon_dry_fire": "Weapon clicks empty",
+  "subtitles.program7.item.glow_stick.throw": "Glow stick tossed",
+  "subtitles.program7.block.glow_stick.stick": "Glow stick sticks fast",
+  "subtitles.program7.block.glow_stick.fade": "Glow stick fades out"
 }

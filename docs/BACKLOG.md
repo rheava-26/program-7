@@ -1,18 +1,33 @@
 # Program 7 — Backlog & Session Handoff
 
-Single source of truth for outstanding work. **Read this first when resuming** — it saves re-deriving state from chat history. Complements `ROADMAP.md` (the phase plan) and the design docs. Last updated 2026-07-13.
+Single source of truth for outstanding work. **Read this first when resuming** — it saves re-deriving state from chat history. Complements `ROADMAP.md` (the phase plan) and the design docs. Last updated 2026-07-15.
 
 ## Current branch / state
 
 - Working branch: `claude/backlog-review-jg7xm6`
 - CI is **compile-only** — gradle can't run in this environment, so there is no runtime verification; changes below are hand-reasoned for compile correctness but unverified at runtime.
 - Recent commits (newest first):
+  - **Glow stick** (`GlowStickItem`/`GlowStickEntity`/`GlowStickBlock`): Phase 4's first player-craftable tool (see "Shipped this session" below)
   - shared shell base (`AbstractShellEntity`) + drag-aware `BallisticSolver` shared by howitzer and mortar + `IndirectFireUnit`-generalized `FireMissionManager` with battery fire (see "Shipped this session" below)
   - `7b61ab9` — review fixes: drag-aware howitzer ballistics, mission persistence on unloaded chunk, no free rearm on a damage-flee
   - `e8e4791` — stand up the Director `FireMissionManager`, wire the howitzer as its first client
   - `2ccbb54` — detailed M109 howitzer model + extended range
   - `208d0fe` — crate unpacking, combat ammo/power retreat, carry-to-capacity logistics
   - `1514986` / `d029350` — cargo/ammunition block family + art passes
+
+## Shipped this session (glow stick — Phase 4's first player tool)
+
+- **Glow stick** (`GlowStickItem` + `GlowStickEntity` + `GlowStickBlock`, all `common`): the doc's Phase 4 "reverse engineering" opener — the first item a player crafts rather than salvages, and the first player-facing tool overall. Cheap and disposable by design (the owner's brief: player tools have to be cool and fun on their own without trivializing the horror), so this is deliberately **not** permanent lighting:
+  - **Recipe**: shaped, 3 glowstone dust + 3 sticks (`g s g` / `s g s`) → 16 glow sticks — comparable cost-per-light to vanilla torches, cheap enough to toss freely per the brief.
+  - **Throw**: right-click throws one (snowball/egg-shaped `use()`, consumes 1 outside creative, small 4-tick cooldown via `ItemCooldownManager`), playing `item.glow_stick.throw`.
+  - **Flight**: `GlowStickEntity extends ThrownEntity` directly (not `AbstractShellEntity` — no explosion/impact machinery needed for a light tool), gravity 0.02 vs. the vanilla-snowball-ish ~0.03 baseline, so it arcs floatier/gentler than a snowball.
+  - **On block hit**: sticks to the hit face and places a `GlowStickBlock` with a `Properties.FACING` (all 6 directions, torch-like floor/wall/ceiling) computed as `hitSide.getOpposite()` — the direction from the placed block back toward its support. Plays `block.glow_stick.stick`. On an entity hit (no damage — it's a light tool) or an already-occupied face, it drops itself as a normal `ItemEntity` instead of placing anything.
+  - **Burn-down**: **scheduled block ticks + an `IntProperty STAGE` (0-3)** — no block entity, per the task's own preferred option (cheaper than a `CrateBlockEntity`-style countdown here since there's nothing to persist beyond one int already living in the blockstate). `GlowStickEntity` schedules the first tick when it places the block; each `scheduledTick` steps `STAGE` up and reschedules itself (~800 ticks / 40s per stage), and `Settings.luminance(state -> GlowStickBlock.luminanceForStage(state.get(STAGE)))` maps stages 0-3 to light levels 12→9→6→3. The stage-3 tick plays `block.glow_stick.fade` and calls `World#removeBlock` directly (not `breakBlock`) so the loot table never fires — a glow stick that burns out on its own drops nothing. A player who mines it early (any stage) gets the ordinary loot-table drop instead — "breaking it while still glowing may drop it back" falls out of that distinction for free, no special-case code.
+  - **Models**: new scratchpad-generated assets following the repo's established pipeline — a slim rod + brighter tip, both as a 3D item model (`models/item/glow_stick.json`, the same `minecraft:block/block` + flat-swatch-texture + shared `display` transform shape as `gun_barrel.json`/`explosive_warhead.json`) and 6 explicit per-facing block models (`models/block/glow_stick_{down,up,north,south,east,west}.json` — hand-computed axis-aligned cuboids per facing rather than blockstate `x`/`y` rotations of one shared model, to avoid guessing rotation math that can't be visually verified here) plus a small custom `GlowStickModel`/`GlowStickRenderer` Java pair (mirrors `HowitzerShellModel`/`HowitzerShellRenderer` exactly) for the flying entity, instead of a `FlyingItemEntityRenderer` — this repo has no existing precedent for that renderer's API in this Yarn version, whereas the shell-model pattern is already proven to compile here.
+  - **Sounds**: three new events (`item.glow_stick.throw`, `block.glow_stick.stick`, `block.glow_stick.fade`) registered in `P7Sounds` and `sounds.json`, redirected to vanilla placeholders (`entity.snowball.throw`, `block.amethyst_block.place`, `block.glass.break` respectively) per the repo's existing placeholder-sound convention, with subtitle lang entries.
+  - **Registration**: no `BlockItem` for `GlowStickBlock` — the throwable item is the only player-facing form, the block only ever appears via the entity sticking to a surface, matching the task's explicit guidance.
+  - **Known gap (documented in the class doc)**: `GlowStickBlock` doesn't watch its support block — mining out the block it's stuck to leaves it floating rather than popping off like a torch would. Left out on purpose: the neighbor-update/support-check block API (`getStateForNeighborUpdate`) changed shape substantially in 1.20.5+ (gained `WorldView`/`ScheduledTickView`/`Random` params), and getting that exact signature wrong is a compile-time risk with no way to verify locally. A later pass can add it once it's checked against a real client/CI run.
+  - **Not yet verified**: the six per-facing block model orientations and the item model's in-hand look are hand-reasoned from geometry, not visually tested (gradle can't run here) — worth a first look in-game before calling the art pass done.
 
 ## Shipped this session (artillery + trees batch)
 

@@ -66,6 +66,12 @@ public final class P7Sounds {
 	public static final RegistrySupplier<SoundEvent> BOAT_ENGINE_LOOP = registerRanged("entity.gunboat.engine_loop", 64f);
 	/** Standoff mining-laser hum — see MineResourceGoal. */
 	public static final RegistrySupplier<SoundEvent> MINING_LASER = registerRanged("entity.mining_drone.laser", 48f);
+	/** Player throws a glow stick — close-quarters cue, default range. */
+	public static final RegistrySupplier<SoundEvent> GLOW_STICK_THROW = register("item.glow_stick.throw");
+	/** A thrown glow stick sticking to a surface. */
+	public static final RegistrySupplier<SoundEvent> GLOW_STICK_STICK = register("block.glow_stick.stick");
+	/** A placed glow stick burning all the way out and going dark. */
+	public static final RegistrySupplier<SoundEvent> GLOW_STICK_FADE = register("block.glow_stick.fade");
 
 	private static RegistrySupplier<SoundEvent> register(String name) {
 		Identifier id = Program7.id(name);

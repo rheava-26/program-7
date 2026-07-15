@@ -17,6 +17,8 @@ import dev.rheava.program7.client.render.BatteryCenterRenderer;
 import dev.rheava.program7.client.render.BombModel;
 import dev.rheava.program7.client.render.BombRenderer;
 import dev.rheava.program7.client.render.DropPodRenderer;
+import dev.rheava.program7.client.render.GlowStickModel;
+import dev.rheava.program7.client.render.GlowStickRenderer;
 import dev.rheava.program7.client.render.GuidedMissileModel;
 import dev.rheava.program7.client.render.GuidedMissileRenderer;
 import dev.rheava.program7.client.render.GunboatModel;
@@ -131,6 +133,8 @@ public final class Program7Client {
 				GuidedMissileModel::getTexturedModelData);
 		EntityModelLayerRegistry.register(BombModel.LAYER,
 				BombModel::getTexturedModelData);
+		EntityModelLayerRegistry.register(GlowStickModel.LAYER,
+				GlowStickModel::getTexturedModelData);
 
 		EntityRendererRegistry.register(P7Entities.SURVEYOR_DRONE, SurveyorDroneRenderer::new);
 		EntityRendererRegistry.register(P7Entities.ATTACK_DRONE, AttackDroneRenderer::new);
@@ -162,6 +166,7 @@ public final class Program7Client {
 		EntityRendererRegistry.register(P7Entities.MISSILE_LAUNCHER, MissileLauncherRenderer::new);
 		EntityRendererRegistry.register(P7Entities.GUIDED_MISSILE, GuidedMissileRenderer::new);
 		EntityRendererRegistry.register(P7Entities.BOMB, BombRenderer::new);
+		EntityRendererRegistry.register(P7Entities.GLOW_STICK, GlowStickRenderer::new);
 
 		NetworkManager.registerReceiver(NetworkManager.Side.S2C,
 				InterferencePayload.ID, InterferencePayload.CODEC,

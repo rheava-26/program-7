@@ -257,6 +257,11 @@ Phases are ordered so every phase ships something playable, and the Director
 
 ## Phase 4 — Reverse Engineering (player tech tree)
 
+- [x] Glow stick: cheap throwable light (glowstone dust + sticks → 16),
+      not a reverse-engineered salvage item but the phase's first
+      player-craftable tool — proves the loop (craft → throw → placed
+      light) before the bench exists. Burns out over a few minutes rather
+      than being permanent lighting; see BACKLOG for the burn-down design.
 - [ ] Reverse-engineering bench: salvage → schematics
 - [ ] Player drones (dyeable, banner patterns)
 - [ ] Hand-built firearms/rifles: loud (gunfire attracts the network),
