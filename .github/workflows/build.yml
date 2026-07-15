@@ -47,7 +47,7 @@ jobs:
       # Stage just the two playable loader jars (drop the -sources and
       # intermediate -dev-shadow jars) so the release page is uncluttered.
       - name: Stage playable jars
-        if: success() && github.ref == 'refs/heads/claude/minecraft-fabric-mod-gb9ys2'
+        if: success() && (github.ref == 'refs/heads/claude/minecraft-fabric-mod-gb9ys2' || github.ref == 'refs/heads/claude/backlog-review-jg7xm6')
         run: |
           mkdir -p dist
           cp fabric/build/libs/*.jar neoforge/build/libs/*.jar dist/ 2>/dev/null || true
@@ -57,7 +57,7 @@ jobs:
       # Publish/refresh a single rolling pre-release so there's always one
       # stable download link for the latest playable dev build.
       - name: Publish dev build release
-        if: success() && github.ref == 'refs/heads/claude/minecraft-fabric-mod-gb9ys2'
+        if: success() && (github.ref == 'refs/heads/claude/minecraft-fabric-mod-gb9ys2' || github.ref == 'refs/heads/claude/backlog-review-jg7xm6')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: dev-latest

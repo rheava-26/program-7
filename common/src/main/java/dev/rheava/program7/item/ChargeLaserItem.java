@@ -20,6 +20,7 @@ import net.minecraft.block.TntBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.Item;
@@ -27,6 +28,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -212,7 +215,7 @@ public class ChargeLaserItem extends Item {
 			return;
 		}
 
-		int elapsed = this.getMaxUseTime(stack) - remainingUseTicks;
+		int elapsed = this.getMaxUseTime(stack, user) - remainingUseTicks;
 
 		Vec3d start = player.getEyePos();
 		Vec3d look = player.getRotationVec(1.0f);
@@ -292,7 +295,9 @@ public class ChargeLaserItem extends Item {
 		if (elapsed % DAMAGE_INTERVAL_TICKS != 0) {
 			return;
 		}
-		DamageSource source = world.getDamageSources().create(P7DamageTypes.LASER, player);
+		RegistryEntry<DamageType> laserType = world.getRegistryManager()
+				.getWrapperOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(P7DamageTypes.LASER);
+		DamageSource source = new DamageSource(laserType, player);
 		target.damage(source, BASE_DAMAGE_PER_APPLICATION);
 	}
 
@@ -307,7 +312,7 @@ public class ChargeLaserItem extends Item {
 			// doesn't already do so for a caller that isn't the block's own
 			// neighbor-update path.
 			world.removeBlock(pos, false);
-			TntBlock.primeTnt(world, pos, player);
+			TntBlock.primeTnt(world, pos);
 			return;
 		}
 		if (state.getBlock() instanceof CargoBlock cargoBlock) {
@@ -428,7 +433,7 @@ public class ChargeLaserItem extends Item {
 	// ---- use-action plumbing -----------------------------------------------
 
 	@Override
-	public int getMaxUseTime(ItemStack stack) {
+	public int getMaxUseTime(ItemStack stack, LivingEntity user) {
 		return 72000;
 	}
 

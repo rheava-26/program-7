@@ -34,6 +34,12 @@ public class LensRepairRecipe extends SpecialCraftingRecipe {
 	}
 
 	@Override
+	public boolean fits(int width, int height) {
+		// Needs room for the laser plus at least one amethyst shard.
+		return width * height >= 2;
+	}
+
+	@Override
 	public boolean matches(CraftingRecipeInput input, World world) {
 		int laserCount = 0;
 		int shardCount = 0;

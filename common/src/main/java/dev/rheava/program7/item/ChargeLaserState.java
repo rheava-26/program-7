@@ -28,7 +28,7 @@ public record ChargeLaserState(int batteryTicks, int heatTicks, boolean overheat
 			Codec.INT.fieldOf("lens_wear").forGetter(ChargeLaserState::lensWear)
 	).apply(instance, ChargeLaserState::new));
 
-	public static final PacketCodec<RegistryByteBuf, ChargeLaserState> PACKET_CODEC = PacketCodecs.codec(CODEC);
+	public static final PacketCodec<RegistryByteBuf, ChargeLaserState> PACKET_CODEC = PacketCodecs.registryCodec(CODEC);
 
 	public ChargeLaserState withBattery(int newBatteryTicks) {
 		return new ChargeLaserState(newBatteryTicks, this.heatTicks, this.overheated, this.lensWear);
