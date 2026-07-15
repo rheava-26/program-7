@@ -39,9 +39,11 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 /**
@@ -210,14 +212,28 @@ public class ChargeLaserItem extends Item {
 			return;
 		}
 
-		int elapsed = this.getMaxUseTime(stack, user) - remainingUseTicks;
+		int elapsed = this.getMaxUseTime(stack) - remainingUseTicks;
 
 		Vec3d start = player.getEyePos();
-		HitResult hit = ProjectileUtil.getCollision(player,
-				candidate -> candidate != player && candidate.canHit() && !candidate.isSpectator(), RANGE);
-		Vec3d end = (hit == null || hit.getType() == HitResult.Type.MISS)
-				? start.add(player.getRotationVec(1.0f).multiply(RANGE))
-				: hit.getPos();
+		Vec3d look = player.getRotationVec(1.0f);
+		Vec3d rangeEnd = start.add(look.multiply(RANGE));
+
+		// Raycast the block world first (the beam passes through fluids), then
+		// look for an entity in front of whatever block stopped it — so a wall
+		// blocks the beam and you can't tag a drone hiding behind one. This is
+		// the repo's proven world.raycast idiom (see HitscanImpact);
+		// ProjectileUtil.getCollision raycasts along the entity's *velocity*,
+		// which is ~zero for a standing player, so it never registers a hit.
+		BlockHitResult blockHit = world.raycast(new RaycastContext(start, rangeEnd,
+				RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, player));
+		Vec3d beamEnd = blockHit.getType() == HitResult.Type.MISS ? rangeEnd : blockHit.getPos();
+		Box searchBox = player.getBoundingBox().stretch(look.multiply(RANGE)).expand(1.0);
+		EntityHitResult entityHit = ProjectileUtil.getEntityCollision(world, player, start, beamEnd, searchBox,
+				candidate -> candidate != player && candidate.canHit() && !candidate.isSpectator());
+
+		HitResult hit = entityHit != null ? entityHit
+				: (blockHit.getType() == HitResult.Type.MISS ? null : blockHit);
+		Vec3d end = hit == null ? rangeEnd : hit.getPos();
 
 		if (elapsed % PARTICLE_INTERVAL_TICKS == 0) {
 			this.drawBeam(serverWorld, start, end);
@@ -229,11 +245,11 @@ public class ChargeLaserItem extends Item {
 			ProgramAcoustics.reportNoise(serverWorld, player.getX(), player.getY(), player.getZ(), NOISE_LOUDNESS);
 		}
 
-		if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity target) {
+		if (entityHit != null && entityHit.getEntity() instanceof LivingEntity target) {
 			this.clearMining(serverWorld, player);
 			this.applyEntityHit(serverWorld, player, target, elapsed);
-		} else if (hit instanceof BlockHitResult blockHit) {
-			this.applyBlockHit(serverWorld, player, blockHit, elapsed);
+		} else if (hit instanceof BlockHitResult blockHitResult) {
+			this.applyBlockHit(serverWorld, player, blockHitResult, elapsed);
 		} else {
 			this.clearMining(serverWorld, player);
 		}
@@ -412,7 +428,7 @@ public class ChargeLaserItem extends Item {
 	// ---- use-action plumbing -----------------------------------------------
 
 	@Override
-	public int getMaxUseTime(ItemStack stack, LivingEntity user) {
+	public int getMaxUseTime(ItemStack stack) {
 		return 72000;
 	}
 
