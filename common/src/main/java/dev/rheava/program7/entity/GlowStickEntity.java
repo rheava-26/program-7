@@ -85,9 +85,17 @@ public class GlowStickEntity extends ThrownEntity {
 	private void stickToBlock(ServerWorld world, BlockHitResult blockHit) {
 		Direction hitSide = blockHit.getSide();
 		BlockPos placePos = blockHit.getBlockPos().offset(hitSide);
-		if (!world.getBlockState(placePos).isAir()) {
-			// Face already occupied (rare — e.g. another glow stick beat it
-			// there); don't overwrite whatever's there.
+		// Replaceable covers plain air as well as tall grass, snow layers, and
+		// water/lava, so the stick can plant itself in foliage or snow instead of only
+		// ever sticking over open air. Outside the world's build height, isReplaceable
+		// can still read true (void air) even though world.setBlockState would silently
+		// no-op there — check isInBuildLimit first so an out-of-range hit falls back to
+		// dropping the item instead of scheduling a tick at a position that will never
+		// hold a block.
+		if (!world.isInBuildLimit(placePos) || !world.getBlockState(placePos).isReplaceable()) {
+			// Target position is out of the world, or the face is already occupied by
+			// something non-replaceable (e.g. another glow stick beat it there); don't
+			// overwrite whatever's there.
 			this.dropAsItem(world);
 			return;
 		}
@@ -95,7 +103,13 @@ public class GlowStickEntity extends ThrownEntity {
 		BlockState state = P7Blocks.GLOW_STICK.get().getDefaultState()
 				.with(GlowStickBlock.FACING, facing)
 				.with(GlowStickBlock.STAGE, 0);
-		world.setBlockState(placePos, state);
+		if (!world.setBlockState(placePos, state)) {
+			// Placement didn't actually take (e.g. lost a race with another change to
+			// this position) — don't schedule a burn-down tick or play the stick sound
+			// for a block that isn't there.
+			this.dropAsItem(world);
+			return;
+		}
 		world.scheduleBlockTick(placePos, P7Blocks.GLOW_STICK.get(), GlowStickBlock.STAGE_INTERVAL_TICKS);
 		world.playSound(null, placePos, P7Sounds.GLOW_STICK_STICK.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
 	}

@@ -23,6 +23,7 @@ import dev.rheava.program7.block.StorageDeckBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.BlockSoundGroup;
 
@@ -207,7 +208,12 @@ public final class P7Blocks {
 					.breakInstantly()
 					.sounds(BlockSoundGroup.GLASS)
 					.luminance(state -> GlowStickBlock.luminanceForStage(state.get(GlowStickBlock.STAGE)))
-					.nonOpaque()));
+					.nonOpaque()
+					// Same reason vanilla torches use this: a piston can't carry the
+					// position-keyed scheduled-tick burn-down chain, so letting a piston
+					// relocate the block instead of destroying it would orphan that chain
+					// and leave a permanent light-12 block behind.
+					.pistonBehavior(PistonBehavior.DESTROY)));
 
 	public static void register() {
 		BLOCKS.register();

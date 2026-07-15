@@ -3,10 +3,12 @@ package dev.rheava.program7.block;
 import java.util.EnumMap;
 import java.util.Map;
 
+import dev.rheava.program7.registry.P7Items;
 import dev.rheava.program7.registry.P7Sounds;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
@@ -20,6 +22,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldView;
 
 /**
  * A thrown {@link dev.rheava.program7.entity.GlowStickEntity} sticks itself
@@ -81,6 +84,17 @@ public class GlowStickBlock extends Block {
 	@Override
 	protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		return SHAPES.getOrDefault(state.get(FACING), VoxelShapes.fullCube());
+	}
+
+	/**
+	 * There's no {@code BlockItem} for this block (see {@code P7Blocks}'s
+	 * javadoc on {@link dev.rheava.program7.registry.P7Blocks#GLOW_STICK}), so
+	 * without this override middle-click pick-block on a placed stick would
+	 * fall through to {@link Block#asItem()} and yield air.
+	 */
+	@Override
+	public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
+		return new ItemStack(P7Items.GLOW_STICK.get());
 	}
 
 	/**
